@@ -6,48 +6,111 @@ import numpy as np
 import ezcv2
 
 
-class ChannelTests(unittest.TestCase):
-    def test_isgray(self):
-        image = ezcv2.pm5544()
-        self.assertFalse(ezcv2.isgray(image))
-        self.assertTrue(ezcv2.isgray(image[:, :, 0]))
-        self.assertTrue(ezcv2.isgray(image[:, :, 0:1]))
-        self.assertFalse(ezcv2.isgray(image[:, :, 0:2]))
+class TestCase(unittest.TestCase):
+    """
+    Base class for test cases.
+    """
     
-    def test_iscolor(self):
-        image = ezcv2.pm5544()
-        self.assertTrue(ezcv2.iscolor(image))
-        self.assertFalse(ezcv2.iscolor(image[:, :, 0]))
-        self.assertFalse(ezcv2.iscolor(image[:, :, 0:1]))
-        self.assertFalse(ezcv2.iscolor(image[:, :, 0:2]))
+    def assertNumpyShape(self, image, shape):
+        self.assertIsInstance(image, np.ndarray)
+        self.assertEqual(image.shape, shape)
+    
+    def assertIsImage(self, x):
+        self.assertIsInstance(x, np.ndarray)
+        self.assertTrue((len(x.shape) == 2) or ((len(x.shape) == 3) and (x.shape[2] in (1, 3))))
+    
+    def assertEqualImageContainers(self, x, y):
+        self.assertIsImage(x)
+        self.assertIsImage(y)
+        self.assertEqual(x.dtype, y.dtype)
+        self.assertEqual(x.shape, y.shape)
+    
+    def assertEqualImages(self, x, y):
+        self.assertEqualImageContainers(x, y)
+        self.assertTrue(np.all(x == y))
         
-    def test_asgray(self):
+    def assertIsColormap(self, x):
+        self.assertIsImage(x)
+        self.assertEqual(x.dtype, np.uint8)
+        self.assertEqual(x.shape, (256, 1, 3))
+
+
+class ChannelTests(TestCase):
+    def test_is_gray(self):
         image = ezcv2.pm5544()
-        self.assertTrue(ezcv2.iscolor(image))
-        image_g = ezcv2.asgray(image)
-        self.assertTrue(ezcv2.isgray(image_g))
+        self.assertFalse(ezcv2.is_gray(image))
+        self.assertTrue(ezcv2.is_gray(image[:, :, 0]))
+        self.assertTrue(ezcv2.is_gray(image[:, :, 0:1]))
+        self.assertFalse(ezcv2.is_gray(image[:, :, 0:2]))
+    
+    def test_is_color(self):
+        image = ezcv2.pm5544()
+        self.assertTrue(ezcv2.is_color(image))
+        self.assertFalse(ezcv2.is_color(image[:, :, 0]))
+        self.assertFalse(ezcv2.is_color(image[:, :, 0:1]))
+        self.assertFalse(ezcv2.is_color(image[:, :, 0:2]))
+        
+    def test_as_gray(self):
+        image = ezcv2.pm5544()
+        self.assertTrue(ezcv2.is_color(image))
+        image_g = ezcv2.as_gray(image)
+        self.assertTrue(ezcv2.is_gray(image_g))
         self.assertEqual(image_g.shape, image.shape[:2])
     
-    def test_asgray_noop(self):
+    def test_as_gray_noop(self):
         image = ezcv2.pm5544()
         image_b = image[:, :, 0]
-        self.assertTrue(np.all(image_b == ezcv2.asgray(image_b)))
+        self.assertEqualImages(image_b, ezcv2.as_gray(image_b))
         
-    def test_ascolor(self):
+    def test_as_color(self):
         image = ezcv2.pm5544()
         image_b = image[:, :, 0]
-        image_c = ezcv2.ascolor(image_b)
-        self.assertTrue(ezcv2.iscolor(image_c))
+        image_c = ezcv2.as_color(image_b)
+        self.assertTrue(ezcv2.is_color(image_c))
         self.assertEqual(image_c.shape, image_b.shape + (3,))
         for n_channel in range(3):
-            self.assertTrue(np.all(image_c[:, :, n_channel] == image_b))
+            self.assertEqualImages(image_c[:, :, n_channel], image_b)
     
-    def test_ascolor_noop(self):
+    def test_as_color_noop(self):
         image = ezcv2.pm5544()
-        self.assertTrue(np.all(image == ezcv2.ascolor(image)))
+        self.assertEqualImages(image, ezcv2.as_color(image))
+    
+    def test_flip_channels_values(self):
+        image = ezcv2.pm5544()
+        image_flipped = ezcv2.flip_channels(image=image)
+        for n_channel in range(3):
+            self.assertEqualImages(image[:, :, n_channel], image_flipped[:, :, 2 - n_channel])
+        
+    def test_flip_channels_once_neq(self):
+        image = ezcv2.pm5544()
+        image_flipped = ezcv2.flip_channels(image=image)
+        self.assertEqualImageContainers(image, image_flipped)
+        self.assertFalse(np.all(image == image_flipped))
+        
+    def test_flip_channels_twice(self):
+        image = ezcv2.pm5544()
+        image_flipped = ezcv2.flip_channels(image=image)
+        image_flipped_flipped = ezcv2.flip_channels(image=image_flipped)
+        self.assertEqualImages(image, image_flipped_flipped)
+
+    def test_colormap_plot(self):
+        result = ezcv2.colormap("plot")
+        self.assertIsColormap(result)
+        self.assertEqual(result[0, 0, :].tolist(), [0, 0, 0])
+        self.assertEqual(result[1, 0, :].tolist(), [0, 0, 255])
+        self.assertEqual(result[2, 0, :].tolist(), [0, 255, 0])
+        self.assertEqual(result[3, 0, :].tolist(), [255, 0, 0])
+        self.assertEqual(result[255, 0, :].tolist(), [255, 255, 255])
+
+    def test_colormap_jet(self):
+        result = ezcv2.colormap("jet")
+        self.assertIsColormap(result)
+        
+    def test_colormap_raise(self):
+        self.assertRaises(ValueError, lambda: ezcv2.colormap("__!?-non-existing_colormap-name-!?__"))
         
 
-class DataTests(unittest.TestCase):
+class DataTests(TestCase):
     def test_data_dir_exists(self):
         self.assertTrue(os.path.exists(ezcv2.DATA_DIR))
     
@@ -57,11 +120,43 @@ class DataTests(unittest.TestCase):
     
     def test_pm5544_load(self):
         image = ezcv2.pm5544()
-        self.assertIsInstance(image, np.ndarray)
+        self.assertIsImage(image)
         self.assertEqual(image.shape, (576, 768, 3))
+    
+    def test_xslope_width256(self):
+        for height in (1, 32):
+            slope = ezcv2.xslope(height=height, width=256)
+            self.assertIsImage(slope)
+            self.assertEqual(slope.dtype, np.uint8)
+            self.assertEqual(slope.shape, (height, 256))
+            for x in range(256):
+                for y in range(height):
+                    self.assertEqual(slope[y, x], x)
+    
+    def test_xslope_widthNot256(self):
+        height = 1
+        for width in (2, 32, 256, 1000):
+            slope = ezcv2.xslope(height=height, width=width)
+            self.assertIsImage(slope)
+            self.assertEqual(slope.dtype, np.uint8)
+            self.assertEqual(slope.shape, (height, width))
+            for y in range(height):
+                self.assertEqual(slope[y, 0], 0)
+                self.assertEqual(slope[y, width - 1], 255)
+
+    def test_yslope(self):
+        height = 256
+        width = 32
+        slope = ezcv2.yslope(width=width, height=height)
+        self.assertIsImage(slope)
+        self.assertEqual(slope.dtype, np.uint8)
+        self.assertEqual(slope.shape, (height, width))
+        for x in range(width):
+            for y in range(height):
+                self.assertEqual(slope[y, x], y)
 
 
-class GeometryTests(unittest.TestCase):
+class GeometryTests(TestCase):
     def test_size(self):
         image = ezcv2.pm5544()
         self.assertEqual(ezcv2.size(image), (768, 576))
@@ -77,7 +172,7 @@ class GeometryTests(unittest.TestCase):
         self.assertEqual(image2.shape, (288, 384, 3))
 
 
-class InfoTests(unittest.TestCase):
+class InfoTests(TestCase):
     def test_info(self):
         image = ezcv2.pm5544()
         info = ezcv2.info(image)
@@ -138,15 +233,11 @@ class InfoTests(unittest.TestCase):
             self.assertAlmostEqual(value_sum, value_color)
 
 
-class IoTests(unittest.TestCase):
+class IoTests(TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.image_filename = os.path.join(ezcv2.DATA_FILENAMES["PM5544"])
+        self.image_filename = os.path.join(ezcv2.DATA_FILENAMES["image:PM5544"])
         self.shape = (576, 768, 3)
-    
-    def assertNumpyShape(self, image, shape):
-        self.assertIsInstance(image, np.ndarray)
-        self.assertEqual(image.shape, shape)
     
     def test_load_default(self):
         image = ezcv2.load(filename=self.image_filename)

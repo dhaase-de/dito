@@ -41,9 +41,9 @@ def hist(image, bin_count=256):
     """
     
     # determine which channels to use
-    if ezcv2.isgray(image):
+    if ezcv2.is_gray(image):
         channels = [0]
-    elif ezcv2.iscolor(image):
+    elif ezcv2.is_color(image):
         channels = [0, 1, 2]
     else:
         raise ValueError("The given image must be a valid gray scale or color image")

@@ -57,6 +57,7 @@ setup(
     ],
     packages=[package_name],
     package_data={package_name: [
-        "data/images/*.png",
+        "datafiles/colormaps/*.png",
+        "datafiles/images/*.png",
     ]},
 )
