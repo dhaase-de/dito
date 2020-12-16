@@ -6,6 +6,47 @@ import numpy as np
 import ezcv2
 
 
+class ChannelTests(unittest.TestCase):
+    def test_isgray(self):
+        image = ezcv2.pm5544()
+        self.assertFalse(ezcv2.isgray(image))
+        self.assertTrue(ezcv2.isgray(image[:, :, 0]))
+        self.assertTrue(ezcv2.isgray(image[:, :, 0:1]))
+        self.assertFalse(ezcv2.isgray(image[:, :, 0:2]))
+    
+    def test_iscolor(self):
+        image = ezcv2.pm5544()
+        self.assertTrue(ezcv2.iscolor(image))
+        self.assertFalse(ezcv2.iscolor(image[:, :, 0]))
+        self.assertFalse(ezcv2.iscolor(image[:, :, 0:1]))
+        self.assertFalse(ezcv2.iscolor(image[:, :, 0:2]))
+        
+    def test_asgray(self):
+        image = ezcv2.pm5544()
+        self.assertTrue(ezcv2.iscolor(image))
+        image_g = ezcv2.asgray(image)
+        self.assertTrue(ezcv2.isgray(image_g))
+        self.assertEqual(image_g.shape, image.shape[:2])
+    
+    def test_asgray_noop(self):
+        image = ezcv2.pm5544()
+        image_b = image[:, :, 0]
+        self.assertTrue(np.all(image_b == ezcv2.asgray(image_b)))
+        
+    def test_ascolor(self):
+        image = ezcv2.pm5544()
+        image_b = image[:, :, 0]
+        image_c = ezcv2.ascolor(image_b)
+        self.assertTrue(ezcv2.iscolor(image_c))
+        self.assertEqual(image_c.shape, image_b.shape + (3,))
+        for n_channel in range(3):
+            self.assertTrue(np.all(image_c[:, :, n_channel] == image_b))
+    
+    def test_ascolor_noop(self):
+        image = ezcv2.pm5544()
+        self.assertTrue(np.all(image == ezcv2.ascolor(image)))
+        
+
 class DataTests(unittest.TestCase):
     def test_data_dir_exists(self):
         self.assertTrue(os.path.exists(ezcv2.DATA_DIR))
