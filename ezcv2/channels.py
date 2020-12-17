@@ -5,6 +5,15 @@ import ezcv2.data
 import ezcv2.io
 
 
+def is_image(image):
+    """
+    Return `True` iff the given image is either a valid grayscale image or a
+    valid color image.
+    """
+    
+    return is_gray(image=image) or is_color(image=image)
+    
+
 def is_gray(image):
     """
     Return `True` iff the given image is a grayscale image.

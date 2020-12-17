@@ -16,8 +16,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(image.shape, shape)
     
     def assertIsImage(self, x):
-        self.assertIsInstance(x, np.ndarray)
-        self.assertTrue((len(x.shape) == 2) or ((len(x.shape) == 3) and (x.shape[2] in (1, 3))))
+        self.assertTrue(ezcv2.is_image(x))
     
     def assertEqualImageContainers(self, x, y):
         self.assertIsImage(x)
