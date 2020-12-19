@@ -39,10 +39,11 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install setuptools wheel
-        python -m pip install "numpy${{ matrix.numpy-version }}"
-        python -m pip install "opencv-python${{ matrix.opencv-version }}"
+        python3 -m pip install --upgrade pip
+        python3 -m pip install setuptools wheel
+        python3 -m pip install "numpy${{ matrix.numpy-version }}"
+        python3 -m pip install "opencv-python${{ matrix.opencv-version }}"
+        ./scripts/build_install_dev.sh
     - name: Run tests
       run: |
         ./scripts/run_tests.sh
