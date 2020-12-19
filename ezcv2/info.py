@@ -12,7 +12,6 @@ def info(image):
     """
 
     result = collections.OrderedDict()
-    result["dev"] = np.prod(image.shape)
     result["size (KiB)"] = image.size * image.itemsize / 1024.0
     result["shape"] = image.shape
     result["dtype"] = image.dtype
