@@ -1,0 +1,48 @@
+# This workflow will install Python dependencies and run tests with a variety of OS/Python/NumPy/OpenCV versions
+
+name: Tests
+
+on: [push, workflow_dispatch]
+
+jobs:
+
+  tests:
+    
+    strategy:
+      matrix:
+        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
+        python-version: ['3.5', '3.6', '3.7', '3.8', '3.9']
+        numpy-version: ['==1.13.3', '']
+        opencv-version: ['>=3.0.0,<4.0.0', '>=4.0.0,<5.0.0']
+        exclude:
+          - os: ubuntu-18.04
+            python-version: '3.5'
+          - os: ubuntu-20.04
+            python-version: '3.5'
+          - numpy-version: '==1.13.3'
+            python-version: '3.7'
+          - numpy-version: '==1.13.3'
+            python-version: '3.8'
+          - numpy-version: '==1.13.3'
+            python-version: '3.9'
+    
+    runs-on: ${{ matrix.os }}
+    
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout 
+      uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install setuptools wheel
+        python -m pip install "numpy${{ matrix.numpy-version }}"
+        python -m pip install "opencv-python${{ matrix.opencv-version }}"
+    - name: Run tests
+      run: |
+        ./scripts/run_tests.sh
