@@ -1,5 +1,6 @@
 import os.path
 
+import cv2
 import numpy as np
 
 import ezcv2.io
@@ -12,8 +13,43 @@ DATA_FILENAMES = {
 }
 
 
+####
+#%%% non-image data
+####
+
+
+def colormap(name):
+    """
+    Returns the colormap specified by `name` as NumPy array of size
+    `(256, 1, 3)`.
+    """
+    
+    # source 1: non-OpenCV colormaps ToDo
+    data_key = "colormap:{}".format(name.lower())
+    if data_key in DATA_FILENAMES.keys():
+        return ezcv2.io.load(filename=DATA_FILENAMES[data_key])
+    
+    # source 2: OpenCV colormaps
+    full_cv2_name = "COLORMAP_{}".format(name.upper())
+    if hasattr(cv2, full_cv2_name):
+        return cv2.applyColorMap(src=yslope(width=1), colormap=getattr(cv2, full_cv2_name))
+    
+    # no match
+    raise ValueError("Unknown colormap '{}'".format(name))
+
+
+####
+#%%% real images
+####
+
+
 def pm5544():
     return ezcv2.io.load(filename=DATA_FILENAMES["image:PM5544"])
+
+
+####
+#%%% synthetic images
+####
 
 
 def xslope(height=32, width=256):
