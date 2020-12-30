@@ -34,21 +34,69 @@ class TestCase(unittest.TestCase):
         self.assertEqual(x.shape, (256, 1, 3))
 
 
-class ChannelTests(TestCase):
-    def test_is_gray(self):
-        image = ezcv2.pm5544()
-        self.assertFalse(ezcv2.is_gray(image))
-        self.assertTrue(ezcv2.is_gray(image[:, :, 0]))
-        self.assertTrue(ezcv2.is_gray(image[:, :, 0:1]))
-        self.assertFalse(ezcv2.is_gray(image[:, :, 0:2]))
+class data_Tests(TestCase):
+    def test_data_dir_exists(self):
+        self.assertTrue(os.path.exists(ezcv2.DATA_DIR))
     
-    def test_is_color(self):
-        image = ezcv2.pm5544()
-        self.assertTrue(ezcv2.is_color(image))
-        self.assertFalse(ezcv2.is_color(image[:, :, 0]))
-        self.assertFalse(ezcv2.is_color(image[:, :, 0:1]))
-        self.assertFalse(ezcv2.is_color(image[:, :, 0:2]))
+    def test_data_files_exists(self):
+        for filename in ezcv2.DATA_FILENAMES.values():
+            self.assertTrue(os.path.exists(filename), "Data file '{}' does not exist".format(filename))
+    
+    def test_colormap_plot(self):
+        result = ezcv2.colormap("plot")
+        self.assertIsColormap(result)
+        self.assertEqual(result[0, 0, :].tolist(), [0, 0, 0])
+        self.assertEqual(result[1, 0, :].tolist(), [0, 0, 255])
+        self.assertEqual(result[2, 0, :].tolist(), [0, 255, 0])
+        self.assertEqual(result[3, 0, :].tolist(), [255, 0, 0])
+        self.assertEqual(result[255, 0, :].tolist(), [255, 255, 255])
+
+    def test_colormap_jet(self):
+        result = ezcv2.colormap("jet")
+        self.assertIsColormap(result)
         
+    def test_colormap_raise(self):
+        self.assertRaises(ValueError, lambda: ezcv2.colormap("__!?-non-existing_colormap-name-!?__"))
+    
+    def test_pm5544_load(self):
+        image = ezcv2.pm5544()
+        self.assertIsImage(image)
+        self.assertEqual(image.shape, (576, 768, 3))
+    
+    def test_xslope_width256(self):
+        for height in (1, 32):
+            slope = ezcv2.xslope(height=height, width=256)
+            self.assertIsImage(slope)
+            self.assertEqual(slope.dtype, np.uint8)
+            self.assertEqual(slope.shape, (height, 256))
+            for x in range(256):
+                for y in range(height):
+                    self.assertEqual(slope[y, x], x)
+    
+    def test_xslope_widthNot256(self):
+        height = 1
+        for width in (2, 32, 256, 1000):
+            slope = ezcv2.xslope(height=height, width=width)
+            self.assertIsImage(slope)
+            self.assertEqual(slope.dtype, np.uint8)
+            self.assertEqual(slope.shape, (height, width))
+            for y in range(height):
+                self.assertEqual(slope[y, 0], 0)
+                self.assertEqual(slope[y, width - 1], 255)
+
+    def test_yslope(self):
+        height = 256
+        width = 32
+        slope = ezcv2.yslope(width=width, height=height)
+        self.assertIsImage(slope)
+        self.assertEqual(slope.dtype, np.uint8)
+        self.assertEqual(slope.shape, (height, width))
+        for x in range(width):
+            for y in range(height):
+                self.assertEqual(slope[y, x], y)
+
+
+class transforms_Tests(TestCase):
     def test_as_gray(self):
         image = ezcv2.pm5544()
         self.assertTrue(ezcv2.is_color(image))
@@ -91,75 +139,7 @@ class ChannelTests(TestCase):
         image_flipped = ezcv2.flip_channels(image=image)
         image_flipped_flipped = ezcv2.flip_channels(image=image_flipped)
         self.assertEqualImages(image, image_flipped_flipped)
-
-    def test_colormap_plot(self):
-        result = ezcv2.colormap("plot")
-        self.assertIsColormap(result)
-        self.assertEqual(result[0, 0, :].tolist(), [0, 0, 0])
-        self.assertEqual(result[1, 0, :].tolist(), [0, 0, 255])
-        self.assertEqual(result[2, 0, :].tolist(), [0, 255, 0])
-        self.assertEqual(result[3, 0, :].tolist(), [255, 0, 0])
-        self.assertEqual(result[255, 0, :].tolist(), [255, 255, 255])
-
-    def test_colormap_jet(self):
-        result = ezcv2.colormap("jet")
-        self.assertIsColormap(result)
         
-    def test_colormap_raise(self):
-        self.assertRaises(ValueError, lambda: ezcv2.colormap("__!?-non-existing_colormap-name-!?__"))
-        
-
-class DataTests(TestCase):
-    def test_data_dir_exists(self):
-        self.assertTrue(os.path.exists(ezcv2.DATA_DIR))
-    
-    def test_data_files_exists(self):
-        for filename in ezcv2.DATA_FILENAMES.values():
-            self.assertTrue(os.path.exists(filename), "Data file '{}' does not exist".format(filename))
-    
-    def test_pm5544_load(self):
-        image = ezcv2.pm5544()
-        self.assertIsImage(image)
-        self.assertEqual(image.shape, (576, 768, 3))
-    
-    def test_xslope_width256(self):
-        for height in (1, 32):
-            slope = ezcv2.xslope(height=height, width=256)
-            self.assertIsImage(slope)
-            self.assertEqual(slope.dtype, np.uint8)
-            self.assertEqual(slope.shape, (height, 256))
-            for x in range(256):
-                for y in range(height):
-                    self.assertEqual(slope[y, x], x)
-    
-    def test_xslope_widthNot256(self):
-        height = 1
-        for width in (2, 32, 256, 1000):
-            slope = ezcv2.xslope(height=height, width=width)
-            self.assertIsImage(slope)
-            self.assertEqual(slope.dtype, np.uint8)
-            self.assertEqual(slope.shape, (height, width))
-            for y in range(height):
-                self.assertEqual(slope[y, 0], 0)
-                self.assertEqual(slope[y, width - 1], 255)
-
-    def test_yslope(self):
-        height = 256
-        width = 32
-        slope = ezcv2.yslope(width=width, height=height)
-        self.assertIsImage(slope)
-        self.assertEqual(slope.dtype, np.uint8)
-        self.assertEqual(slope.shape, (height, width))
-        for x in range(width):
-            for y in range(height):
-                self.assertEqual(slope[y, x], y)
-
-
-class GeometryTests(TestCase):
-    def test_size(self):
-        image = ezcv2.pm5544()
-        self.assertEqual(ezcv2.size(image), (768, 576))
-    
     def test_resize_scale(self):
         image = ezcv2.pm5544()
         image2 = ezcv2.resize(image, 0.5)
@@ -171,7 +151,25 @@ class GeometryTests(TestCase):
         self.assertEqual(image2.shape, (288, 384, 3))
 
 
-class InfoTests(TestCase):
+class infos_Tests(TestCase):
+    def test_is_gray(self):
+        image = ezcv2.pm5544()
+        self.assertFalse(ezcv2.is_gray(image))
+        self.assertTrue(ezcv2.is_gray(image[:, :, 0]))
+        self.assertTrue(ezcv2.is_gray(image[:, :, 0:1]))
+        self.assertFalse(ezcv2.is_gray(image[:, :, 0:2]))
+    
+    def test_is_color(self):
+        image = ezcv2.pm5544()
+        self.assertTrue(ezcv2.is_color(image))
+        self.assertFalse(ezcv2.is_color(image[:, :, 0]))
+        self.assertFalse(ezcv2.is_color(image[:, :, 0:1]))
+        self.assertFalse(ezcv2.is_color(image[:, :, 0:2]))
+    
+    def test_size(self):
+        image = ezcv2.pm5544()
+        self.assertEqual(ezcv2.size(image), (768, 576))
+    
     def test_info(self):
         image = ezcv2.pm5544()
         info = ezcv2.info(image)
@@ -232,7 +230,7 @@ class InfoTests(TestCase):
             self.assertAlmostEqual(value_sum, value_color)
 
 
-class IoTests(TestCase):
+class io_Tests(TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.image_filename = os.path.join(ezcv2.DATA_FILENAMES["image:PM5544"])
