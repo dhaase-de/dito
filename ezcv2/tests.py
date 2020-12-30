@@ -34,6 +34,28 @@ class TestCase(unittest.TestCase):
         self.assertEqual(x.shape, (256, 1, 3))
 
 
+class aliases_Tests(TestCase):
+    def test_otsu_raise(self):
+        image = ezcv2.pm5544()
+        self.assertRaises(ValueError, lambda: ezcv2.otsu(image=image))
+        
+    def test_otsu_return(self):
+        image = ezcv2.pm5544()
+        image_gray = ezcv2.as_gray(image)
+        result = ezcv2.otsu(image=image_gray)
+        self.assertIsInstance(result, tuple)
+        self.assertTrue(len(result) == 2)
+        self.assertIsInstance(result[0], float)
+        self.assertIsInstance(result[1], np.ndarray)
+    
+    def test_otsu_theta(self):
+        image = ezcv2.pm5544()
+        image_gray = ezcv2.as_gray(image)
+        theta = ezcv2.otsu_theta(image=image_gray)
+        self.assertIsInstance(theta, float)
+        self.assertAlmostEqual(theta, 89.0)
+
+
 class data_Tests(TestCase):
     def test_data_dir_exists(self):
         self.assertTrue(os.path.exists(ezcv2.DATA_DIR))

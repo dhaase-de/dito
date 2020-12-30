@@ -1,8 +1,12 @@
 import cv2
 
+import ezcv2.infos
+
 
 def otsu(image):
-    (theta, image2) = cv2.threshold(src=image, thresh=-1, maxval=255, type=cv2.THRASH_BINARY | cv2.THRESH_OTSU)
+    if ezcv2.infos.is_color(image=image):
+        raise ValueError("Expected gray image but got color image for Otsu thresholding")
+    (theta, image2) = cv2.threshold(src=image, thresh=-1, maxval=255, type=cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     return (theta, image2)
 
 
