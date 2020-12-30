@@ -31,32 +31,6 @@ def is_color(image):
     return (len(image.shape) == 3) and (image.shape[2] == 3)
 
 
-def as_gray(image):
-    """
-    Convert the given image from BGR to grayscale.
-    
-    If it is already a grayscale image, return the image unchanged.
-    """
-    
-    if is_gray(image=image):
-        return image
-    else:
-        return cv2.cvtColor(src=image, code=cv2.COLOR_BGR2GRAY)
-
-
-def as_color(image):
-    """
-    Convert the given image from grayscale to BGR.
-    
-    If it is already a color image, return the image unchanged.
-    """
-    
-    if is_color(image=image):
-        return image
-    else:
-        return cv2.cvtColor(src=image, code=cv2.COLOR_GRAY2BGR)
-
-
 def size(image):
     """
     Return the size `(X, Y)` of the given image.

@@ -4,6 +4,32 @@ import ezcv2.data
 import ezcv2.infos
 
 
+def as_gray(image):
+    """
+    Convert the given image from BGR to grayscale.
+    
+    If it is already a grayscale image, return the image unchanged.
+    """
+    
+    if ezcv2.infos.is_gray(image=image):
+        return image
+    else:
+        return cv2.cvtColor(src=image, code=cv2.COLOR_BGR2GRAY)
+
+
+def as_color(image):
+    """
+    Convert the given image from grayscale to BGR.
+    
+    If it is already a color image, return the image unchanged.
+    """
+    
+    if ezcv2.infos.is_color(image=image):
+        return image
+    else:
+        return cv2.cvtColor(src=image, code=cv2.COLOR_GRAY2BGR)
+
+
 def flip_channels(image):
     """
     Changes BGR channels to RGB channels and vice versa.
