@@ -118,61 +118,6 @@ class data_Tests(TestCase):
                 self.assertEqual(slope[y, x], y)
 
 
-class transforms_Tests(TestCase):
-    def test_as_gray(self):
-        image = ezcv2.pm5544()
-        self.assertTrue(ezcv2.is_color(image))
-        image_g = ezcv2.as_gray(image)
-        self.assertTrue(ezcv2.is_gray(image_g))
-        self.assertEqual(image_g.shape, image.shape[:2])
-    
-    def test_as_gray_noop(self):
-        image = ezcv2.pm5544()
-        image_b = image[:, :, 0]
-        self.assertEqualImages(image_b, ezcv2.as_gray(image_b))
-        
-    def test_as_color(self):
-        image = ezcv2.pm5544()
-        image_b = image[:, :, 0]
-        image_c = ezcv2.as_color(image_b)
-        self.assertTrue(ezcv2.is_color(image_c))
-        self.assertEqual(image_c.shape, image_b.shape + (3,))
-        for n_channel in range(3):
-            self.assertEqualImages(image_c[:, :, n_channel], image_b)
-    
-    def test_as_color_noop(self):
-        image = ezcv2.pm5544()
-        self.assertEqualImages(image, ezcv2.as_color(image))
-    
-    def test_flip_channels_values(self):
-        image = ezcv2.pm5544()
-        image_flipped = ezcv2.flip_channels(image=image)
-        for n_channel in range(3):
-            self.assertEqualImages(image[:, :, n_channel], image_flipped[:, :, 2 - n_channel])
-        
-    def test_flip_channels_once_neq(self):
-        image = ezcv2.pm5544()
-        image_flipped = ezcv2.flip_channels(image=image)
-        self.assertEqualImageContainers(image, image_flipped)
-        self.assertFalse(np.all(image == image_flipped))
-        
-    def test_flip_channels_twice(self):
-        image = ezcv2.pm5544()
-        image_flipped = ezcv2.flip_channels(image=image)
-        image_flipped_flipped = ezcv2.flip_channels(image=image_flipped)
-        self.assertEqualImages(image, image_flipped_flipped)
-        
-    def test_resize_scale(self):
-        image = ezcv2.pm5544()
-        image2 = ezcv2.resize(image, 0.5)
-        self.assertEqual(image2.shape, (288, 384, 3))
-        
-    def test_resize_size(self):
-        image = ezcv2.pm5544()
-        image2 = ezcv2.resize(image, (384, 288))
-        self.assertEqual(image2.shape, (288, 384, 3))
-
-
 class infos_Tests(TestCase):
     def test_is_gray(self):
         image = ezcv2.pm5544()
@@ -285,7 +230,70 @@ class io_Tests(TestCase):
         self.assertNumpyShape(image_load, self.shape)    
         self.assertNumpyShape(image_decode, self.shape)
         self.assertTrue(np.all(image_load == image_decode))
-        
 
+
+class transforms_Tests(TestCase):
+    def test_as_gray(self):
+        image = ezcv2.pm5544()
+        self.assertTrue(ezcv2.is_color(image))
+        image_g = ezcv2.as_gray(image)
+        self.assertTrue(ezcv2.is_gray(image_g))
+        self.assertEqual(image_g.shape, image.shape[:2])
+    
+    def test_as_gray_noop(self):
+        image = ezcv2.pm5544()
+        image_b = image[:, :, 0]
+        self.assertEqualImages(image_b, ezcv2.as_gray(image_b))
+        
+    def test_as_color(self):
+        image = ezcv2.pm5544()
+        image_b = image[:, :, 0]
+        image_c = ezcv2.as_color(image_b)
+        self.assertTrue(ezcv2.is_color(image_c))
+        self.assertEqual(image_c.shape, image_b.shape + (3,))
+        for n_channel in range(3):
+            self.assertEqualImages(image_c[:, :, n_channel], image_b)
+    
+    def test_as_color_noop(self):
+        image = ezcv2.pm5544()
+        self.assertEqualImages(image, ezcv2.as_color(image))
+    
+    def test_flip_channels_values(self):
+        image = ezcv2.pm5544()
+        image_flipped = ezcv2.flip_channels(image=image)
+        for n_channel in range(3):
+            self.assertEqualImages(image[:, :, n_channel], image_flipped[:, :, 2 - n_channel])
+        
+    def test_flip_channels_once_neq(self):
+        image = ezcv2.pm5544()
+        image_flipped = ezcv2.flip_channels(image=image)
+        self.assertEqualImageContainers(image, image_flipped)
+        self.assertFalse(np.all(image == image_flipped))
+        
+    def test_flip_channels_twice(self):
+        image = ezcv2.pm5544()
+        image_flipped = ezcv2.flip_channels(image=image)
+        image_flipped_flipped = ezcv2.flip_channels(image=image_flipped)
+        self.assertEqualImages(image, image_flipped_flipped)
+        
+    def test_resize_scale(self):
+        image = ezcv2.pm5544()
+        image2 = ezcv2.resize(image, 0.5)
+        self.assertEqual(image2.shape, (288, 384, 3))
+        
+    def test_resize_size(self):
+        image = ezcv2.pm5544()
+        image2 = ezcv2.resize(image, (384, 288))
+        self.assertEqual(image2.shape, (288, 384, 3))  
+
+
+class utils_Tests(TestCase):
+    def test_tir_args(self):
+        items = (1.24, -1.87)
+        self.assertEqual(ezcv2.tir(*items), (1, -2))
+        self.assertEqual(ezcv2.tir(items), (1, -2))
+        self.assertEqual(ezcv2.tir(list(items)), (1, -2))
+
+        
 if __name__ == "__main__":
     unittest.main()
