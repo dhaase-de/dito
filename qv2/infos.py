@@ -3,7 +3,7 @@ import collections
 import cv2
 import numpy as np
 
-import ezcv2.utils
+import qv2.utils
 
 
 def is_image(image):
@@ -63,7 +63,7 @@ def pinfo(image):
     """
     
     result = info(image=image)
-    ezcv2.utils.ptable(rows=result.items())
+    qv2.utils.ptable(rows=result.items())
 
 
 def hist(image, bin_count=256):
@@ -72,9 +72,9 @@ def hist(image, bin_count=256):
     """
     
     # determine which channels to use
-    if ezcv2.is_gray(image):
+    if qv2.is_gray(image):
         channels = [0]
-    elif ezcv2.is_color(image):
+    elif qv2.is_color(image):
         channels = [0, 1, 2]
     else:
         raise ValueError("The given image must be a valid gray scale or color image")

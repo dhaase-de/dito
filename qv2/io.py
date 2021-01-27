@@ -3,7 +3,7 @@ import os.path
 import cv2
 import numpy as np
 
-import ezcv2.utils
+import qv2.utils
 
 
 def load(filename, color=None):
@@ -77,7 +77,7 @@ def save(filename, image, mkdir=True):
 
     # create parent dir
     if mkdir:
-        ezcv2.utils.mkdir(dirname=os.path.dirname(filename))
+        qv2.utils.mkdir(dirname=os.path.dirname(filename))
 
     # write
     return cv2.imwrite(filename=filename, img=image)

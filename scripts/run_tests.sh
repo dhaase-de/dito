@@ -7,4 +7,4 @@ set -o nounset
 # get absolute path of this script
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
-cd "$SCRIPT_DIR/../ezcv2" && python3 tests.py --verbose
+cd "$SCRIPT_DIR/../qv2" && python3 tests.py --verbose

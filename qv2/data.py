@@ -3,7 +3,7 @@ import os.path
 import cv2
 import numpy as np
 
-import ezcv2.io
+import qv2.io
 
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "datafiles")
@@ -27,7 +27,7 @@ def colormap(name):
     # source 1: non-OpenCV colormaps ToDo
     data_key = "colormap:{}".format(name.lower())
     if data_key in DATA_FILENAMES.keys():
-        return ezcv2.io.load(filename=DATA_FILENAMES[data_key])
+        return qv2.io.load(filename=DATA_FILENAMES[data_key])
     
     # source 2: OpenCV colormaps
     full_cv2_name = "COLORMAP_{}".format(name.upper())
@@ -44,7 +44,7 @@ def colormap(name):
 
 
 def pm5544():
-    return ezcv2.io.load(filename=DATA_FILENAMES["image:PM5544"])
+    return qv2.io.load(filename=DATA_FILENAMES["image:PM5544"])
 
 
 ####

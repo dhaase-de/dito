@@ -1,7 +1,7 @@
 import cv2
 
-import ezcv2.data
-import ezcv2.infos
+import qv2.data
+import qv2.infos
 
 
 def as_gray(image):
@@ -11,7 +11,7 @@ def as_gray(image):
     If it is already a grayscale image, return the image unchanged.
     """
     
-    if ezcv2.infos.is_gray(image=image):
+    if qv2.infos.is_gray(image=image):
         return image
     else:
         return cv2.cvtColor(src=image, code=cv2.COLOR_BGR2GRAY)
@@ -24,7 +24,7 @@ def as_color(image):
     If it is already a color image, return the image unchanged.
     """
     
-    if ezcv2.infos.is_color(image=image):
+    if qv2.infos.is_color(image=image):
         return image
     else:
         return cv2.cvtColor(src=image, code=cv2.COLOR_GRAY2BGR)
@@ -44,7 +44,7 @@ def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolati
     
     elif isinstance(scale_or_size, tuple) and (len(scale_or_size) == 2):
         target_size = scale_or_size
-        current_size = ezcv2.infos.size(image)
+        current_size = qv2.infos.size(image)
         return cv2.resize(src=image, dsize=target_size, dst=None, fx=0.0, fy=0.0, interpolation=interpolation_up if all(target_size[n_dim] > current_size[n_dim] for n_dim in range(2)) else interpolation_down)
     
     else:
@@ -56,4 +56,4 @@ def colorize(image, colormap_name):
     Colorize the `image` using the colormap identified by `colormap_name`.
     """
 
-    return cv2.applyColorMap(src=image, userColor=ezcv2.data.colormap(name=colormap_name))
+    return cv2.applyColorMap(src=image, userColor=qv2.data.colormap(name=colormap_name))
