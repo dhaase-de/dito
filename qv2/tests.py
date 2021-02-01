@@ -56,6 +56,65 @@ class aliases_Tests(TestCase):
         self.assertAlmostEqual(theta, 89.0)
 
 
+class channels_Tests(TestCase):
+    def test_is_gray(self):
+        image = qv2.pm5544()
+        self.assertFalse(qv2.is_gray(image))
+        self.assertTrue(qv2.is_gray(image[:, :, 0]))
+        self.assertTrue(qv2.is_gray(image[:, :, 0:1]))
+        self.assertFalse(qv2.is_gray(image[:, :, 0:2]))
+    
+    def test_is_color(self):
+        image = qv2.pm5544()
+        self.assertTrue(qv2.is_color(image))
+        self.assertFalse(qv2.is_color(image[:, :, 0]))
+        self.assertFalse(qv2.is_color(image[:, :, 0:1]))
+        self.assertFalse(qv2.is_color(image[:, :, 0:2]))
+    
+    def test_as_gray(self):
+        image = qv2.pm5544()
+        self.assertTrue(qv2.is_color(image))
+        image_g = qv2.as_gray(image)
+        self.assertTrue(qv2.is_gray(image_g))
+        self.assertEqual(image_g.shape, image.shape[:2])
+    
+    def test_as_gray_noop(self):
+        image = qv2.pm5544()
+        image_b = image[:, :, 0]
+        self.assertEqualImages(image_b, qv2.as_gray(image_b))
+        
+    def test_as_color(self):
+        image = qv2.pm5544()
+        image_b = image[:, :, 0]
+        image_c = qv2.as_color(image_b)
+        self.assertTrue(qv2.is_color(image_c))
+        self.assertEqual(image_c.shape, image_b.shape + (3,))
+        for n_channel in range(3):
+            self.assertEqualImages(image_c[:, :, n_channel], image_b)
+    
+    def test_as_color_noop(self):
+        image = qv2.pm5544()
+        self.assertEqualImages(image, qv2.as_color(image))
+    
+    def test_flip_channels_values(self):
+        image = qv2.pm5544()
+        image_flipped = qv2.flip_channels(image=image)
+        for n_channel in range(3):
+            self.assertEqualImages(image[:, :, n_channel], image_flipped[:, :, 2 - n_channel])
+        
+    def test_flip_channels_once_neq(self):
+        image = qv2.pm5544()
+        image_flipped = qv2.flip_channels(image=image)
+        self.assertEqualImageContainers(image, image_flipped)
+        self.assertFalse(np.all(image == image_flipped))
+        
+    def test_flip_channels_twice(self):
+        image = qv2.pm5544()
+        image_flipped = qv2.flip_channels(image=image)
+        image_flipped_flipped = qv2.flip_channels(image=image_flipped)
+        self.assertEqualImages(image, image_flipped_flipped)
+
+
 class data_Tests(TestCase):
     def test_data_dir_exists(self):
         self.assertTrue(os.path.exists(qv2.DATA_DIR))
@@ -118,25 +177,23 @@ class data_Tests(TestCase):
                 self.assertEqual(slope[y, x], y)
 
 
-class infos_Tests(TestCase):
-    def test_is_gray(self):
-        image = qv2.pm5544()
-        self.assertFalse(qv2.is_gray(image))
-        self.assertTrue(qv2.is_gray(image[:, :, 0]))
-        self.assertTrue(qv2.is_gray(image[:, :, 0:1]))
-        self.assertFalse(qv2.is_gray(image[:, :, 0:2]))
-    
-    def test_is_color(self):
-        image = qv2.pm5544()
-        self.assertTrue(qv2.is_color(image))
-        self.assertFalse(qv2.is_color(image[:, :, 0]))
-        self.assertFalse(qv2.is_color(image[:, :, 0:1]))
-        self.assertFalse(qv2.is_color(image[:, :, 0:2]))
-    
+class geometry_Tests(TestCase):
     def test_size(self):
         image = qv2.pm5544()
         self.assertEqual(qv2.size(image), (768, 576))
-    
+
+    def test_resize_scale(self):
+        image = qv2.pm5544()
+        image2 = qv2.resize(image, 0.5)
+        self.assertEqual(image2.shape, (288, 384, 3))
+        
+    def test_resize_size(self):
+        image = qv2.pm5544()
+        image2 = qv2.resize(image, (384, 288))
+        self.assertEqual(image2.shape, (288, 384, 3))
+
+
+class infos_Tests(TestCase):
     def test_info(self):
         image = qv2.pm5544()
         info = qv2.info(image)
@@ -233,60 +290,9 @@ class io_Tests(TestCase):
 
 
 class transforms_Tests(TestCase):
-    def test_as_gray(self):
-        image = qv2.pm5544()
-        self.assertTrue(qv2.is_color(image))
-        image_g = qv2.as_gray(image)
-        self.assertTrue(qv2.is_gray(image_g))
-        self.assertEqual(image_g.shape, image.shape[:2])
-    
-    def test_as_gray_noop(self):
-        image = qv2.pm5544()
-        image_b = image[:, :, 0]
-        self.assertEqualImages(image_b, qv2.as_gray(image_b))
-        
-    def test_as_color(self):
-        image = qv2.pm5544()
-        image_b = image[:, :, 0]
-        image_c = qv2.as_color(image_b)
-        self.assertTrue(qv2.is_color(image_c))
-        self.assertEqual(image_c.shape, image_b.shape + (3,))
-        for n_channel in range(3):
-            self.assertEqualImages(image_c[:, :, n_channel], image_b)
-    
-    def test_as_color_noop(self):
-        image = qv2.pm5544()
-        self.assertEqualImages(image, qv2.as_color(image))
-    
-    def test_flip_channels_values(self):
-        image = qv2.pm5544()
-        image_flipped = qv2.flip_channels(image=image)
-        for n_channel in range(3):
-            self.assertEqualImages(image[:, :, n_channel], image_flipped[:, :, 2 - n_channel])
-        
-    def test_flip_channels_once_neq(self):
-        image = qv2.pm5544()
-        image_flipped = qv2.flip_channels(image=image)
-        self.assertEqualImageContainers(image, image_flipped)
-        self.assertFalse(np.all(image == image_flipped))
-        
-    def test_flip_channels_twice(self):
-        image = qv2.pm5544()
-        image_flipped = qv2.flip_channels(image=image)
-        image_flipped_flipped = qv2.flip_channels(image=image_flipped)
-        self.assertEqualImages(image, image_flipped_flipped)
-        
-    def test_resize_scale(self):
-        image = qv2.pm5544()
-        image2 = qv2.resize(image, 0.5)
-        self.assertEqual(image2.shape, (288, 384, 3))
-        
-    def test_resize_size(self):
-        image = qv2.pm5544()
-        image2 = qv2.resize(image, (384, 288))
-        self.assertEqual(image2.shape, (288, 384, 3))  
+    pass
 
-
+        
 class utils_Tests(TestCase):
     def test_tir_args(self):
         items = (1.24, -1.87)

@@ -9,7 +9,7 @@ import qv2.io
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "datafiles")
 DATA_FILENAMES = {
     "image:PM5544": os.path.join(DATA_DIR, "images", "PM5544.png"),
-    "colormap:plot": os.path.join(DATA_DIR, "colormaps", "plot.png") 
+    "colormap:plot": os.path.join(DATA_DIR, "colormaps", "plot.png"),
 }
 
 

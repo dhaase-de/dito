@@ -6,38 +6,6 @@ import numpy as np
 import qv2.utils
 
 
-def is_image(image):
-    """
-    Return `True` iff the given image is either a valid grayscale image or a
-    valid color image.
-    """
-    
-    return is_gray(image=image) or is_color(image=image)
-    
-
-def is_gray(image):
-    """
-    Return `True` iff the given image is a grayscale image.
-    """
-    
-    return (len(image.shape) == 2) or ((len(image.shape) == 3) and (image.shape[2] == 1))
-
-
-def is_color(image):
-    """
-    Return `True` iff the given image is a color image.
-    """
-    
-    return (len(image.shape) == 3) and (image.shape[2] == 3)
-
-
-def size(image):
-    """
-    Return the size `(X, Y)` of the given image.
-    """
-    return (image.shape[1], image.shape[0])
-
-
 def info(image):
     """
     Returns an ordered dictionary containing info about the given image.

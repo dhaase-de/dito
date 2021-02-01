@@ -1,10 +1,10 @@
 import cv2
 
-import qv2.infos
+import qv2.channels
 
 
 def otsu(image):
-    if qv2.infos.is_color(image=image):
+    if qv2.channels.is_color(image=image):
         raise ValueError("Expected gray image but got color image for Otsu thresholding")
     (theta, image2) = cv2.threshold(src=image, thresh=-1, maxval=255, type=cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     return (theta, image2)
