@@ -7,6 +7,5 @@ from qv2.data import *
 from qv2.geometry import *
 from qv2.infos import *
 from qv2.io import *
-from qv2.transforms import *
 from qv2.utils import *
 from qv2.visual import *
