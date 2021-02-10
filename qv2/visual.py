@@ -21,9 +21,13 @@ def is_colormap(colormap):
     return True
 
 
-def colorize(image, colormap_name):
+def colorize(image, colormap):
     """
     Colorize the `image` using the colormap identified by `colormap_name`.
     """
-
-    return cv2.applyColorMap(src=image, userColor=qv2.data.colormap(name=colormap_name))
+    if isinstance(colormap, str):
+        return cv2.applyColorMap(src=image, userColor=qv2.data.colormap(name=colormap))
+    elif is_colormap(colormap=colormap):
+        return cv2.applyColorMap(src=image, userColor=colormap)
+    else:
+        raise TypeError("Argument `colormap` must either be a string (the colormap name) or a valid colormap.")
