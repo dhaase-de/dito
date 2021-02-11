@@ -16,7 +16,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(image.shape, shape)
     
     def assertIsImage(self, x):
-        self.assertTrue(qv2.is_image(x))
+        self.assertTrue(qv2.is_image(image=x))
     
     def assertEqualImageContainers(self, x, y):
         self.assertIsImage(x)
@@ -28,10 +28,48 @@ class TestCase(unittest.TestCase):
         self.assertEqualImageContainers(x, y)
         self.assertTrue(np.all(x == y))
         
-    def assertIsColormap(self, x):
-        self.assertIsImage(x)
-        self.assertEqual(x.dtype, np.uint8)
-        self.assertEqual(x.shape, (256, 1, 3))
+
+class dtype_range_Tests(TestCase):
+    def test_dtype_range_uint8(self):
+        range_ = qv2.dtype_range(dtype=np.uint8)
+        self.assertEqual(range_, (0, 2**8 - 1))
+        
+    def test_dtype_range_uint16(self):
+        range_ = qv2.dtype_range(dtype=np.uint16)
+        self.assertEqual(range_, (0, 2**16 - 1))
+    
+    def test_dtype_range_uint32(self):
+        range_ = qv2.dtype_range(dtype=np.uint32)
+        self.assertEqual(range_, (0, 2**32 - 1))
+    
+    def test_dtype_range_int8(self):
+        range_ = qv2.dtype_range(dtype=np.int8)
+        self.assertEqual(range_, (-2**7, 2**7 - 1))
+    
+    def test_dtype_range_int16(self):
+        range_ = qv2.dtype_range(dtype=np.int16)
+        self.assertEqual(range_, (-2**15, 2**15 - 1))
+    
+    def test_dtype_range_int32(self):
+        range_ = qv2.dtype_range(dtype=np.int32)
+        self.assertEqual(range_, (-2**31, 2**31 - 1))
+    
+    def test_dtype_range_float32(self):
+        range_ = qv2.dtype_range(dtype=np.float32)
+        self.assertEqual(range_, (0, 1.0))
+        
+    def test_dtype_range_float64(self):
+        range_ = qv2.dtype_range(dtype=np.float64)
+        self.assertEqual(range_, (0, 1.0))
+        
+    def test_dtype_range_bool(self):
+        range_ = qv2.dtype_range(dtype=np.bool_)
+        self.assertEqual(range_, (False, True))
+
+
+####
+#%%% TODO: refactor
+####
 
 
 class aliases_Tests(TestCase):
@@ -56,7 +94,7 @@ class aliases_Tests(TestCase):
         self.assertAlmostEqual(theta, 89.0)
 
 
-class channels_Tests(TestCase):
+class core_Tests(TestCase):
     def test_is_gray(self):
         image = qv2.pm5544()
         self.assertFalse(qv2.is_gray(image))
@@ -125,7 +163,7 @@ class data_Tests(TestCase):
     
     def test_colormap_plot(self):
         result = qv2.colormap("plot")
-        self.assertIsColormap(result)
+        self.assertTrue(qv2.is_colormap(result))
         self.assertEqual(result[0, 0, :].tolist(), [0, 0, 0])
         self.assertEqual(result[1, 0, :].tolist(), [0, 0, 255])
         self.assertEqual(result[2, 0, :].tolist(), [0, 255, 0])
@@ -134,7 +172,7 @@ class data_Tests(TestCase):
 
     def test_colormap_jet(self):
         result = qv2.colormap("jet")
-        self.assertIsColormap(result)
+        self.assertTrue(qv2.is_colormap(result))
         
     def test_colormap_raise(self):
         self.assertRaises(ValueError, lambda: qv2.colormap("__!?-non-existing_colormap-name-!?__"))
