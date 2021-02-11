@@ -5,6 +5,26 @@ import qv2.core
 import qv2.data
 
 
+def colormap(name):
+    """
+    Returns the colormap specified by `name` as `uint8` NumPy array of size
+    `(256, 1, 3)`.
+    """
+    
+    # source 1: non-OpenCV colormaps ToDo
+    data_key = "colormap:{}".format(name.lower())
+    if data_key in qv2.data.DATA_FILENAMES.keys():
+        return qv2.io.load(filename=qv2.data.DATA_FILENAMES[data_key])
+    
+    # source 2: OpenCV colormaps
+    full_cv2_name = "COLORMAP_{}".format(name.upper())
+    if hasattr(cv2, full_cv2_name):
+        return cv2.applyColorMap(src=qv2.data.yslope(width=1), colormap=getattr(cv2, full_cv2_name))
+    
+    # no match
+    raise ValueError("Unknown colormap '{}'".format(name))
+
+
 def is_colormap(colormap):
     """
     Returns `True` iff `colormap` is a OpenCV-compatible colormap.
