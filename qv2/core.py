@@ -1,4 +1,10 @@
 import cv2
+import numpy as np
+
+
+####
+#%%% general
+####
 
 
 def is_image(image):
@@ -8,6 +14,35 @@ def is_image(image):
     """
     
     return is_gray(image=image) or is_color(image=image)
+
+
+####
+#%%% type-related
+####
+
+
+def dtype_range(dtype):
+    """
+    Returns the min and max intensity value of images for a given NumPy dtype.
+    
+    For integer dtypes, this corresponds to their full range.
+    For floating dtypes, this corresponds to the range `(0.0, 1.0)`.
+    For bool dtypes, this corresponds to the range (`False`, `True`).
+    """
+    if np.issubdtype(dtype, np.integer):
+        info = np.iinfo(dtype)
+        return (info.min, info.max)
+    elif np.issubdtype(dtype, np.floating):
+        return (0.0, 1.0)
+    elif np.issubdtype(dtype, np.bool_):
+        return (False, True)
+    else:
+        raise TypeError("Invalid dtype '{}'".format(dtype))
+
+
+####
+#%%% channel-related
+####
     
 
 def is_gray(image):
