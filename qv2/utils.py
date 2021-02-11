@@ -2,27 +2,6 @@ import errno
 import os
 
 
-def tir(*args):
-    """
-    The items of `*args` are rounded, converted to `int` and combined into a
-    tuple.
-
-    The primary use-case of this function is to pass point coordinates to
-    certain OpenCV functions.
-
-    >>> tir(1.24, -1.87)
-    (1, -2)
-    """
-    
-    if (len(args) == 1) and (len(args[0]) == 2):
-        items = args[0]
-    elif len(args) == 2:
-        items = args
-    else:
-        raise ValueError("The two required arguments must either be (i) given separately or (ii) via a sequence of length two, but got neither")
-    return tuple(int(round(item)) for item in items)
-
-
 def mkdir(dirname):
     """
     Create the given directory if it does not already exist.
