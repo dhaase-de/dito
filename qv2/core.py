@@ -144,3 +144,32 @@ def flip_channels(image):
     Changes BGR channels to RGB channels and vice versa.
     """
     return cv2.cvtColor(src=image, code=cv2.COLOR_BGR2RGB)
+
+####
+#%%% value-related
+####
+
+
+def clip(image, lower=None, upper=None):
+    """
+    Clip values to the range specified by `lower` and `upper`.
+    """
+    if lower is not None:
+        image[image < lower] = lower
+    if upper is not None:
+        image[image > upper] = upper
+    return image
+
+
+def clip_01(image):
+    """
+    Clip values to the range `(0.0, 1.0)`.
+    """
+    return clip(image=image, lower=0.0, upper=1.0)
+
+
+def clip_11(image):
+    """
+    Clip values to the range `(-1.0, 1.0)`.
+    """
+    return clip(image=image, lower=-1.0, upper=1.0)

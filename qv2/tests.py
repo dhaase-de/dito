@@ -26,7 +26,18 @@ class TestCase(unittest.TestCase):
     
     def assertEqualImages(self, x, y):
         self.assertEqualImageContainers(x, y)
-        self.assertTrue(np.all(x == y))
+        if np.issubdtype(x.dtype, np.floating):
+            self.assertTrue(np.allclose(x, y))
+        else:
+            self.assertTrue(np.all(x == y))
+        
+
+class clip_Tests(TestCase):
+    def test_clip_01(self):
+        image = np.array([[-2.0, -1.0, 0.0, 1.0, 2.0]], dtype=np.float32)
+        image_clipped = qv2.clip_01(image=image)
+        image_expected = np.array([[0.0, 0.0, 0.0, 1.0, 1.0]], dtype=np.float32)
+        self.assertEqualImages(image_clipped, image_expected)
         
 
 class dtype_range_Tests(TestCase):
