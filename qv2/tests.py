@@ -82,6 +82,68 @@ class dtype_range_Tests(TestCase):
         self.assertEqual(range_, (False, True))
 
 
+class normalize_Tests(TestCase):
+    def run_in_out_test(self, image_in, image_out, **kwargs):
+        image_normalized = qv2.normalize(image=image_in, **kwargs)
+        print(image_normalized)
+        self.assertEqualImages(image_normalized, image_out)
+    
+    def test_normalize_none_uint8(self):
+        self.run_in_out_test(
+            image_in=np.array([[0, 1, 2]], dtype=np.uint8),
+            image_out=np.array([[0, 1, 2]], dtype=np.uint8),
+            mode="none",
+        )
+    
+    def test_normalize_minmax_uint8(self):
+        self.run_in_out_test(
+            image_in=np.array([[0, 1, 2]], dtype=np.uint8),
+            image_out=np.array([[0, 127, 255]], dtype=np.uint8),
+            mode="minmax",
+        )
+    
+    def test_normalize_minmax_int8(self):
+        self.run_in_out_test(
+            image_in=np.array([[0, 1, 2]], dtype=np.int8),
+            image_out=np.array([[-128, 0, 127]], dtype=np.int8),
+            mode="minmax",
+        )
+    
+    def test_normalize_minmax_float32(self):
+        self.run_in_out_test(
+            image_in=np.array([[-1.0, 0.0, 1.0]], dtype=np.float32),
+            image_out=np.array([[0.0, 0.5, 1.0]], dtype=np.float32),
+            mode="minmax",
+        )
+    
+    def test_normalize_zminmax_float32(self):
+        self.run_in_out_test(
+            image_in=np.array([[-1.0, 0.0, 1.0, 2.0]], dtype=np.float32),
+            image_out=np.array([[0.25, 0.5, 0.75, 1.0]], dtype=np.float32),
+            mode="zminmax",
+        )
+    
+    def test_normalize_percentile_uint8_q(self):
+        self.run_in_out_test(
+            image_in=np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]], dtype=np.uint8),
+            image_out=np.array([[0, 0, 31, 63, 95, 127, 159, 191, 223, 255, 255]], dtype=np.uint8),
+            mode="percentile",
+            q=10.0,
+        )
+    
+    def test_normalize_percentile_uint8_p(self):
+        self.run_in_out_test(
+            image_in=np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]], dtype=np.uint8),
+            image_out=np.array([[0, 0, 31, 63, 95, 127, 159, 191, 223, 255, 255]], dtype=np.uint8),
+            mode="percentile",
+            p=10.0,
+        )
+    
+    def test_normalize_raise_invalid_mode(self):
+        image = np.array([[0, 1, 2]], dtype=np.uint8)
+        self.assertRaises(ValueError, lambda: qv2.normalize(image=image, mode="__NON-EXISTING-MODE__"))
+        
+
 ####
 #%%% TODO: refactor
 ####

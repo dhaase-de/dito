@@ -173,3 +173,51 @@ def clip_11(image):
     Clip values to the range `(-1.0, 1.0)`.
     """
     return clip(image=image, lower=-1.0, upper=1.0)
+
+
+def normalize(image, mode="minmax", **kwargs):
+    """
+    Normalizes the intensity values of the given image.
+    """
+
+    if mode == "none":
+        return image
+
+    elif mode == "interval":
+        # interval range to be spread out to the "full" interval range
+        (lower_source, upper_source) = sorted((kwargs["lower"], kwargs["upper"]))
+
+        # the target interval range depends on the image's data type
+        (lower_target, upper_target) = dtype_range(image.dtype)
+
+        # we temporarily work with a float image (because values outside of
+        # the target interval can occur)
+        image_work = image.astype("float").copy()
+        
+        # spread the given interval to the full range, clip outlier values
+        image_work = (image_work - lower_source) / (upper_source - lower_source) * (upper_target - lower_target) + lower_target
+        image_work = clip(image=image_work, lower=lower_target, upper=upper_target)
+
+        # return an image with the original data type
+        return image_work.astype(image.dtype)
+
+    elif mode == "minmax":
+        return normalize(image, mode="interval", lower=np.min(image), upper=np.max(image))
+
+    elif mode == "zminmax":
+        # "zero-symmetric" minmax (makes only sense for float images)
+        absmax = max(np.abs(np.min(image)), np.abs(np.max(image)))
+        return normalize(image, mode="interval", lower=-absmax, upper=absmax)
+
+    elif mode == "percentile":
+        for key in ("q", "p"):
+            if key in kwargs.keys():
+                q = kwargs[key]
+                break
+        else:
+            q = 2.0
+        q = min(max(0.0, q), 50.0)
+        return normalize(image, mode="interval", lower=np.percentile(image, q), upper=np.percentile(image, 100.0 - q))
+
+    else:
+        raise ValueError("Invalid mode '{mode}'".format(mode=mode))
