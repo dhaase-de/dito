@@ -65,6 +65,10 @@ class dtype_range_Tests(TestCase):
         range_ = qv2.dtype_range(dtype=np.int32)
         self.assertEqual(range_, (-2**31, 2**31 - 1))
     
+    def test_dtype_range_float(self):
+        range_ = qv2.dtype_range(dtype=np.float)
+        self.assertEqual(range_, (0, 1.0))
+    
     def test_dtype_range_float32(self):
         range_ = qv2.dtype_range(dtype=np.float32)
         self.assertEqual(range_, (0, 1.0))
