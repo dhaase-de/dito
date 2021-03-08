@@ -66,7 +66,31 @@ def dtype_common(dtypes):
 
 
 def convert(image, dtype):
-    pass
+    """
+    Converts `image` to the NumPy `dtype` and scales the intensity values
+    accordingly.
+
+    Intensity values are always clipped to the allowed range (even for
+    identical source and target types). Returns always a copy of the data,
+    even for equal source and target types.
+    """
+
+    # clip image against its source dtype (important for floats)
+    # clip also guarantees that the original image will remain unchanged
+    (lower, upper) = dtype_range(dtype=image.dtype)
+    image_clipped = clip(image=image, lower=lower, upper=upper)
+
+    if image.dtype == dtype:
+        return image_clipped
+    else:
+        # only a scale factor is needed, since all dtypes share a common "zero"
+        scale = dtype_range(dtype=dtype)[1] / dtype_range(dtype=image.dtype)[1]
+
+        # use at least the 'float32' dtype for the intermediate image (but if the image is 'float64', use that)
+        intermediate_dtype = dtype_common(dtypes=[image.dtype, np.float32])
+
+        return (image_clipped.astype(dtype=intermediate_dtype) * scale).astype(dtype)
+
 
 ####
 #%%% array access
@@ -173,6 +197,7 @@ def flip_channels(image):
     """
     return cv2.cvtColor(src=image, code=cv2.COLOR_BGR2RGB)
 
+
 ####
 #%%% value-related
 ####
@@ -182,10 +207,16 @@ def clip(image, lower=None, upper=None):
     """
     Clip values to the range specified by `lower` and `upper`.
     """
+
+    # assert that the input array remains unchanged
+    image = image.copy()
+
+    # clip
     if lower is not None:
         image[image < lower] = lower
     if upper is not None:
         image[image > upper] = upper
+
     return image
 
 

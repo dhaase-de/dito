@@ -30,7 +30,7 @@ class TestCase(unittest.TestCase):
             self.assertTrue(np.allclose(x, y))
         else:
             self.assertTrue(np.all(x == y))
-        
+
 
 class clip_Tests(TestCase):
     def test_clip_01(self):
@@ -38,6 +38,12 @@ class clip_Tests(TestCase):
         image_clipped = dito.clip_01(image=image)
         image_expected = np.array([[0.0, 0.0, 0.0, 1.0, 1.0]], dtype=np.float32)
         self.assertEqualImages(image_clipped, image_expected)
+
+    def test_clip_input_unchanged(self):
+        image = np.array([[-2.0, -1.0, 0.0, 1.0, 2.0]], dtype=np.float32)
+        image_copy = image.copy()
+        image_clipped = dito.clip_01(image=image)
+        self.assertEqualImages(image, image_copy)
 
 
 class colorize_Tests(TestCase):
@@ -52,6 +58,50 @@ class colorize_Tests(TestCase):
         self.assertTrue(dito.is_gray(image=image))
         image_colorized = dito.colorize(image=image, colormap="jet")
         self.assertTrue(dito.is_color(image=image_colorized))
+
+
+class convert_Tests(TestCase):
+    def test_convert_identical(self):
+        image = dito.xslope(height=32, width=256)
+        image_converted = dito.convert(image=image, dtype=np.uint8)
+        self.assertEqualImages(image, image_converted)
+
+    def test_convert_loop(self):
+        image = dito.xslope(height=32, width=256)
+        image_converted = dito.convert(image=image, dtype=np.float32)
+        image_converted_2 = dito.convert(image=image_converted, dtype=np.uint8)
+        self.assertEqualImages(image, image_converted_2)
+
+    def test_convert_uint8_float32(self):
+        image = dito.xslope(height=32, width=256)
+        image_converted = dito.convert(image=image, dtype=np.float32)
+        self.assertAlmostEqual(np.min(image_converted), 0.0)
+        self.assertAlmostEqual(np.max(image_converted), 1.0)
+
+    def test_convert_bool_uint8(self):
+        image = np.array([[False, True]], dtype=np.bool_)
+        image_converted = dito.convert(image=image, dtype=np.uint8)
+        self.assertEqual(image_converted[0, 0], 0)
+        self.assertEqual(image_converted[0, 1], 255)
+
+    def test_convert_color(self):
+        image_gray = dito.xslope(height=32, width=256)
+        image_color = dito.as_color(image=image_gray.copy())
+        image_gray_converted = dito.convert(image=image_gray, dtype=np.float32)
+        image_color_converted = dito.convert(image=image_color, dtype=np.float32)
+        self.assertEqualImages(image_gray_converted, dito.as_gray(image=image_color_converted))
+
+    def test_convert_input_unchanged(self):
+        image = np.array([[-2.0, -1.0, 0.0, 1.0, 2.0]], dtype=np.float32)
+        image_copy = image.copy()
+        dito.convert(image=image, dtype=np.uint8)
+        self.assertEqualImages(image, image_copy)
+
+    def test_convert_float_clipped(self):
+        image = np.array([[-2.0, -1.0, 0.0, 1.0, 2.0]], dtype=np.float32)
+        image_clipped = dito.convert(image=image, dtype=np.float32)
+        self.assertAlmostEqual(np.min(image_clipped), 0.0)
+        self.assertAlmostEqual(np.max(image_clipped), 1.0)
 
 
 class dtype_common_Test(TestCase):
