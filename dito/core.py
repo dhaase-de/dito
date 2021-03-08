@@ -40,6 +40,9 @@ def dtype_range(dtype):
         raise TypeError("Invalid dtype '{}'".format(dtype))
 
 
+def convert(image, dtype):
+    pass
+
 ####
 #%%% array access
 ####

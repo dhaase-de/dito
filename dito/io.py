@@ -3,7 +3,7 @@ import os.path
 import cv2
 import numpy as np
 
-import qv2.utils
+import dito.utils
 
 
 def load(filename, color=None):
@@ -77,7 +77,7 @@ def save(filename, image, mkdir=True):
 
     # create parent dir
     if mkdir:
-        qv2.utils.mkdir(dirname=os.path.dirname(filename))
+        dito.utils.mkdir(dirname=os.path.dirname(filename))
 
     # write
     return cv2.imwrite(filename=filename, img=image)

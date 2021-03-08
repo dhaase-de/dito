@@ -21,7 +21,7 @@ except ImportError:
 
 
 # package dirs
-package_name = "qv2"
+package_name = "dito"
 package_dir = os.path.abspath(os.path.dirname(__file__))
 source_dir = os.path.join(package_dir, package_name)
 
@@ -49,7 +49,7 @@ setup(
     version=version,
     description="Yet another toolbox for the daily work with OpenCV",
     author="Daniel Haase",
-    url="https://github.com/dhaase-de/qv2",
+    url="https://github.com/dhaase-de/dito",
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",

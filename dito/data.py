@@ -3,7 +3,7 @@ import os.path
 import cv2
 import numpy as np
 
-import qv2.io
+import dito.io
 
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "datafiles")
@@ -19,7 +19,7 @@ DATA_FILENAMES = {
 
 
 def pm5544():
-    return qv2.io.load(filename=DATA_FILENAMES["image:PM5544"])
+    return dito.io.load(filename=DATA_FILENAMES["image:PM5544"])
 
 
 ####

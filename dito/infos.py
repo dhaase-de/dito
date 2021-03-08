@@ -3,7 +3,7 @@ import collections
 import cv2
 import numpy as np
 
-import qv2.utils
+import dito.utils
 
 
 def info(image):
@@ -31,7 +31,7 @@ def pinfo(image):
     """
     
     result = info(image=image)
-    qv2.utils.ptable(rows=result.items())
+    dito.utils.ptable(rows=result.items())
 
 
 def hist(image, bin_count=256):
@@ -40,9 +40,9 @@ def hist(image, bin_count=256):
     """
     
     # determine which channels to use
-    if qv2.is_gray(image):
+    if dito.is_gray(image):
         channels = [0]
-    elif qv2.is_color(image):
+    elif dito.is_color(image):
         channels = [0, 1, 2]
     else:
         raise ValueError("The given image must be a valid gray scale or color image")

@@ -1,6 +1,6 @@
-Python package `qv2`
-====================
+Python package `dito`
+=====================
 
-![Tests](https://github.com/dhaase-de/qv2/workflows/Tests/badge.svg)
+![Tests](https://github.com/dhaase-de/dito/workflows/Tests/badge.svg)
 
-`qv2` is "quick `cv2`" - yet another toolbox for the daily work with OpenCV under Python.
+`dito` is yet another toolbox for the daily work with OpenCV under Python.
