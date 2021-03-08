@@ -1,5 +1,10 @@
-# dev files
+# Python files
 __pycache__/
 *.egg-info/
-*.swp
 
+# editor files
+*.swp
+.idea/
+
+# dev files
+venv/
