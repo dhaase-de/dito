@@ -5,7 +5,7 @@ import dito.core
 import dito.data
 
 
-def colormap(name):
+def get_colormap(name):
     """
     Returns the colormap specified by `name` as `uint8` NumPy array of size
     `(256, 1, 3)`.
@@ -46,7 +46,7 @@ def colorize(image, colormap):
     Colorize the `image` using the colormap identified by `colormap_name`.
     """
     if isinstance(colormap, str):
-        return cv2.applyColorMap(src=image, userColor=dito.data.colormap(name=colormap))
+        return cv2.applyColorMap(src=image, userColor=get_colormap(name=colormap))
     elif is_colormap(colormap=colormap):
         return cv2.applyColorMap(src=image, userColor=colormap)
     else:

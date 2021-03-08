@@ -38,7 +38,21 @@ class clip_Tests(TestCase):
         image_clipped = dito.clip_01(image=image)
         image_expected = np.array([[0.0, 0.0, 0.0, 1.0, 1.0]], dtype=np.float32)
         self.assertEqualImages(image_clipped, image_expected)
-        
+
+
+class colorize_Tests(TestCase):
+    def test_colorize_colormap(self):
+        image = dito.xslope(height=32, width=256)
+        self.assertTrue(dito.is_gray(image=image))
+        image_colorized = dito.colorize(image=image, colormap=dito.get_colormap(name="jet"))
+        self.assertTrue(dito.is_color(image=image_colorized))
+
+    def test_colorize_name(self):
+        image = dito.xslope(height=32, width=256)
+        self.assertTrue(dito.is_gray(image=image))
+        image_colorized = dito.colorize(image=image, colormap="jet")
+        self.assertTrue(dito.is_color(image=image_colorized))
+
 
 class dtype_range_Tests(TestCase):
     def test_dtype_range_uint8(self):
@@ -80,6 +94,24 @@ class dtype_range_Tests(TestCase):
     def test_dtype_range_bool(self):
         range_ = dito.dtype_range(dtype=np.bool_)
         self.assertEqual(range_, (False, True))
+
+
+class get_colormap_Tests(TestCase):
+    def test_get_colormap_plot(self):
+        result = dito.get_colormap("plot")
+        self.assertTrue(dito.is_colormap(result))
+        self.assertEqual(result[0, 0, :].tolist(), [0, 0, 0])
+        self.assertEqual(result[1, 0, :].tolist(), [0, 0, 255])
+        self.assertEqual(result[2, 0, :].tolist(), [0, 255, 0])
+        self.assertEqual(result[3, 0, :].tolist(), [255, 0, 0])
+        self.assertEqual(result[255, 0, :].tolist(), [255, 255, 255])
+
+    def test_get_colormap_jet(self):
+        result = dito.get_colormap("jet")
+        self.assertTrue(dito.is_colormap(result))
+
+    def test_get_colormap_raise(self):
+        self.assertRaises(ValueError, lambda: dito.get_colormap("__!?-non-existing_colormap-name-!?__"))
 
 
 class normalize_Tests(TestCase):
@@ -236,23 +268,9 @@ class data_Tests(TestCase):
     def test_data_files_exists(self):
         for filename in dito.DATA_FILENAMES.values():
             self.assertTrue(os.path.exists(filename), "Data file '{}' does not exist".format(filename))
-    
-    def test_colormap_plot(self):
-        result = dito.colormap("plot")
-        self.assertTrue(dito.is_colormap(result))
-        self.assertEqual(result[0, 0, :].tolist(), [0, 0, 0])
-        self.assertEqual(result[1, 0, :].tolist(), [0, 0, 255])
-        self.assertEqual(result[2, 0, :].tolist(), [0, 255, 0])
-        self.assertEqual(result[3, 0, :].tolist(), [255, 0, 0])
-        self.assertEqual(result[255, 0, :].tolist(), [255, 255, 255])
 
-    def test_colormap_jet(self):
-        result = dito.colormap("jet")
-        self.assertTrue(dito.is_colormap(result))
-        
-    def test_colormap_raise(self):
-        self.assertRaises(ValueError, lambda: dito.colormap("__!?-non-existing_colormap-name-!?__"))
-    
+
+
     def test_pm5544_load(self):
         image = dito.pm5544()
         self.assertIsImage(image)
