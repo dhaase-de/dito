@@ -40,6 +40,31 @@ def dtype_range(dtype):
         raise TypeError("Invalid dtype '{}'".format(dtype))
 
 
+def dtype_common(dtypes):
+    """
+    For a given vector `dtypes` of types, returns the type which supports
+    all ranges.
+    """
+
+    hierarchy = (np.bool_, np.uint8, np.uint16, np.float32, np.float64)
+    max_index = 0
+    for dtype in dtypes:
+        # check if `dtype` is a valid NumPy dtype
+        try:
+            np.dtype(dtype)
+        except TypeError:
+            raise ValueError("Invalid image type '{}'".format(dtype))
+
+        # search for `dtype` in the hierarchy and update the max index if found
+        for (index, value) in enumerate(hierarchy):
+            if value == np.dtype(dtype):
+                max_index = max(max_index, index)
+                break
+        else:
+            raise ValueError("Invalid image type '{}'".format(dtype))
+    return hierarchy[max_index]
+
+
 def convert(image, dtype):
     pass
 
@@ -59,7 +84,7 @@ def tir(*args):
     >>> tir(1.24, -1.87)
     (1, -2)
     """
-    
+
     if (len(args) == 1) and (len(args[0]) == 2):
         items = args[0]
     elif len(args) == 2:

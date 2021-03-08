@@ -54,6 +54,30 @@ class colorize_Tests(TestCase):
         self.assertTrue(dito.is_color(image=image_colorized))
 
 
+class dtype_common_Test(TestCase):
+    def test_dtype_common_cases(self):
+        cases = [
+            {"arg": ["uint8"], "expected_result": np.uint8},
+            {"arg": ["uint8", "uint8"], "expected_result": np.uint8},
+            {"arg": ["uint8", "bool"], "expected_result": np.uint8},
+            {"arg": ["bool", "uint8"], "expected_result": np.uint8},
+            {"arg": ["bool", "uint8", "uint16"], "expected_result": np.uint16},
+            {"arg": ["uint8", "uint16"], "expected_result": np.uint16},
+            {"arg": ["uint8", "float32"], "expected_result": np.float32},
+            {"arg": ["uint8", "float64"], "expected_result": np.float64},
+            {"arg": ["float32", "float64"], "expected_result": np.float64},
+            {"arg": ["double"], "expected_result": np.float64},
+            {"arg": [np.uint8], "expected_result": np.uint8},
+            {"arg": [np.bool_, "uint8", np.uint16], "expected_result": np.uint16},
+        ]
+        for case in cases:
+            result = dito.dtype_common(dtypes=case["arg"])
+            self.assertEqual(result, case["expected_result"])
+
+    def test_dtype_common_raise(self):
+        self.assertRaises(ValueError, lambda: dito.dtype_common(dtypes=["__non-existing-dtype__"]))
+
+
 class dtype_range_Tests(TestCase):
     def test_dtype_range_uint8(self):
         range_ = dito.dtype_range(dtype=np.uint8)
