@@ -11,7 +11,7 @@ def get_colormap(name):
     `(256, 1, 3)`.
     """
     
-    # source 1: non-OpenCV colormaps ToDo
+    # source 1: non-OpenCV colormaps
     data_key = "colormap:{}".format(name.lower())
     if data_key in dito.data.DATA_FILENAMES.keys():
         return dito.io.load(filename=dito.data.DATA_FILENAMES[data_key])
