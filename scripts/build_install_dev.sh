@@ -8,4 +8,4 @@ set -o nounset
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 # run local installation
-cd "$SCRIPT_DIR/.." && python3 setup.py develop --user
+cd "$SCRIPT_DIR/.." && /usr/bin/env python3 setup.py develop --user
