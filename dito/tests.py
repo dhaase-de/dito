@@ -247,7 +247,44 @@ class normalize_Tests(TestCase):
     def test_normalize_raise_invalid_mode(self):
         image = np.array([[0, 1, 2]], dtype=np.uint8)
         self.assertRaises(ValueError, lambda: dito.normalize(image=image, mode="__NON-EXISTING-MODE__"))
-        
+
+
+class stack_Tests(TestCase):
+    def test_stack_mixed(self):
+        # TODO: create more individual tests
+        rows = [
+            [
+                dito.xslope(height=32, width=256),
+                dito.as_color(image=dito.xslope(height=64, width=128)),
+            ],
+            [
+                np.ones(shape=(100, 100), dtype=np.bool_),
+            ],
+        ]
+        image_stacked = dito.stack(rows, padding=8, background_color=127)
+        self.assertTrue(image_stacked.dtype == np.uint8)
+        self.assertTrue(dito.is_color(image=image_stacked))
+        self.assertEqual(image_stacked.shape, (188, 408, 3))
+        self.assertEqual(image_stacked[0, 0, 0], 127)
+        self.assertEqual(image_stacked[90, 10, 0], 255)
+
+    def test_stack_single_row(self):
+        row = [
+            dito.xslope(height=32, width=256),
+            dito.as_color(image=dito.xslope(height=64, width=128)),
+        ]
+        image_stacked = dito.stack(images=row)
+        image_stacked_2 = dito.stack(images=[row])
+        self.assertEqualImages(image_stacked, image_stacked_2)
+
+    def test_stack_raise_on_single_image(self):
+        image = dito.xslope(height=32, width=256)
+        self.assertRaises(ValueError, lambda: dito.stack(images=image))
+
+    def test_stack_raise_on_non_image(self):
+        rows = [[0, 1, 2], [3, 4, 5]]
+        self.assertRaises(ValueError, lambda: dito.stack(images=rows))
+
 
 ####
 #%%% TODO: refactor

@@ -58,7 +58,7 @@ def colorize(image, colormap):
 ####
 
 
-def stack(images, padding=0, dtype=None, gray=None):
+def stack(images, padding=0, background_color=0, dtype=None, gray=None):
     """
     Stack given images into one image.
 
@@ -66,16 +66,19 @@ def stack(images, padding=0, dtype=None, gray=None):
     horizontally) or a vector of vectors of images, defining rows and columns.
     """
 
+    # check argument `images`
     if isinstance(images, (tuple, list)) and (len(images) > 0) and isinstance(images[0], np.ndarray):
+        # `images` is a vector of images
         rows = [images]
     elif isinstance(images, (tuple, list)) and (len(images) > 0) and isinstance(images[0], (tuple, list)) and (len(images[0]) > 0) and isinstance(images[0][0], np.ndarray):
+        # `images` is a vector of vectors of images
         rows = images
     else:
-        raise ValueError("Invalid argument 'Is' - must be vector of images or vector of vectors of images")
+        raise ValueError("Invalid argument 'images' - must be vector of images or vector of vectors of images")
 
     # find common data type and color mode
     if dtype is None:
-        dtype = tcommon((image.dtype for row in rows for image in row))
+        dtype = dito.core.dtype_common((image.dtype for row in rows for image in row))
     if gray is None:
         gray = all(dito.core.is_gray(image=image) for row in rows for image in row)
 
@@ -83,7 +86,7 @@ def stack(images, padding=0, dtype=None, gray=None):
     row_images = []
     width = 0
     for (n_row, row) in enumerate(rows):
-        # height of the row
+        # determine row height
         row_height = 0
         for image in row:
             row_height = max(row_height, image.shape[0])
@@ -92,58 +95,60 @@ def stack(images, padding=0, dtype=None, gray=None):
         else:
             row_height += padding
 
+        # construct image
         row_image = None
         for (n_col, image) in enumerate(row):
-            # convert to common data type and color mode
+            # convert individual image to target data type and color mode
+            image = dito.core.convert(image=image, dtype=dtype)
             if gray:
-                J = dito.core.as_gray(image=image)
+                image = dito.core.as_gray(image=image)
             else:
-                J = dito.core.as_gray(image=image)
-            J = convert(J, dtype)
+                image = dito.core.as_color(image=image)
 
             # add padding
-            p = [[padding if nRow == 0 else 0, padding], [padding if nCol == 0 else 0, padding]]
+            pad_width = [[padding if n_row == 0 else 0, padding], [padding if n_col == 0 else 0, padding]]
             if not gray:
-                p.append([0, 0])
-            J = np.pad(J, p, mode="constant", constant_values=0)
+                pad_width.append([0, 0])
+            image = np.pad(array=image, pad_width=pad_width, mode="constant", constant_values=background_color)
 
             # ensure that image has the height of the row
-            gap = rowHeight - J.shape[0]
+            gap = row_height - image.shape[0]
             if gap > 0:
                 if gray:
-                    Z = np.zeros(shape=(gap, J.shape[1]), dtype=dtype)
+                    image_fill = np.zeros(shape=(gap, image.shape[1]), dtype=dtype) + background_color
                 else:
-                    Z = np.zeros(shape=(gap, J.shape[1], 3), dtype=dtype)
-                J = np.vstack((J, Z))
+                    image_fill = np.zeros(shape=(gap, image.shape[1], 3), dtype=dtype) + background_color
+                image = np.vstack(tup=(image, image_fill))
 
             # add to current row image
-            if R is None:
-                R = J
+            if row_image is None:
+                row_image = image
             else:
-                R = np.hstack((R, J))
+                row_image = np.hstack(tup=(row_image, image))
 
-        width = max(width, R.shape[1])
-        Rs.append(R)
+        # update max width
+        width = max(width, row_image.shape[1])
+        row_images.append(row_image)
 
     # step 2/2: construct stacked image from the row images
-    S = None
-    for R in Rs:
+    stacked_image = None
+    for row_image in row_images:
         # ensure that the row image has the width of the final image
-        gap = width - R.shape[1]
+        gap = width - row_image.shape[1]
         if gap > 0:
             if gray:
-                Z = np.zeros(shape=(R.shape[0], gap), dtype=dtype)
+                image_fill = np.zeros(shape=(row_image.shape[0], gap), dtype=dtype) + background_color
             else:
-                Z = np.zeros(shape=(R.shape[0], gap, 3), dtype=dtype)
-            R = np.hstack((R, Z))
+                image_fill = np.zeros(shape=(row_image.shape[0], gap, 3), dtype=dtype) + background_color
+            row_image = np.hstack(tup=(row_image, image_fill))
 
         # add to final image
-        if S is None:
-            S = R
+        if stacked_image is None:
+            stacked_image = row_image
         else:
-            S = np.vstack((S, R))
+            stacked_image = np.vstack(tup=(stacked_image, row_image))
 
-    return S
+    return stacked_image
 
 
 ####
