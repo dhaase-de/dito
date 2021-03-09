@@ -3,6 +3,7 @@ import collections
 import cv2
 import numpy as np
 
+import dito.core
 import dito.utils
 
 
@@ -40,9 +41,9 @@ def hist(image, bin_count=256):
     """
     
     # determine which channels to use
-    if dito.is_gray(image):
+    if dito.core.is_gray(image):
         channels = [0]
-    elif dito.is_color(image):
+    elif dito.core.is_color(image):
         channels = [0, 1, 2]
     else:
         raise ValueError("The given image must be a valid gray scale or color image")
