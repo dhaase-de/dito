@@ -40,6 +40,54 @@ class TempDirTestCase(TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
+class CachedImageLoader_Test(TempDirTestCase):
+    def test_CachedImageLoader_init(self):
+        max_count = 8
+        loader = dito.CachedImageLoader(max_count=max_count)
+        self.assertEqual(loader.get_cache_info().maxsize, max_count)
+        self.assertEqual(loader.get_cache_info().hits, 0)
+        self.assertEqual(loader.get_cache_info().misses, 0)
+
+    def test_CachedImageLoader_hit_nohit(self):
+        # save two images
+        image = dito.xslope()
+        filename_0 = os.path.join(self.temp_dir.name, "image_0.png")
+        filename_1 = os.path.join(self.temp_dir.name, "image_1.png")
+        dito.save(filename=filename_0, image=image)
+        dito.save(filename=filename_1, image=image)
+
+        loader = dito.CachedImageLoader(max_count=4)
+
+        # miss
+        loader.load(filename=filename_0)
+        self.assertEqual(loader.get_cache_info().hits, 0)
+        self.assertEqual(loader.get_cache_info().misses, 1)
+
+        # hit
+        loader.load(filename=filename_0)
+        self.assertEqual(loader.get_cache_info().hits, 1)
+        self.assertEqual(loader.get_cache_info().misses, 1)
+
+        # hit
+        loader.load(filename=filename_0)
+        self.assertEqual(loader.get_cache_info().hits, 2)
+        self.assertEqual(loader.get_cache_info().misses, 1)
+
+        # miss
+        loader.load(filename=filename_1)
+        self.assertEqual(loader.get_cache_info().hits, 2)
+        self.assertEqual(loader.get_cache_info().misses, 2)
+
+        # hit
+        loader.load(filename=filename_1)
+        self.assertEqual(loader.get_cache_info().hits, 3)
+        self.assertEqual(loader.get_cache_info().misses, 2)
+
+    def test_CachedImageLoader_raise(self):
+        loader = dito.CachedImageLoader(max_count=4)
+        filename = os.path.join(self.temp_dir.name, "__nonexistent__.png")
+        self.assertRaises(FileNotFoundError, lambda: loader.load(filename=filename))
+
 
 class clip_Tests(TestCase):
     def test_clip_01(self):

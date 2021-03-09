@@ -1,9 +1,26 @@
+import functools
 import os.path
 
 import cv2
 import numpy as np
 
 import dito.utils
+
+
+class CachedImageLoader():
+    def __init__(self, max_count=128):
+        # decorate here, because maxsize can be specified by the user
+        self.load = functools.lru_cache(maxsize=max_count, typed=True)(self.load)
+
+    @staticmethod
+    def load(filename, color=None):
+        return load(filename=filename, color=color)
+
+    def get_cache_info(self):
+        return self.load.cache_info()
+
+    def clear_cache(self):
+        self.load.cache_clear()
 
 
 def load(filename, color=None):
