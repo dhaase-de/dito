@@ -156,70 +156,98 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
 ####
 
 
-def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name="show", close_window=False, engine=None, **kwargs):
+def get_screenres():
     """
-    Show image `I` on the screen.
+    Return the resolution (width, height) of the screen in pixels.
 
-    If `I` is a list of images or a list of lists of images, they are stacked
-    into one image.
+    If it can not be determined, assume 1920x1080.
+    See http://stackoverflow.com/a/3949983 for info.
+    """
+
+    try:
+        import tkinter as tk
+    except ImportError:
+        return (1920, 1080)
+
+    root = tk.Tk()
+    (width, height) = (root.winfo_screenwidth(), root.winfo_screenheight())
+    root.destroy()
+    return (width, height)
+
+
+def qkeys():
+    """
+    Returns a tuple of key codes ('unicode code points', as returned by
+    `ord()` which correspond to key presses indicating the desire to
+    quit (`<ESC>`, `q`).
+
+    >>> qkeys()
+    (27, 113)
+    """
+
+    return (27, ord("q"))
+
+
+def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name="dito.show", close_window=False, engine=None):
+    """
+    Show `image` on the screen.
+
+    If `image` is a list of images or a list of lists of images, they are
+    stacked into one image.
     """
 
     if isinstance(image, np.ndarray):
-        # I is an image, use it as it is
-        J = image
-    elif isinstance(image, (list, tuple)) and (len(I) > 0) and isinstance(I[0], np.ndarray):
-        # I is a list of images: auto-stack them into one image
-        J = astack(I)
-    elif isinstance(I, (list, tuple)) and (len(I) > 0) and isinstance(I[0], (list, tuple)) and (len(I[0]) > 0) and isinstance(I[0][0], np.ndarray):
-        # I is a list of lists of images: stack them into one image
-        J = stack(I)
+        # use image as is
+        pass
+    elif isinstance(image, (list, tuple)) and (len(image) > 0) and isinstance(image[0], np.ndarray):
+        # list of images: stack them into one image
+        image = stack(images=[image])
+    elif isinstance(image, (list, tuple)) and (len(image) > 0) and isinstance(image[0], (list, tuple)) and (len(image[0]) > 0) and isinstance(image[0][0], np.ndarray):
+        # list of lists of images: stack them into one image
+        image = stack(images=image)
     else:
-        raise ValueError("Invalid value for parameter `image` ({}) - it must either be (i) an image, (ii) a non-empty list of images or a non-empty list of non-empty lists of images".format(I))
+        raise ValueError("Invalid value for parameter `image` ({}) - it must either be (i) an image, (ii) a non-empty list of images or a non-empty list of non-empty lists of images".format(image))
 
     # normalize intensity values
-    if normalize is not None:
-        J = dito.core.normalize(image=J, mode=normalize_mode, **normalize_kwargs)
-
-    # convert to 8 bit
-    #J = convert(J, "uint8")
+    if normalize_mode is not None:
+        image = dito.core.normalize(image=image, mode=normalize_mode, **normalize_kwargs)
 
     # resize image
     if scale is None:
         # try to find a good scale factor automatically
-        (W, H) = dh.gui.screenres()
-        if (W is not None) and (H is not None):
-            scale = 0.85 * min(H / J.shape[0], W / J.shape[1])
-        else:
-            scale = 850.0 / max(I.shape)
-    J = dito.core.resize(image=J, scale_or_size=scale)
+        (width, height) = get_screenres()
+        scale = 0.85 * min(height / image.shape[0], width / image.shape[1])
+    image = dito.core.resize(image=image, scale_or_size=scale)
 
     # apply colormap
     if colormap is not None:
-        if isinstance(colormap, str):
-            colormap = dito.colormap(name=colormap)
-        J = dito.channels.colorize(image=J, colormap_name=colormap)
+        image = colorize(image=image, colormap=colormap)
 
     # determine how to display the image
     if engine is None:
-        # TODO: auto-detect if in notebook, then use IPython as engine
+        # TODO: auto-detect if in notebook
         engine = "cv2"
 
+    # show
     if engine == "cv2":
         try:
-            cv2.imshow(window_name, J)
+            cv2.imshow(window_name, image)
             key = cv2.waitKey(wait)
         finally:
             if close_window:
                 cv2.destroyWindow(window_name)
+
     elif engine == "ipython":
         # source: https://gist.github.com/uduse/e3122b708a8871dfe9643908e6ef5c54
-        import PIL.Image
-        from io import BytesIO
+        import io
         import IPython.display
-        f = BytesIO()
-        PIL.Image.fromarray(J).save(f, "png")
+        import PIL.Image
+        f = io.BytesIO()
+        # TODO: this just encodes the image array as PNG bytes - we don't need PIL for that -> remove PIL
+        PIL.Image.fromarray(image).save(f, "png")
         IPython.display.display(IPython.display.Image(data=f.getvalue()))
-        key = 0
+        key = -1
+
     else:
         raise RuntimeError("Unsupported engine '{}'".format(engine))
 
