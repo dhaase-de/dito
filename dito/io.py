@@ -21,18 +21,22 @@ def load(filename, color=None):
     if not os.path.exists(filename):
         raise FileNotFoundError("Image file '{}' does not exist".format(filename))
 
-    # flags - select grayscale or color mode
-    if color is None:
-        flags = cv2.IMREAD_UNCHANGED
+    if filename.endswith(".npy"):
+        # use NumPy
+        image = np.load(file=filename)
     else:
-        flags = cv2.IMREAD_ANYDEPTH | (cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE)
-
-    # read image
-    image = cv2.imread(filename=filename, flags=flags)
+        # use OpenCV
+        if color is None:
+            # load the image as it is
+            flags = cv2.IMREAD_ANYDEPTH | cv2.IMREAD_UNCHANGED
+        else:
+            # force gray/color mode
+            flags = cv2.IMREAD_ANYDEPTH | (cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE)
+        image = cv2.imread(filename=filename, flags=flags)
     
     # check if loading was successful
-    if image is None:
-        raise RuntimeError("Could not load image from file '{}'".format(filename))
+    if not isinstance(image, np.ndarray):
+        raise TypeError("Could not load image from file '{}' (expected object ob type 'np.ndarray', but got '{}'".format(filename, type(image)))
 
     return image
 
@@ -52,8 +56,12 @@ def save(filename, image, mkdir=True):
     if mkdir:
         dito.utils.mkdir(dirname=os.path.dirname(filename))
 
-    # write
-    return cv2.imwrite(filename=filename, img=image)
+    if filename.endswith(".npy"):
+        # use NumPy
+        np.save(file=filename, arr=image)
+    else:
+        # use OpenCV
+        cv2.imwrite(filename=filename, img=image)
 
 
 def decode(b, color=None):

@@ -1,4 +1,5 @@
 import os.path
+import tempfile
 import unittest
 
 import numpy as np
@@ -30,6 +31,14 @@ class TestCase(unittest.TestCase):
             self.assertTrue(np.allclose(x, y))
         else:
             self.assertTrue(np.all(x == y))
+
+
+class TempDirTestCase(TestCase):
+    def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory(prefix="dito.tests.")
+
+    def tearDown(self):
+        self.temp_dir.cleanup()
 
 
 class clip_Tests(TestCase):
@@ -267,6 +276,29 @@ class normalize_Tests(TestCase):
     def test_normalize_raise_invalid_mode(self):
         image = np.array([[0, 1, 2]], dtype=np.uint8)
         self.assertRaises(ValueError, lambda: dito.normalize(image=image, mode="__NON-EXISTING-MODE__"))
+
+
+class save_Tests(TempDirTestCase):
+    def _test_save_load(self, extension):
+        image = dito.pm5544()
+        filename = os.path.join(self.temp_dir.name, "image.{}".format(extension))
+        dito.save(filename=filename, image=image)
+        image_loaded = dito.load(filename=filename)
+        if extension == "jpg":
+            # JPG compression is lossy
+            self.assertEqualImageContainers(image, image_loaded)
+        else:
+            # all other formats should be lossless
+            self.assertEqualImages(image, image_loaded)
+
+    def test_save_load_jpg(self):
+        self._test_save_load(extension="jpg")
+
+    def test_save_load_png(self):
+        self._test_save_load(extension="png")
+
+    def test_save_load_npy(self):
+        self._test_save_load(extension="npy")
 
 
 class stack_Tests(TestCase):
