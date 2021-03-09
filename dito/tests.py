@@ -482,10 +482,10 @@ class core_Tests(TestCase):
 
 class data_Tests(TestCase):
     def test_data_dir_exists(self):
-        self.assertTrue(os.path.exists(dito.DATA_DIR))
+        self.assertTrue(os.path.exists(dito.RESOURCES_DIR))
     
     def test_data_files_exists(self):
-        for filename in dito.DATA_FILENAMES.values():
+        for filename in dito.RESOURCES_FILENAMES.values():
             self.assertTrue(os.path.exists(filename), "Data file '{}' does not exist".format(filename))
 
 
@@ -608,7 +608,7 @@ class infos_Tests(TestCase):
 class io_Tests(TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.image_filename = os.path.join(dito.DATA_FILENAMES["image:PM5544"])
+        self.image_filename = os.path.join(dito.RESOURCES_FILENAMES["image:PM5544"])
         self.shape = (576, 768, 3)
     
     def test_load_default(self):

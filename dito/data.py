@@ -5,10 +5,10 @@ import numpy as np
 import dito.io
 
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "datafiles")
-DATA_FILENAMES = {
-    "image:PM5544": os.path.join(DATA_DIR, "images", "PM5544.png"),
-    "colormap:plot": os.path.join(DATA_DIR, "colormaps", "plot.png"),
+RESOURCES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources")
+RESOURCES_FILENAMES = {
+    "image:PM5544": os.path.join(RESOURCES_DIR, "images", "PM5544.png"),
+    "colormap:plot": os.path.join(RESOURCES_DIR, "colormaps", "plot.png"),
 }
 
 
@@ -18,7 +18,7 @@ DATA_FILENAMES = {
 
 
 def pm5544():
-    return dito.io.load(filename=DATA_FILENAMES["image:PM5544"])
+    return dito.io.load(filename=RESOURCES_FILENAMES["image:PM5544"])
 
 
 ####

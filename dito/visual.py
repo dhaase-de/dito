@@ -13,8 +13,8 @@ def get_colormap(name):
     
     # source 1: non-OpenCV colormaps
     data_key = "colormap:{}".format(name.lower())
-    if data_key in dito.data.DATA_FILENAMES.keys():
-        return dito.io.load(filename=dito.data.DATA_FILENAMES[data_key])
+    if data_key in dito.data.RESOURCES_FILENAMES.keys():
+        return dito.io.load(filename=dito.data.RESOURCES_FILENAMES[data_key])
     
     # source 2: OpenCV colormaps
     full_cv2_name = "COLORMAP_{}".format(name.upper())

@@ -1,4 +1,3 @@
-import os
 import os.path
 import re
 
@@ -58,7 +57,7 @@ setup(
     ],
     packages=[package_name],
     package_data={package_name: [
-        "datafiles/colormaps/*.png",
-        "datafiles/images/*.png",
+        "resources/colormaps/*.png",
+        "resources/images/*.png",
     ]},
 )
