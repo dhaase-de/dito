@@ -33,7 +33,7 @@ Use `scripts/run_tests.sh` to run all unit tests.
 Changelog
 =========
 
-2.0.0 (2021-03-09)
+v2.0.0 (2021-03-09)
 ------------------
 
 * initial release, based in large parts on [`dh.image`](https://github.com/dhaase-de/dh-python-dh)
