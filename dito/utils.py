@@ -30,8 +30,7 @@ def ftable(rows):
     for row in rows:
         for n_col in range(col_count):
             col_lengths[n_col] = max(col_lengths[n_col], len(str(row[n_col])))
-    
-    
+
     # the line at the top and bottom
     sep_line = col_sep.join(sep_symbol * col_length for col_length in col_lengths)
     
