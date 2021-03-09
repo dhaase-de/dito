@@ -286,6 +286,14 @@ class stack_Tests(TestCase):
         self.assertRaises(ValueError, lambda: dito.stack(images=rows))
 
 
+class text_Tests(TestCase):
+    def test_text_input_unchanged(self):
+        image = dito.pm5544()
+        image_copy = image.copy()
+        dito.text(image=image, message="Hello World", position=(0.5, 0.5), anchor="cc")
+        self.assertEqualImages(image, image_copy)
+
+
 ####
 #%%% TODO: refactor
 ####

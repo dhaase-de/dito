@@ -152,6 +152,106 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
 
 
 ####
+#%%% text
+####
+
+
+def text(image, message, position=(0.0, 0.0), anchor="lt", font="sans", scale=1.0, thickness=1, padding_rel=1.0, inner_color=(255, 255, 255), outer_color=None, background_color=0, line_type=cv2.LINE_AA):
+    """
+    Draws the text `message` into the given `image`.
+
+    The `position` is given as 2D point in relative coordinates (i.e., with
+    coordinate ranges of [0.0, 1.0]). The `anchor` must be given as two letter
+    string, following the pattern `[lcr][tcb]`. It specifies the horizontal
+    and vertical alignment of the text with respect to the given position. The
+    `padding_rel` is given in (possibly non-integer) multiples of the font's
+    baseline height.
+    """
+
+    # keep input image unchanged
+    image = image.copy()
+
+    # font
+    if font == "sans":
+        font_face = cv2.FONT_HERSHEY_DUPLEX
+    elif font == "serif":
+        font_face = cv2.FONT_HERSHEY_TRIPLEX
+    else:
+        raise ValueError("Invalid font '{}'".format(font))
+    font_scale = scale
+    font_thickness = thickness
+
+    # calculate width and height of the text
+    ((text_width, text_height), baseline) = cv2.getTextSize(
+        text=message,
+        fontFace=font_face,
+        fontScale=font_scale,
+        thickness=font_thickness,
+    )
+
+    # base offset derived from the specified position
+    offset = np.array([
+        position[0] * image.shape[1],
+        position[1] * (image.shape[0] - baseline),
+    ])
+
+    # adjust offset based on the specified anchor type
+    if not (isinstance(anchor, str) and (len(anchor) == 2) and (anchor[0] in ("l", "c", "r")) and (anchor[1] in ("t", "c", "b"))):
+        raise ValueError("Argument 'anchor' must be a string of length two (pattern: '[lcr][tcb]') , but is '{}'".format(anchor))
+    (anchor_h, anchor_v) = anchor
+    if anchor_h == "l":
+        pass
+    elif anchor_h == "c":
+        offset[0] -= text_width * 0.5
+    elif anchor_h == "r":
+        offset[0] -= text_width
+    if anchor_v == "t":
+        offset[1] += text_height
+    elif anchor_v == "c":
+        offset[1] += text_height * 0.5
+    elif anchor_v == "b":
+        pass
+
+    # finalize offset
+    offset = dito.core.tir(*offset)
+
+    # add padding to offset
+    padding_abs = round(padding_rel * baseline)
+
+    # draw background rectangle
+    if background_color is not None:
+        # TODO: allow actual BGR color, not just one intensity value (use cv2.rectangle for drawing)
+        image[max(0, offset[1] - text_height - padding_abs):min(image.shape[0], offset[1] + max(baseline, padding_abs)), max(0, offset[0] - padding_abs):min(image.shape[1], offset[0] + text_width + padding_abs), ...] = background_color
+
+    # draw text
+    if outer_color is not None:
+        cv2.putText(
+            img=image,
+            text=message,
+            org=offset,
+            fontFace=font_face,
+            fontScale=font_scale,
+            color=outer_color,
+            thickness=font_thickness + 2,
+            lineType=line_type,
+            bottomLeftOrigin=False,
+        )
+    cv2.putText(
+        img=image,
+        text=message,
+        org=offset,
+        fontFace=font_face,
+        fontScale=font_scale,
+        color=inner_color,
+        thickness=font_thickness,
+        lineType=line_type,
+        bottomLeftOrigin=False,
+    )
+
+    return image
+
+
+####
 #%%% image visualization
 ####
 
