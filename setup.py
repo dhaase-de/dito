@@ -47,10 +47,11 @@ with open(version_filename, "r") as f:
 setup(
     name=package_name,
     version=version,
-    description="Yet another toolbox for the daily work with OpenCV",
+    description="Yet another toolbox for the daily work with OpenCV under Python",
     author="Daniel Haase",
     url="https://github.com/dhaase-de/dito",
     classifiers=[
+        "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
         "Topic :: Utilities",
