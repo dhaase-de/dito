@@ -9,4 +9,5 @@ dist/
 .idea/
 
 # dev files
+dev/
 venv/
