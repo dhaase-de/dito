@@ -9,6 +9,7 @@ Status
 
 ![Tests](https://github.com/dhaase-de/dito/workflows/Tests/badge.svg)
 [![PyPI Version](https://img.shields.io/pypi/v/dito.svg)](https://pypi.python.org/pypi/dito/)
+[![PyPI Python Versions](https://img.shields.io/pypi/pyversions/dito.svg)](https://pypi.python.org/pypi/dito/)
 [![License](https://img.shields.io/github/license/dhaase-de/dito.svg)](LICENSE.txt)
 
 
