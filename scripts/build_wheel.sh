@@ -8,5 +8,5 @@ set -o nounset
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 source "$SCRIPT_DIR"/setenv.sh
 
-# run local installation
-cd "$PACKAGE_DIR" && /usr/bin/env python3 setup.py develop --user
+# run setup script
+cd "$PACKAGE_DIR" && /usr/bin/env python3 setup.py bdist_wheel
