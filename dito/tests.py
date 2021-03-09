@@ -170,6 +170,26 @@ class dtype_range_Tests(TestCase):
         self.assertEqual(range_, (False, True))
 
 
+class encode_Tests(TestCase):
+    def test_encode_extensions(self):
+        image = dito.pm5544()
+        extensions = ("jpg", "png")
+        for extension in extensions:
+            for prefix in ("", "."):
+                dito.encode(extension="{}{}".format(prefix, extension), image=image)
+
+    def test_encode_byte(self):
+        image = dito.pm5544()
+        result = dito.encode(extension=".png", image=image)
+        self.assertIsInstance(result, bytes)
+
+    def test_encode_decode(self):
+        image = dito.pm5544()
+        image_encoded = dito.encode(image=image)
+        image_decoded = dito.decode(b=image_encoded)
+        self.assertEqualImages(image, image_decoded)
+
+
 class get_colormap_Tests(TestCase):
     def test_get_colormap_plot(self):
         result = dito.get_colormap("plot")

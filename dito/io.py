@@ -37,6 +37,25 @@ def load(filename, color=None):
     return image
 
 
+def save(filename, image, mkdir=True):
+    """
+    Save image `image` to file `filename`.
+
+    If `mkdir` is `True`, the parent dir of the given filename is created
+    before saving the image.
+    """
+
+    if not isinstance(image, np.ndarray):
+        raise RuntimeError("Invalid image (type '{}')".format(type(image).__name__))
+
+    # create parent dir
+    if mkdir:
+        dito.utils.mkdir(dirname=os.path.dirname(filename))
+
+    # write
+    return cv2.imwrite(filename=filename, img=image)
+
+
 def decode(b, color=None):
     """
     Load image from the byte array `b` containing the *encoded* image and
@@ -64,20 +83,20 @@ def decode(b, color=None):
     return image
 
 
-def save(filename, image, mkdir=True):
+def encode(image, extension="png", params=None):
     """
-    Save image `image` to file `filename`.
-
-    If `mkdir` is `True`, the parent dir of the given filename is created
-    before saving the image.
+    Encode the given `image` into a byte array which contains the same bytes
+    as if the image would have been saved to a file.
     """
 
-    if not isinstance(image, np.ndarray):
-        raise RuntimeError("Invalid image (type '{}')".format(type(image).__name__))
+    # allow extensions to be specified with or without leading dot
+    if not extension.startswith("."):
+        extension = "." + extension
 
-    # create parent dir
-    if mkdir:
-        dito.utils.mkdir(dirname=os.path.dirname(filename))
+    # use empty tuple if no params are given
+    if params is None:
+        params = tuple()
 
-    # write
-    return cv2.imwrite(filename=filename, img=image)
+    (_, array) = cv2.imencode(ext=extension, img=image, params=params)
+
+    return array.tobytes()
