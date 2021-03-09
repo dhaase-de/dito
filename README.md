@@ -16,9 +16,9 @@ Status
 Requirements
 ------------
 
-* Python 3
-* NumPy
-* OpenCV
+* [Python 3](https://www.python.org/)
+* [NumPy](https://numpy.org/)
+* [OpenCV](https://opencv.org/)
 
 See `requirements.txt` for version details.
 
@@ -39,12 +39,12 @@ Tests
 -----
 
 Use `scripts/run_tests.sh` to run all unit tests.
+This is equivalent to `python3 -m dito.tests --verbose`.
 
 
 Changelog
-=========
+---------
 
-v2.0.0 (2021-03-09)
-------------------
+### v2.0.0 (2021-03-09) ###
 
 * initial release, based in large parts on [`dh.image`](https://github.com/dhaase-de/dh-python-dh)
