@@ -13,6 +13,16 @@ Status
 [![License](https://img.shields.io/github/license/dhaase-de/dito.svg)](LICENSE.txt)
 
 
+Requirements
+------------
+
+* Python 3
+* NumPy
+* OpenCV
+
+See `requirements.txt` for version details.
+
+
 Installation
 ------------
 
