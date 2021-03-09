@@ -13,7 +13,7 @@ def info(image):
     """
 
     result = collections.OrderedDict()
-    result["size (KiB)"] = image.size * image.itemsize / 1024.0
+    result["size"] = "{:.1f} KiB".format(image.size * image.itemsize / 1024.0)
     result["shape"] = image.shape
     result["dtype"] = image.dtype
     result["mean"] = np.mean(image)
