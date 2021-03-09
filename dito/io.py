@@ -12,8 +12,7 @@ class CachedImageLoader():
         # decorate here, because maxsize can be specified by the user
         self.load = functools.lru_cache(maxsize=max_count, typed=True)(self.load)
 
-    @staticmethod
-    def load(filename, color=None):
+    def load(self, filename, color=None):
         return load(filename=filename, color=color)
 
     def get_cache_info(self):
