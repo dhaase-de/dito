@@ -40,6 +40,7 @@ class TempDirTestCase(TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
+
 class CachedImageLoader_Test(TempDirTestCase):
     def test_CachedImageLoader_init(self):
         max_count = 8
@@ -265,6 +266,27 @@ class get_colormap_Tests(TestCase):
         self.assertRaises(ValueError, lambda: dito.get_colormap("__!?-non-existing_colormap-name-!?__"))
 
 
+class human_bytes_Tests(TestCase):
+    def test_human_bytes_exact(self):
+        cases = [
+            [0, "0 bytes"],
+            [1, "1 bytes"],
+            [123, "123 bytes"],
+            [1000, "1000 bytes"],
+            [1023, "1023 bytes"],
+            [1024, "1.00 KiB"],
+            [100000, "97.66 KiB"],
+            [123456, "120.56 KiB"],
+            [2000000, "1.91 MiB"],
+            [5050505, "4.82 MiB"],
+            [123456789, "117.74 MiB"],
+            [12345678900, "11.50 GiB"],
+        ]
+        for (byte_count, expected_result) in cases:
+            result = dito.human_bytes(byte_count=byte_count)
+            self.assertEqual(result, expected_result)
+
+
 class normalize_Tests(TestCase):
     def run_in_out_test(self, image_in, image_out, **kwargs):
         image_normalized = dito.normalize(image=image_in, **kwargs)
@@ -324,6 +346,20 @@ class normalize_Tests(TestCase):
     def test_normalize_raise_invalid_mode(self):
         image = np.array([[0, 1, 2]], dtype=np.uint8)
         self.assertRaises(ValueError, lambda: dito.normalize(image=image, mode="__NON-EXISTING-MODE__"))
+
+
+class random_image_Tests(TestCase):
+    def test_random_image_color(self):
+        image_size = (256, 128)
+        image = dito.random_image(size=image_size, color=True)
+        self.assertIsImage(image)
+        self.assertNumpyShape(image, (image_size[1], image_size[0], 3))
+
+    def test_random_image_gray(self):
+        image_size = (256, 128)
+        image = dito.random_image(size=image_size, color=False)
+        self.assertIsImage(image)
+        self.assertNumpyShape(image, (image_size[1], image_size[0]))
 
 
 class save_Tests(TempDirTestCase):
@@ -392,6 +428,39 @@ class text_Tests(TestCase):
         image_copy = image.copy()
         dito.text(image=image, message="Hello World", position=(0.5, 0.5), anchor="cc")
         self.assertEqualImages(image, image_copy)
+
+
+class VideoSaver_Tests(TempDirTestCase):
+    def test_VideoSaver_random_video(self):
+        filename = os.path.join(self.temp_dir.name, "VideoSaver.avi")
+        codec = "MJPG"
+        fps = 12.0
+        image_size = (320, 240)
+        frame_count = int(1.0 * fps)
+        min_file_size = 250000
+
+        with dito.VideoSaver(filename=filename, codec=codec, fps=fps) as saver:
+            for n_frame in range(frame_count):
+                image = dito.random_image(size=image_size, color=True)
+                saver.append(image=image)
+
+        self.assertTrue(saver.file_exists())
+        self.assertGreaterEqual(saver.get_file_size(), min_file_size)
+
+    def test_VideoSaver_raise_on_invalid_size(self):
+        filename = os.path.join(self.temp_dir.name, "VideoSaver.avi")
+        codec = "MJPG"
+        fps = 10.0
+        image_size = (320, 240)
+
+        with dito.VideoSaver(filename=filename, codec=codec, fps=fps) as saver:
+            for n_frame in range(2):
+                if n_frame == 0:
+                    image = dito.random_image(size=image_size)
+                    saver.append(image=image)
+                else:
+                    image = dito.random_image(size=tuple(value + 1 for value in image_size))
+                    self.assertRaises(ValueError, lambda: saver.append(image=image))
 
 
 ####
