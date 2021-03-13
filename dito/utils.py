@@ -66,6 +66,54 @@ def human_bytes(byte_count):
 ####
 
 
+def now_str(mode="compact", date=True, time=True, microtime=True):
+    """
+    Return the current date and/or time as string.
+    """
+
+    # check arguments
+    if not (date or time or microtime):
+        raise ValueError("At least one of 'date', 'time', 'microtime' must be `True`")
+
+    # select format string parts based on mode
+    if mode == "compact":
+        date_fmt = "%Y%m%d"
+        time_sep = "_"
+        time_fmt = "%H%M%S"
+        micro_sep = "_"
+        micro_fmt = "%f"
+    elif mode == "readable":
+        date_fmt = "%Y-%m-%d"
+        time_sep = "_"
+        time_fmt = "%H-%M-%S"
+        micro_sep = "_"
+        micro_fmt = "%f"
+    elif mode == "print":
+        date_fmt = "%Y-%m-%d"
+        time_sep = " "
+        time_fmt = "%H:%M:%S"
+        micro_sep = "."
+        micro_fmt = "%f"
+    else:
+        raise ValueError("Invalid mode '{}".format(mode))
+
+    # build final format string
+    fmt = ""
+    if date:
+        fmt += date_fmt
+    if time:
+        if fmt != "":
+            fmt += time_sep
+        fmt += time_fmt
+    if microtime:
+        if fmt != "":
+            fmt += micro_sep
+        fmt += micro_fmt
+
+    # return formatted date and/or time
+    return datetime.datetime.now().strftime(fmt)
+
+
 def ftable(rows):
     """
     Format the data specified in `rows` as table string.

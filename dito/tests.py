@@ -391,6 +391,29 @@ class normalize_Tests(TestCase):
         self.assertRaises(ValueError, lambda: dito.normalize(image=image, mode="__NON-EXISTING-MODE__"))
 
 
+class now_str_Tests(TestCase):
+    def test_now_str_length(self):
+        cases = [
+            {"kwargs": {"mode": "compact",  "date": True, "time": False, "microtime": False}, "expected_length": 8},
+            {"kwargs": {"mode": "readable", "date": True, "time": False, "microtime": False}, "expected_length": 10},
+            {"kwargs": {"mode": "print",    "date": True, "time": False, "microtime": False}, "expected_length": 10},
+            {"kwargs": {"mode": "compact",  "date": True, "time": True,  "microtime": False}, "expected_length": 15},
+            {"kwargs": {"mode": "readable", "date": True, "time": True,  "microtime": False}, "expected_length": 19},
+            {"kwargs": {"mode": "print",    "date": True, "time": True,  "microtime": False}, "expected_length": 19},
+        ]
+        for case in cases:
+            # assert equal length
+            result = dito.now_str(**case["kwargs"])
+            self.assertIsInstance(result, str)
+            self.assertEqual(len(result), case["expected_length"])
+
+            # assert greater length with microtime
+            case["kwargs"]["microtime"] = True
+            result_microtime = dito.now_str(**case["kwargs"])
+            self.assertIsInstance(result_microtime, str)
+            self.assertGreater(len(result_microtime), case["expected_length"])
+
+
 class random_image_Tests(TestCase):
     def test_random_image_color(self):
         image_size = (256, 128)
