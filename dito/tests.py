@@ -1,5 +1,4 @@
 import os.path
-import tempfile
 import unittest
 
 import numpy as np
@@ -35,7 +34,7 @@ class TestCase(unittest.TestCase):
 
 class TempDirTestCase(TestCase):
     def setUp(self):
-        self.temp_dir = tempfile.TemporaryDirectory(prefix="dito.tests.")
+        self.temp_dir = dito.get_temp_dir(prefix="dito.tests.")
 
     def tearDown(self):
         self.temp_dir.cleanup()
@@ -285,6 +284,50 @@ class human_bytes_Tests(TestCase):
         for (byte_count, expected_result) in cases:
             result = dito.human_bytes(byte_count=byte_count)
             self.assertEqual(result, expected_result)
+
+
+class MultiShow_Tests(TestCase):
+    def get_random_image(self):
+        return dito.random_image(size=(256, 128))
+
+    def test_MultiShow_image_count(self):
+        mshow = dito.MultiShow()
+        self.assertEqual(len(mshow.images), 0)
+
+        mshow.show(image=self.get_random_image(), hide=True)
+        self.assertEqual(len(mshow.images), 1)
+
+        mshow.show(image=self.get_random_image(), hide=True)
+        self.assertEqual(len(mshow.images), 2)
+
+        mshow.show(image=self.get_random_image(), keep=False, hide=True)
+        self.assertEqual(len(mshow.images), 2)
+
+    def test_MultiShow_identical(self):
+        mshow = dito.MultiShow()
+
+        image1 = self.get_random_image()
+        mshow.show(image=image1, scale=1.0, hide=True)
+
+        image2 = self.get_random_image()
+        mshow.show(image=image2, scale=1.0, hide=True)
+
+        image3 = self.get_random_image()
+        mshow.show(image=image3, scale=1.0, keep=False, hide=True)
+
+        image4 = self.get_random_image()
+        mshow.show(image=image4, scale=1.0, hide=True)
+
+        self.assertEqualImages(image1, mshow.images[0])
+        self.assertEqualImages(image2, mshow.images[1])
+        self.assertEqualImages(image4, mshow.images[2])
+
+    def test_MultiShow_shape(self):
+        mshow = dito.MultiShow()
+
+        image = dito.as_gray(self.get_random_image())
+        mshow.show(image=image, scale=2.0, colormap="jet", hide=True)
+        self.assertEqual((image.shape[0] * 2, image.shape[1] * 2, 3), mshow.images[0].shape)
 
 
 class normalize_Tests(TestCase):

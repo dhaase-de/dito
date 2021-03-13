@@ -288,14 +288,13 @@ def qkeys():
     return (27, ord("q"))
 
 
-def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name="dito.show", close_window=False, engine=None):
+def prepare_for_display(image, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None):
     """
-    Show `image` on the screen.
+    Prepare `image` (or a list or a list of lists of images) for being
+    displayed on the screen (or similar purposes).
 
-    If `image` is a list of images or a list of lists of images, they are
-    stacked into one image.
+    Internal function used by `show` and `MultiShow`.
     """
-
     if isinstance(image, np.ndarray):
         # use image as is
         pass
@@ -323,6 +322,19 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
     if colormap is not None:
         image = colorize(image=image, colormap=colormap)
 
+    return image
+
+
+def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name="dito.show", close_window=False, engine=None):
+    """
+    Show `image` on the screen.
+
+    If `image` is a list of images or a list of lists of images, they are
+    stacked into one image.
+    """
+
+    image_show = prepare_for_display(image=image, scale=scale, normalize_mode=normalize_mode, normalize_kwargs=normalize_kwargs, colormap=colormap)
+
     # determine how to display the image
     if engine is None:
         # TODO: auto-detect if in notebook
@@ -331,7 +343,7 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
     # show
     if engine == "cv2":
         try:
-            cv2.imshow(window_name, image)
+            cv2.imshow(window_name, image_show)
             key = cv2.waitKey(wait)
         finally:
             if close_window:
@@ -352,3 +364,81 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
         raise RuntimeError("Unsupported engine '{}'".format(engine))
 
     return key
+
+
+class MultiShow():
+    """
+    Extension of the functionality provided by the `dito.show` function.
+
+    It keeps all images that have been shown and can re-show them interactively.
+    """
+    def __init__(self, window_name="dito.MultiShow", close_window=False):
+        self.window_name = window_name
+        self.close_window = close_window
+        self.engine = "cv2"
+
+        self.images = []
+
+    def _show(self, image, wait):
+        """
+        Internal method used to actually show an image on the screen.
+        """
+        return show(image=image, wait=wait, scale=1.0, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name=self.window_name, close_window=self.close_window, engine=self.engine)
+
+    def show(self, image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, keep=True, hide=False):
+        """
+        Shows image on the screen, just as `dito.show` would. However, the
+        image is also stored internally, and can be re-shown anytime.
+        """
+        image_show = prepare_for_display(image=image, scale=scale, normalize_mode=normalize_mode, normalize_kwargs=normalize_kwargs, colormap=colormap)
+        if keep:
+            self.images.append(image_show)
+        if not hide:
+            return self._show(image=image_show, wait=wait)
+        else:
+            return -1
+
+    def reshow(self, n_image, wait=0):
+        """
+        Re-show specific image.
+        """
+        return self._show(image=self.images[n_image], wait=wait)
+
+    def reshow_interactive(self):
+        """
+        Re-show all images interactively.
+        """
+        image_count = len(self.images)
+        if image_count == 0:
+            raise RuntimeError("No images available")
+
+        # initial settings
+        n_image = image_count - 1
+        show_overlay = True
+
+        # start loop
+        while True:
+            # get image to show
+            image = self.images[n_image]
+            if show_overlay:
+                image = text(image=image, message="{}/{}".format(n_image + 1, image_count), scale=0.5)
+
+            # show image
+            key = self._show(image=image, wait=0)
+
+            # handle keys
+            if key in (ord("+"),):
+                # show next image
+                n_image = (n_image + 1) % image_count
+            elif key in (ord("-"),):
+                # show previous image
+                n_image = (n_image - 1) % image_count
+            elif key in (ord(" "),):
+                # toggle overlay
+                show_overlay = not show_overlay
+            elif key in qkeys():
+                # quit
+                break
+
+            if self.close_window:
+                cv2.destroyWindow(winname=self.window_name)

@@ -1,6 +1,8 @@
 import collections
+import datetime
 import errno
 import os
+import tempfile
 
 
 ####
@@ -20,6 +22,15 @@ def mkdir(dirname):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
+
+
+def get_temp_dir(prefix):
+    """
+    Creates and returns temporary directory.
+
+    The property `.name` holds the path. It can be deleted using the `.cleanup()` method.
+    """
+    return tempfile.TemporaryDirectory(prefix=prefix)
 
 
 def human_bytes(byte_count):
