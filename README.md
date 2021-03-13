@@ -46,6 +46,13 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
-### v2.0.0 (2021-03-09) ###
+### v2.1.0 (2021-03-14) ###
+* added `MultiShow` as extension of `show` which can also interactively re-show or save images
+* added `VideoSaver`and script `dito_images_to_video.py`
+* extended other IO functionality (`CachedImageLoader`, `.npy` support for `save` and `load`, and `encode`)
+* added synthetic image generators (`checkerboard`, `background_checkerboard`, `random_image`)
+* added several helper functions (e.g., `now_str`, `human_bytes`)
+* fixed some minor issues (e.g., handling of empty dirs in `mkdir`)
 
+### v2.0.0 (2021-03-09) ###
 * initial release, based in large parts on [`dh.image`](https://github.com/dhaase-de/dh-python-dh)
