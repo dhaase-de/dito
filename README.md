@@ -7,7 +7,8 @@ Python Package `dito`
 Status
 ------
 
-![Tests](https://github.com/dhaase-de/dito/workflows/Tests/badge.svg)
+[![Tests (subset)](https://github.com/dhaase-de/dito/actions/workflows/tests-subset.yml/badge.svg)](https://github.com/dhaase-de/dito/actions/workflows/tests-subset.yml)
+[![Tests (full)](https://github.com/dhaase-de/dito/actions/workflows/tests-full.yml/badge.svg)](https://github.com/dhaase-de/dito/actions/workflows/tests-full.yml)
 [![PyPI Version](https://img.shields.io/pypi/v/dito.svg)](https://pypi.python.org/pypi/dito/)
 [![PyPI Python Versions](https://img.shields.io/pypi/pyversions/dito.svg)](https://pypi.python.org/pypi/dito/)
 [![License](https://img.shields.io/github/license/dhaase-de/dito.svg)](LICENSE.txt)
