@@ -13,7 +13,7 @@ def info(image):
     """
 
     result = collections.OrderedDict()
-    result["size"] = "{:.1f} KiB".format(image.size * image.itemsize / 1024.0)
+    result["size"] = dito.utils.human_bytes(byte_count=image.size * image.itemsize)
     result["shape"] = image.shape
     result["dtype"] = image.dtype
     result["mean"] = np.mean(image)
