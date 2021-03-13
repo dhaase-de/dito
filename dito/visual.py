@@ -260,7 +260,7 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="sans", scale=1.
 ####
 
 
-def get_screenres():
+def get_screenres(fallback=(1920, 1080)):
     """
     Return the resolution (width, height) of the screen in pixels.
 
@@ -268,12 +268,17 @@ def get_screenres():
     See http://stackoverflow.com/a/3949983 for info.
     """
 
+
+
     try:
         import tkinter as tk
     except ImportError:
-        return (1920, 1080)
+        return fallback
 
-    root = tk.Tk()
+    try:
+        root = tk.Tk()
+    except tk.TclError:
+        return fallback
     (width, height) = (root.winfo_screenwidth(), root.winfo_screenheight())
     root.destroy()
     return (width, height)
