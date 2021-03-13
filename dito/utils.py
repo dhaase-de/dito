@@ -1,5 +1,11 @@
+import collections
 import errno
 import os
+
+
+####
+#%%% file-related
+####
 
 
 def mkdir(dirname):
@@ -8,12 +14,45 @@ def mkdir(dirname):
     """
     
     if dirname == "":
-        raise ValueError("Invalid dirname '{}'".format(dirname))
+        return
     try:
         os.makedirs(dirname)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
+
+
+def human_bytes(byte_count):
+    """
+    Formats a given `byte_count` into a human-readable string.
+    """
+
+    prefixes = collections.OrderedDict()
+    prefixes["KiB"] = 1024.0**1
+    prefixes["MiB"] = 1024.0**2
+    prefixes["GiB"] = 1024.0**3
+
+    count = byte_count
+    unit = "bytes"
+    for (new_unit, new_scale) in prefixes.items():
+        new_count = byte_count / new_scale
+        if new_count < 1.0:
+            break
+        else:
+            count = new_count
+            unit = new_unit
+
+    if isinstance(count, int):
+        # count is an integer -> use no decimal places
+        return "{} {}".format(count, unit)
+    else:
+        # count is a float -> use two decimal places
+        return "{:.2f} {}".format(count, unit)
+
+
+####
+#%%% output-related
+####
 
 
 def ftable(rows):
