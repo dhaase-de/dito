@@ -60,4 +60,5 @@ setup(
         "resources/colormaps/*.png",
         "resources/images/*.png",
     ]},
+    scripts=["bin/dito_images_to_video.py"],
 )
