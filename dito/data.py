@@ -67,3 +67,14 @@ def background_checkerboard(size=(512, 288), block_size=16):
     grid of light and dark gray squares of size `block_size`.
     """
     return checkerboard(size=size, block_size=block_size, low=80, high=120)
+
+
+def random_image(size=(512, 288), color=True):
+    """
+    Returns a random `uint8` image of the given `shape`.
+    """
+    shape = tuple(size[::-1])
+    if color:
+        shape = shape + (3,)
+    image_random = np.random.rand(*shape)
+    return dito.core.convert(image=image_random, dtype=np.uint8)
