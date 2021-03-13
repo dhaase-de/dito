@@ -49,10 +49,12 @@ def load(filename, color=None):
             # force gray/color mode
             flags = cv2.IMREAD_ANYDEPTH | (cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE)
         image = cv2.imread(filename=filename, flags=flags)
-    
+
     # check if loading was successful
+    if image is None:
+        raise RuntimeError("Image file '{}' exists, but could not be loaded".format(filename))
     if not isinstance(image, np.ndarray):
-        raise TypeError("Could not load image from file '{}' (expected object ob type 'np.ndarray', but got '{}'".format(filename, type(image)))
+        raise TypeError("Image file '{}' exists, but has wrong type (expected object of type 'np.ndarray', but got '{}'".format(filename, type(image)))
 
     return image
 
@@ -124,3 +126,93 @@ def encode(image, extension="png", params=None):
     (_, array) = cv2.imencode(ext=extension, img=image, params=params)
 
     return array.tobytes()
+
+
+class VideoSaver():
+    """
+    Convenience wrapper for `cv2.VideoWriter`.
+
+    Main differences compared to `cv2.VideoWriter`:
+    * the parent dir of the output file is created automatically
+    * the codec can be given as a string
+    * the frame size is taken from the first provided image
+    * the sizes of all following images are checked - id they do not match the size of the first image, an exception is
+      raised
+    * images are converted to gray/color mode automatically
+    """
+
+    def __init__(self, filename, codec="MJPG", fps=30.0, color=True):
+        self.filename = filename
+        self.codec = codec
+        self.fps = fps
+        self.color = color
+
+        if (not isinstance(self.codec, str)) or (len(self.codec) != 4):
+            raise ValueError("Argument 'codec' must be a string of length 4")
+
+        self.frame_count = 0
+        self.image_size = None
+        self.writer = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.save()
+
+    def get_fourcc(self):
+        return cv2.VideoWriter_fourcc(*self.codec)
+
+    def init_writer(self, image_size):
+        self.image_size = image_size
+        dito.utils.mkdir(os.path.dirname(self.filename))
+        self.writer = cv2.VideoWriter(
+            filename=self.filename,
+            fourcc=self.get_fourcc(),
+            fps=self.fps,
+            frameSize=self.image_size,
+            isColor=self.color,
+        )
+
+    def append(self, image):
+        """
+        Add frame `image` to the video.
+        """
+        image_size = dito.core.size(image=image)
+
+        # create writer if this is the first frame
+        if self.writer is None:
+            self.init_writer(image_size=image_size)
+
+        # check if the image size is consistent with the previous frames
+        if image_size != self.image_size:
+            raise ValueError("Image size '{}' differs from previous image size '{}'".format(image_size, self.image_size))
+
+        # apply correct color mode
+        if self.color:
+            image = dito.core.as_color(image=image)
+        else:
+            image = dito.core.as_gray(image=image)
+
+        self.writer.write(image=image)
+        self.frame_count += 1
+
+    def save(self):
+        """
+        This finishes the video.
+
+        If `VideoSaver` is used via context manager, this is called automatically. Otherwise, it must be called
+        manually.
+        """
+        if self.writer is not None:
+            self.writer.release()
+
+    def file_exists(self):
+        return os.path.exists(path=self.filename)
+
+    def get_file_size(self):
+        return os.path.getsize(filename=self.filename)
+
+    def print_summary(self):
+        if self.file_exists():
+            print("Saved {} frame(s) to '{}', file size is {}".format(self.frame_count, self.filename, dito.utils.human_bytes(byte_count=self.get_file_size())))
