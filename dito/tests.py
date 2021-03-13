@@ -286,7 +286,7 @@ class human_bytes_Tests(TestCase):
             self.assertEqual(result, expected_result)
 
 
-class MultiShow_Tests(TestCase):
+class MultiShow_Tests(TempDirTestCase):
     def get_random_image(self):
         return dito.random_image(size=(256, 128))
 
@@ -328,6 +328,22 @@ class MultiShow_Tests(TestCase):
         image = dito.as_gray(self.get_random_image())
         mshow.show(image=image, scale=2.0, colormap="jet", hide=True)
         self.assertEqual((image.shape[0] * 2, image.shape[1] * 2, 3), mshow.images[0].shape)
+
+    def test_MultiShow_save(self):
+        mshow = dito.MultiShow(save_dir=self.temp_dir.name)
+
+        image_count = 3
+        images = []
+        for n_image in range(image_count):
+            image = self.get_random_image()
+            images.append(image.copy())
+            mshow.show(image=image, scale=1.0, hide=True)
+
+        mshow.save_all()
+        for n_image in range(image_count):
+            filename = os.path.join(mshow.save_dir, "{:>08d}.png".format(n_image + 1))
+            image_loaded = dito.load(filename=filename)
+            self.assertEqualImages(image_loaded, images[n_image])
 
 
 class normalize_Tests(TestCase):

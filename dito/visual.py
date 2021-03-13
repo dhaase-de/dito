@@ -1,8 +1,12 @@
+import os.path
+
 import cv2
 import numpy as np
 
 import dito.core
 import dito.data
+import dito.io
+import dito.utils
 
 
 def get_colormap(name):
@@ -372,12 +376,23 @@ class MultiShow():
 
     It keeps all images that have been shown and can re-show them interactively.
     """
-    def __init__(self, window_name="dito.MultiShow", close_window=False):
+    def __init__(self, window_name="dito.MultiShow", close_window=False, save_dir=None):
         self.window_name = window_name
         self.close_window = close_window
+        self.save_dir = save_dir
         self.engine = "cv2"
-
         self.images = []
+
+    def save(self, n_image):
+        if self.save_dir is None:
+            self.save_dir = dito.utils.get_temp_dir(prefix="dito.MultiShow.{}.".format(dito.utils.now_str())).name
+        filename = os.path.join(self.save_dir, "{:>08d}.png".format(n_image + 1))
+        dito.io.save(filename=filename, image=self.images[n_image])
+        print("Saved image {}/{} to file '{}'".format(n_image + 1, len(self.images), filename))
+
+    def save_all(self):
+        for n_image in range(len(self.images)):
+            self.save(n_image=n_image)
 
     def _show(self, image, wait):
         """
@@ -436,6 +451,12 @@ class MultiShow():
             elif key in (ord(" "),):
                 # toggle overlay
                 show_overlay = not show_overlay
+            elif key in (ord("s"),):
+                # save current image
+                self.save(n_image=n_image)
+            elif key in (ord("a"),):
+                # save all images
+                self.save_all()
             elif key in qkeys():
                 # quit
                 break
