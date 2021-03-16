@@ -7,21 +7,6 @@ import numpy as np
 import dito.utils
 
 
-class CachedImageLoader():
-    def __init__(self, max_count=128):
-        # decorate here, because maxsize can be specified by the user
-        self.load = functools.lru_cache(maxsize=max_count, typed=True)(self.load)
-
-    def load(self, filename, color=None):
-        return load(filename=filename, color=color)
-
-    def get_cache_info(self):
-        return self.load.cache_info()
-
-    def clear_cache(self):
-        self.load.cache_clear()
-
-
 def load(filename, color=None):
     """
     Load image from file given by `filename` and return NumPy array.
@@ -126,6 +111,21 @@ def encode(image, extension="png", params=None):
     (_, array) = cv2.imencode(ext=extension, img=image, params=params)
 
     return array.tobytes()
+
+
+class CachedImageLoader():
+    def __init__(self, max_count=128):
+        # decorate here, because maxsize can be specified by the user
+        self.load = functools.lru_cache(maxsize=max_count, typed=True)(self.load)
+
+    def load(self, filename, color=None):
+        return load(filename=filename, color=color)
+
+    def get_cache_info(self):
+        return self.load.cache_info()
+
+    def clear_cache(self):
+        self.load.cache_clear()
 
 
 class VideoSaver():
