@@ -47,7 +47,7 @@ def is_colormap(colormap):
 
 def colorize(image, colormap):
     """
-    Colorize the `image` using the colormap identified by `colormap_name`.
+    Colorize the `image` using the specified `colormap`.
     """
     if isinstance(colormap, str):
         return cv2.applyColorMap(src=image, userColor=get_colormap(name=colormap))
