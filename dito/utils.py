@@ -4,6 +4,17 @@ import errno
 import os
 import tempfile
 
+import cv2
+
+
+####
+#%%% OpenCV-related
+####
+
+
+def cv2_version():
+    return tuple(int(value) for value in cv2.__version__.split("."))
+
 
 ####
 #%%% file-related

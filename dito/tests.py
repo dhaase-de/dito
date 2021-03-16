@@ -161,6 +161,15 @@ class convert_Tests(TestCase):
         self.assertAlmostEqual(np.max(image_clipped), 1.0)
 
 
+class cv_version_Tests(TestCase):
+    def test_cv2_version(self):
+        version = dito.cv2_version()
+        self.assertIsInstance(version, tuple)
+        self.assertEqual(len(version), 3)
+        for number in version:
+            self.assertIsInstance(number, int)
+
+
 class dtype_common_Test(TestCase):
     def test_dtype_common_cases(self):
         cases = [
