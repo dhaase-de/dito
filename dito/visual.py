@@ -50,11 +50,19 @@ def colorize(image, colormap):
     Colorize the `image` using the specified `colormap`.
     """
     if isinstance(colormap, str):
-        return cv2.applyColorMap(src=image, userColor=get_colormap(name=colormap))
+        # get colormap by name
+        colormap = get_colormap(name=colormap)
     elif is_colormap(colormap=colormap):
-        return cv2.applyColorMap(src=image, userColor=colormap)
+        # argument is already a colormap
+        pass
     else:
         raise TypeError("Argument `colormap` must either be a string (the colormap name) or a valid colormap.")
+
+    # cv2.applyColorMap(src=image, userColor=colormap) only works for OpenCV>=3.3.0
+    # (below that version, only internal OpenCV colormaps are supported)
+    # thus, we use cv2.LUT
+    image = dito.core.as_color(image=dito.core.as_gray(image=image))
+    return cv2.LUT(src=image, lut=colormap)
 
 
 ####

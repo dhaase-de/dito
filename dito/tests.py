@@ -1,6 +1,7 @@
 import os.path
 import unittest
 
+import cv2
 import numpy as np
 
 import dito
@@ -115,6 +116,17 @@ class colorize_Tests(TestCase):
         self.assertTrue(dito.is_gray(image=image))
         image_colorized = dito.colorize(image=image, colormap="jet")
         self.assertTrue(dito.is_color(image=image_colorized))
+
+    def test_colorize_identical_to_applyColormap(self):
+        images = [
+            dito.xslope(height=32, width=256),
+            dito.pm5544(),
+            dito.random_image(size=(128, 128), color=True),
+        ]
+        for image in images:
+            image_colorized_dito = dito.colorize(image=image, colormap="jet")
+            image_colorized_applyColormap = cv2.applyColorMap(src=image, colormap=cv2.COLORMAP_JET)
+            self.assertEqualImages(image_colorized_dito, image_colorized_applyColormap)
 
 
 class convert_Tests(TestCase):
