@@ -25,6 +25,12 @@ jobs:
             python-version: '3.8'
           - numpy-version: '==1.13.3'
             python-version: '3.9'
+          - opencv-version: '>=3.2.0,<3.3.0'
+            python-version: '3.7'
+          - opencv-version: '>=3.2.0,<3.3.0'
+            python-version: '3.8'
+          - opencv-version: '>=3.2.0,<3.3.0'
+            python-version: '3.9'
     
     runs-on: ${{ matrix.os }}
     
