@@ -26,13 +26,13 @@ def info(image):
     return result
 
 
-def pinfo(image):
+def pinfo(image, **kwargs):
     """
     Prints info about the given image.
     """
     
     result = info(image=image)
-    dito.utils.ptable(rows=result.items())
+    dito.utils.ptable(rows=result.items(), **kwargs)
 
 
 def hist(image, bin_count=256):

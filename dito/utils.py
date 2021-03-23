@@ -158,9 +158,9 @@ def ftable(rows):
     return "\n".join(lines)
     
 
-def ptable(rows):
+def ptable(rows, **kwargs):
     """
     Print the data specified in `rows` as table.
     """
     
-    print(ftable(rows=rows))
+    print(ftable(rows=rows), **kwargs)
