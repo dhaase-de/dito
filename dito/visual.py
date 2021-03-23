@@ -1,4 +1,5 @@
 import os.path
+import time
 
 import cv2
 import numpy as np
@@ -383,6 +384,36 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
         image_show_bytes.write(image_show_encoded)
         IPython.display.display(IPython.display.Image(data=image_show_bytes.getvalue()))
         key = -1
+
+    elif engine in ("pygame",):
+        import io
+        import pygame
+
+        # convert NumPy array of image to pygame surface
+        image_show = dito.core.as_color(image=image_show)
+        image_pygame = pygame.image.frombuffer(image_show.tobytes(), dito.size(image_show), "BGR")
+
+        # set up pygame window
+        display_surface = pygame.display.set_mode(dito.core.size(image=image_show))
+        display_surface.fill((0, 0, 0))
+
+        # draw image
+        display_surface.blit(image_pygame, (0, 0))
+        pygame.display.set_caption(window_name)
+        pygame.display.flip()
+
+        # wait for input
+        time_start = time.time()
+        while True:
+            for event in pygame.event.get():
+                # return key code if key was pressed
+                if event.type == pygame.KEYDOWN:
+                    return event.key
+
+            # if waited longer than 'wait' milliseconds, return -1 (this is equivalent to OpenCV's behavior)
+            waited_ms = 1000.0 * (time.time() - time_start)
+            if waited_ms > wait:
+                return -1
 
     else:
         raise RuntimeError("Unsupported engine '{}'".format(engine))
