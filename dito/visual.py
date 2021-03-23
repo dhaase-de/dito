@@ -366,6 +366,13 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
             if close_window:
                 cv2.destroyWindow(window_name)
 
+    elif engine in ("plt", "matplotlib"):
+        import matplotlib.pyplot as plt
+        plt.imshow(X=dito.core.flip_channels(image=image_show))
+        plt.tight_layout()
+        plt.show()
+        key = -1
+
     elif engine == "ipython":
         # source: https://gist.github.com/uduse/e3122b708a8871dfe9643908e6ef5c54
         import io
@@ -389,11 +396,11 @@ class MultiShow():
 
     It keeps all images that have been shown and can re-show them interactively.
     """
-    def __init__(self, window_name="dito.MultiShow", close_window=False, save_dir=None):
+    def __init__(self, window_name="dito.MultiShow", close_window=False, engine="cv2", save_dir=None):
         self.window_name = window_name
         self.close_window = close_window
+        self.engine = engine
         self.save_dir = save_dir
-        self.engine = "cv2"
         self.images = []
 
     def save(self, n_image, verbose=True):
@@ -408,11 +415,11 @@ class MultiShow():
         for n_image in range(len(self.images)):
             self.save(n_image=n_image, **kwargs)
 
-    def _show(self, image, wait):
+    def _show(self, image, wait, engine):
         """
         Internal method used to actually show an image on the screen.
         """
-        return show(image=image, wait=wait, scale=1.0, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name=self.window_name, close_window=self.close_window, engine=self.engine)
+        return show(image=image, wait=wait, scale=1.0, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name=self.window_name, close_window=self.close_window, engine=engine)
 
     def show(self, image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, keep=True, hide=False):
         """
@@ -423,7 +430,7 @@ class MultiShow():
         if keep:
             self.images.append(image_show)
         if not hide:
-            return self._show(image=image_show, wait=wait)
+            return self._show(image=image_show, wait=wait, engine=self.engine)
         else:
             return -1
 
@@ -431,7 +438,7 @@ class MultiShow():
         """
         Re-show specific image.
         """
-        return self._show(image=self.images[n_image], wait=wait)
+        return self._show(image=self.images[n_image], wait=wait, engine=self.engine)
 
     def reshow_interactive(self):
         """
@@ -452,8 +459,8 @@ class MultiShow():
             if show_overlay:
                 image = text(image=image, message="{}/{}".format(n_image + 1, image_count), scale=0.5)
 
-            # show image
-            key = self._show(image=image, wait=0)
+            # show image (we need "cv2" as engine, to capture the keyboard inputs)
+            key = self._show(image=image, wait=0, engine="cv2")
 
             # handle keys
             if key in (ord("+"),):
