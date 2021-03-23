@@ -451,6 +451,19 @@ class now_str_Tests(TestCase):
             self.assertGreater(len(result_microtime), case["expected_length"])
 
 
+class pinfo_Tests(TempDirTestCase):
+    def test_pinfo_file(self):
+        image = dito.pm5544()
+        info_filename = os.path.join(self.temp_dir.name, "pinfo.txt")
+        with open(info_filename, "w") as f:
+            dito.pinfo(image=image, file=f)
+
+        self.assertTrue(os.path.exists(info_filename))
+        with open(info_filename, "r") as f:
+            lines = f.readlines()
+        self.assertEqual(len(lines), 12)
+
+
 class random_image_Tests(TestCase):
     def test_random_image_color(self):
         image_size = (256, 128)
@@ -535,20 +548,34 @@ class text_Tests(TestCase):
 
 class VideoSaver_Tests(TempDirTestCase):
     def test_VideoSaver_random_video(self):
-        filename = os.path.join(self.temp_dir.name, "VideoSaver.avi")
+        # video settings
         codec = "MJPG"
         fps = 12.0
         image_size = (320, 240)
         frame_count = int(1.0 * fps)
         min_file_size = 250000
 
+        filename = os.path.join(self.temp_dir.name, "VideoSaver.avi")
         with dito.VideoSaver(filename=filename, codec=codec, fps=fps) as saver:
+            # save video
             for n_frame in range(frame_count):
                 image = dito.random_image(size=image_size, color=True)
                 saver.append(image=image)
 
+            # save summary
+            summary_filename = os.path.join(self.temp_dir.name, "VideoSaver_summary.txt")
+            with open(summary_filename, "w") as f:
+                saver.print_summary(file=f)
+
+        # check video file
         self.assertTrue(saver.file_exists())
         self.assertGreaterEqual(saver.get_file_size(), min_file_size)
+
+        # check summary file
+        self.assertTrue(os.path.exists(summary_filename))
+        with open(summary_filename, "r") as f:
+            lines = f.readlines()
+        self.assertEqual(len(lines), 11)
 
     def test_VideoSaver_raise_on_invalid_size(self):
         filename = os.path.join(self.temp_dir.name, "VideoSaver.avi")
