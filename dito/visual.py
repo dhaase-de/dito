@@ -402,6 +402,9 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
         pygame.display.set_caption(window_name)
         pygame.display.flip()
 
+        # emulate same behavior as OpenCV when keeping keys pressed
+        pygame.key.set_repeat(500, 10)
+
         # wait for input
         time_start = time.time()
         while True:
