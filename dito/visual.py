@@ -411,9 +411,10 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
                     return event.key
 
             # if waited longer than 'wait' milliseconds, return -1 (this is equivalent to OpenCV's behavior)
-            waited_ms = 1000.0 * (time.time() - time_start)
-            if waited_ms > wait:
-                return -1
+            if wait > 0:
+                waited_ms = 1000.0 * (time.time() - time_start)
+                if waited_ms > wait:
+                    return -1
 
     else:
         raise RuntimeError("Unsupported engine '{}'".format(engine))
