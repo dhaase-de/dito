@@ -358,7 +358,7 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
         engine = "cv2"
 
     # show
-    if engine == "cv2":
+    if engine in ("cv2",):
         try:
             cv2.imshow(window_name, image_show)
             key = cv2.waitKey(wait)
@@ -366,22 +366,22 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
             if close_window:
                 cv2.destroyWindow(window_name)
 
-    elif engine in ("plt", "matplotlib"):
+    elif engine in ("matplotlib", "plt"):
         import matplotlib.pyplot as plt
         plt.imshow(X=dito.core.flip_channels(image=image_show))
         plt.tight_layout()
         plt.show()
         key = -1
 
-    elif engine == "ipython":
+    elif engine in ("ipython", "jupyter"):
         # source: https://gist.github.com/uduse/e3122b708a8871dfe9643908e6ef5c54
         import io
         import IPython.display
-        import PIL.Image
-        f = io.BytesIO()
-        # TODO: this just encodes the image array as PNG bytes - we don't need PIL for that -> remove PIL
-        PIL.Image.fromarray(image).save(f, "png")
-        IPython.display.display(IPython.display.Image(data=f.getvalue()))
+
+        image_show_encoded = dito.io.encode(image=image_show, extension="png")
+        image_show_bytes = io.BytesIO()
+        image_show_bytes.write(image_show_encoded)
+        IPython.display.display(IPython.display.Image(data=image_show_bytes.getvalue()))
         key = -1
 
     else:
