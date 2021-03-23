@@ -360,7 +360,7 @@ class MultiShow_Tests(TempDirTestCase):
             images.append(image.copy())
             mshow.show(image=image, scale=1.0, hide=True)
 
-        mshow.save_all()
+        mshow.save_all(verbose=False)
         for n_image in range(image_count):
             filename = os.path.join(mshow.save_dir, "{:>08d}.png".format(n_image + 1))
             image_loaded = dito.load(filename=filename)

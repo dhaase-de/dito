@@ -396,16 +396,17 @@ class MultiShow():
         self.engine = "cv2"
         self.images = []
 
-    def save(self, n_image):
+    def save(self, n_image, verbose=True):
         if self.save_dir is None:
             self.save_dir = dito.utils.get_temp_dir(prefix="dito.MultiShow.{}.".format(dito.utils.now_str())).name
         filename = os.path.join(self.save_dir, "{:>08d}.png".format(n_image + 1))
         dito.io.save(filename=filename, image=self.images[n_image])
-        print("Saved image {}/{} to file '{}'".format(n_image + 1, len(self.images), filename))
+        if verbose:
+            print("Saved image {}/{} to file '{}'".format(n_image + 1, len(self.images), filename))
 
-    def save_all(self):
+    def save_all(self, **kwargs):
         for n_image in range(len(self.images)):
-            self.save(n_image=n_image)
+            self.save(n_image=n_image, **kwargs)
 
     def _show(self, image, wait):
         """
