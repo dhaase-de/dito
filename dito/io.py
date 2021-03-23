@@ -1,5 +1,6 @@
 import functools
 import os.path
+import time
 
 import cv2
 import numpy as np
@@ -214,5 +215,17 @@ class VideoSaver():
         return os.path.getsize(filename=self.filename)
 
     def print_summary(self):
-        if self.file_exists():
-            print("Saved {} frame(s) to '{}', file size is {}".format(self.frame_count, self.filename, dito.utils.human_bytes(byte_count=self.get_file_size())))
+        file_exists = self.file_exists()
+        rows = [
+            ["Output", ""],
+
+            ["..Filename", self.filename],
+            ["..Exists", file_exists],
+            ["..Size", dito.utils.human_bytes(byte_count=self.get_file_size()) if file_exists else "n/a"],
+            ["..Modified", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(filename=self.filename))) if file_exists else "n/a"],
+            ["Frames", ""],
+            ["..Size", self.image_size],
+            ["..Color", self.color],
+            ["..Count", self.frame_count],
+        ]
+        dito.utils.ptable(rows=rows)
