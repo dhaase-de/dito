@@ -218,6 +218,7 @@ class VideoSaver():
         file_exists = self.file_exists()
         rows = [
             ["Output", ""],
+            ["..Codec", self.codec],
             ["..Filename", self.filename],
             ["..Exists", file_exists],
             ["..Size", dito.utils.human_bytes(byte_count=self.get_file_size()) if file_exists else "n/a"],

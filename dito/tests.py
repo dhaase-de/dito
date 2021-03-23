@@ -575,7 +575,7 @@ class VideoSaver_Tests(TempDirTestCase):
         self.assertTrue(os.path.exists(summary_filename))
         with open(summary_filename, "r") as f:
             lines = f.readlines()
-        self.assertEqual(len(lines), 11)
+        self.assertEqual(len(lines), 12)
 
     def test_VideoSaver_raise_on_invalid_size(self):
         filename = os.path.join(self.temp_dir.name, "VideoSaver.avi")
