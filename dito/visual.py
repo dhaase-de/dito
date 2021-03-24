@@ -367,6 +367,7 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
     elif engine in ("matplotlib", "plt"):
         import matplotlib.pyplot as plt
         plt.imshow(X=dito.core.flip_channels(image=image_show))
+        plt.axis("off")
         plt.tight_layout()
         plt.show()
         key = -1
