@@ -276,8 +276,6 @@ def get_screenres(fallback=(1920, 1080)):
     See http://stackoverflow.com/a/3949983 for info.
     """
 
-
-
     try:
         import tkinter as tk
     except ImportError:
@@ -393,12 +391,14 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
         image_pygame = pygame.image.frombuffer(image_show.tobytes(), dito.size(image_show), "BGR")
 
         # set up pygame window
-        display_surface = pygame.display.set_mode(dito.core.size(image=image_show))
-        display_surface.fill((0, 0, 0))
+        pygame.display.set_caption(window_name)
+        image_icon = pygame.image.frombuffer(dito.core.resize(image=image_show, scale_or_size=(32, 32), interpolation_down=cv2.INTER_NEAREST).tobytes(), (32, 32), "BGR")
+        pygame.display.set_icon(image_icon)
 
         # draw image
+        display_surface = pygame.display.set_mode(dito.core.size(image=image_show))
+        display_surface.fill((0, 0, 0))
         display_surface.blit(image_pygame, (0, 0))
-        pygame.display.set_caption(window_name)
         pygame.display.flip()
 
         # emulate same behavior as OpenCV when keeping keys pressed
