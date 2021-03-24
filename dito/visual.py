@@ -1,5 +1,4 @@
 import os.path
-import time
 
 import cv2
 import numpy as np
@@ -406,18 +405,21 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
         pygame.key.set_repeat(500, 10)
 
         # wait for input
-        time_start = time.time()
         while True:
+            # wait after showing the image
+            if wait > 0:
+                pygame.time.wait(wait)
+            else:
+                pygame.time.wait(10)
+
+            # return key code if key was pressed during the wait phase
             for event in pygame.event.get():
-                # return key code if key was pressed
                 if event.type == pygame.KEYDOWN:
                     return event.key
 
-            # if waited longer than 'wait' milliseconds, return -1 (this is equivalent to OpenCV's behavior)
+            # if no key was pressed and wait > 0, return -1 (this is equivalent to OpenCV's behavior)
             if wait > 0:
-                waited_ms = 1000.0 * (time.time() - time_start)
-                if waited_ms > wait:
-                    return -1
+                return -1
 
     else:
         raise RuntimeError("Unsupported engine '{}'".format(engine))
