@@ -130,7 +130,7 @@ def size(image):
     return (image.shape[1], image.shape[0])
 
 
-def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolation_up=cv2.INTER_CUBIC):
+def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolation_up=cv2.INTER_NEAREST):
     if isinstance(scale_or_size, float):
         scale = scale_or_size
         return cv2.resize(src=image, dsize=None, dst=None, fx=scale, fy=scale, interpolation=interpolation_up if scale > 1.0 else interpolation_down)
