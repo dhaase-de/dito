@@ -62,6 +62,8 @@ setup(
     packages=[package_name],
     package_data={package_name: [
         "resources/colormaps/*.png",
+        "resources/fonts/*/LICENSE.txt",
+        "resources/fonts/tamzen/*.png",
         "resources/images/*.png",
     ]},
     scripts=["bin/dito_images_to_video.py"],

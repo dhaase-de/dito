@@ -5,12 +5,23 @@ import numpy as np
 import dito.io
 
 
+####
+#%%% resource filenames
+####
+
+
 RESOURCES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources")
 RESOURCES_FILENAMES = {
-    "image:PM5544": os.path.join(RESOURCES_DIR, "images", "PM5544.png"),
     "colormap:plot": os.path.join(RESOURCES_DIR, "colormaps", "plot.png"),
-}
 
+    "font:tamzen-9": os.path.join(RESOURCES_DIR, "fonts", "tamzen", "Tamzen5x9_lh4rb.png"),
+    "font:tamzen-12": os.path.join(RESOURCES_DIR, "fonts", "tamzen", "Tamzen6x12_lh4rb.png"),
+    "font:tamzen-14": os.path.join(RESOURCES_DIR, "fonts", "tamzen", "Tamzen7x14_lh4rb.png"),
+    "font:tamzen-16": os.path.join(RESOURCES_DIR, "fonts", "tamzen", "Tamzen8x16_lh4rb.png"),
+    "font:tamzen-20": os.path.join(RESOURCES_DIR, "fonts", "tamzen", "Tamzen10x20_lh4rb.png"),
+
+    "image:PM5544": os.path.join(RESOURCES_DIR, "images", "PM5544.png"),
+}
 
 ####
 #%%% real images
