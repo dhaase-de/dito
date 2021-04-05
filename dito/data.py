@@ -14,6 +14,16 @@ RESOURCES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resour
 RESOURCES_FILENAMES = {
     "colormap:plot": os.path.join(RESOURCES_DIR, "colormaps", "plot.png"),
 
+    "font:source-10": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "10_lh4rb.png"),
+    "font:source-15": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "15_lh4rb.png"),
+    "font:source-20": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "20_lh4rb.png"),
+    "font:source-25": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "25_lh4rb.png"),
+    "font:source-30": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "30_lh4rb.png"),
+    "font:source-35": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "35_lh4rb.png"),
+    "font:source-40": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "40_lh4rb.png"),
+    "font:source-50": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "50_lh4rb.png"),
+    "font:source-70": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "70_lh4rb.png"),
+
     "font:tamzen-9": os.path.join(RESOURCES_DIR, "fonts", "tamzen", "Tamzen5x9_lh4rb.png"),
     "font:tamzen-12": os.path.join(RESOURCES_DIR, "fonts", "tamzen", "Tamzen6x12_lh4rb.png"),
     "font:tamzen-14": os.path.join(RESOURCES_DIR, "fonts", "tamzen", "Tamzen7x14_lh4rb.png"),

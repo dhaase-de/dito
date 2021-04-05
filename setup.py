@@ -63,6 +63,7 @@ setup(
     package_data={package_name: [
         "resources/colormaps/*.png",
         "resources/fonts/*/LICENSE.txt",
+        "resources/fonts/source_code_pro/*.png",
         "resources/fonts/tamzen/*.png",
         "resources/fonts/terminus/*.png",
         "resources/images/*.png",
