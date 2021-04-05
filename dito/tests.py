@@ -90,6 +90,32 @@ class CachedImageLoader_Test(TempDirTestCase):
         self.assertRaises(FileNotFoundError, lambda: loader.load(filename=filename))
 
 
+class as_channel_Tests(TestCase):
+    def test_as_channels_raise_on_none(self):
+        self.assertRaises(ValueError, lambda: dito.as_channels(b=None, g=None, r=None))
+
+    def test_as_channels_raise_on_color(self):
+        image = dito.pm5544()
+        self.assertRaises(ValueError, lambda: dito.as_channels(b=image, g=None, r=None))
+
+    def test_as_channels_single(self):
+        image = dito.pm5544()
+        image_b = dito.as_gray(image=image)
+        image_rgb = dito.as_channels(b=image_b, g=None, r=None)
+        self.assertEqualImageContainers(dito.as_color(image=image_b), image_rgb)
+        self.assertEqualImages(image_b, image_rgb[:, :, 0])
+        self.assertEqual(np.sum(image_rgb[:, :, 1]), 0)
+        self.assertEqual(np.sum(image_rgb[:, :, 2]), 0)
+
+    def test_as_channels_all(self):
+        image = dito.pm5544()
+        image_b = image[:, :, 0]
+        image_g = image[:, :, 1]
+        image_r = image[:, :, 2]
+        image_rgb = dito.as_channels(b=image_b, g=image_g, r=image_r)
+        self.assertEqualImages(image, image_rgb)
+
+
 class clip_Tests(TestCase):
     def test_clip_01(self):
         image = np.array([[-2.0, -1.0, 0.0, 1.0, 2.0]], dtype=np.float32)

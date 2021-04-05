@@ -198,6 +198,33 @@ def flip_channels(image):
     return cv2.cvtColor(src=image, code=cv2.COLOR_BGR2RGB)
 
 
+def as_channels(b=None, g=None, r=None):
+    """
+    Merge up to three gray scale images into one color image.
+    """
+    # check arguments
+    if (b is None) and (g is None) and (r is None):
+        raise ValueError("At least for one channel an image must be given")
+
+    # get the first non-`None` image (needed to determine the shape and dtype below)
+    for channel_image in (b, g, r):
+        if channel_image is not None:
+            channel_image_zero = 0 * channel_image
+            break
+
+    channel_images = []
+    for channel_image in (b, g, r):
+        if channel_image is not None:
+            if not is_gray(image=channel_image):
+                raise ValueError("At least one of the given images is not a gray scale image")
+            channel_images.append(channel_image)
+        else:
+            channel_images.append(channel_image_zero)
+
+    return cv2.merge(mv=channel_images)
+
+
+
 ####
 #%%% value-related
 ####
