@@ -571,6 +571,17 @@ class text_Tests(TestCase):
         dito.text(image=image, message="Hello World", position=(0.5, 0.5), anchor="cc")
         self.assertEqualImages(image, image_copy)
 
+    def test_text_output_different(self):
+        image = dito.pm5544()
+        text_image = dito.text(image=image, message="Hello World", position=(0.5, 0.5), anchor="cc")
+        self.assertEqualImageContainers(image, text_image)
+        self.assertFalse(np.all(image == text_image))
+
+    def test_text_opacity_0(self):
+        image = dito.pm5544()
+        text_image = dito.text(image=image, message="Hello World", position=(0.5, 0.5), anchor="cc", opacity=0.0)
+        self.assertEqualImages(image, text_image)
+
 
 class VideoSaver_Tests(TempDirTestCase):
     def test_VideoSaver_random_video(self):

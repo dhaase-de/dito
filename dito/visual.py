@@ -1,3 +1,5 @@
+import collections
+import math
 import os.path
 
 import cv2
@@ -168,7 +170,203 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
 ####
 
 
-def text(image, message, position=(0.0, 0.0), anchor="lt", font="sans", scale=1.0, thickness=1, padding_rel=1.0, inner_color=(255, 255, 255), outer_color=None, background_color=0, line_type=cv2.LINE_AA):
+class MonospaceBitmapFont():
+    def __init__(self, filename):
+        self.filename = filename
+        (self.char_width, self.char_height, self.char_images) = self.load_lh4rb(filename=self.filename)
+
+    @classmethod
+    def init_from_name(cls, name):
+        key = "font:{}".format(name)
+        try:
+            filename = dito.data.RESOURCES_FILENAMES[key]
+        except KeyError:
+            raise KeyError("Unknown font '{}'".format(name))
+        return cls(filename=filename)
+
+    @classmethod
+    def save_lh1rb(cls, filename, char_images_regular, char_images_bold):
+        """
+        Currently unused - just here for documentation purposes.
+        When used, the quantization should be fixed (see `save_lh4rb`).
+        """
+        chars = cls.get_iso_8859_1_chars()
+        char_count = len(chars)
+        chars_per_position = 4
+
+        position_count = math.ceil(char_count / chars_per_position)
+        position_images = []
+        for n_position in range(position_count):
+            position_image = char_images_regular[" "] * 0
+            for n_position_char in range(chars_per_position):
+                n_char = n_position * chars_per_position + n_position_char
+                if n_char < char_count:
+                    char = chars[n_char]
+                    position_image += (char_images_regular[char] // 255) << (7 - n_position_char * 2)
+                    position_image += (char_images_bold[char] // 255) << (6 - n_position_char * 2)
+            position_images.append(position_image)
+
+        out_image = stack([position_images])
+        dito.io.save(filename=filename, image=out_image)
+
+    @classmethod
+    def save_lh4rb(cls, filename, char_images_regular, char_images_bold):
+        """
+        Save the given character images in dito's own monospace bitmap font format ('lh4rb').
+
+        For a description of the format, see `load_lh4rb`.
+        This method is usually only called when adding new fonts to dito.
+        """
+        chars = cls.get_iso_8859_1_chars()
+        position_images = []
+        for char in chars:
+            position_image = (np.round(char_images_regular[char].astype(np.float32) / 17.0).astype(np.uint8) << 4) + np.round(char_images_bold[char].astype(np.float32) / 17.0).astype(np.uint8)
+            position_images.append(position_image)
+        out_image = stack([position_images])
+        dito.io.save(filename=filename, image=out_image)
+
+    @classmethod
+    def load_lh4rb(cls, filename):
+        """
+        Load the font from dito's own monospace bitmap font format ('lh4rb').
+
+        In principle, it is just a PNG image which contains all ISO-8859-1 (= Latin-1) characters in regular and
+        bold style, stacked horizontally. The regular and bold variants of each character are stacked on top of another,
+        each using a depth of four bit. This saves quite some space (especially when using a PNG optimizer).
+
+        Hence the name 'lh4rb' stands for:
+            l:  latin-1 (ISO-8859-1) character set
+            h:  characters are stacked horizontally
+            4:  each character style has a bit depth of four
+            rb: each character is available in a regular and bold style
+        """
+        chars = cls.get_iso_8859_1_chars()
+        char_count = len(chars)
+        chars_per_position = 1
+
+        image = dito.io.load(filename=filename, color=False)
+        char_height = image.shape[0]
+        char_width = (image.shape[1] * chars_per_position) // char_count
+
+        char_images = collections.OrderedDict()
+        for (n_char, char) in enumerate(chars):
+            n_position = n_char
+            position_image = image[:, (n_position * char_width):((n_position + 1) * char_width)]
+            char_images[char] = collections.OrderedDict()
+            char_images[char]["regular"] = ((0xF0 & position_image) >> 4) * 17
+            char_images[char]["bold"] = (0x0F & position_image) * 17
+
+        return (char_width, char_height, char_images)
+
+    @staticmethod
+    def get_iso_8859_1_codes():
+        return tuple(range(32, 127)) + tuple(range(160, 256))
+
+    @classmethod
+    def get_iso_8859_1_chars(cls):
+        codes = cls.get_iso_8859_1_codes()
+        return tuple(chr(code) for code in codes)
+
+    def get_char_image(self, char, style="regular"):
+        return self.char_images.get(char, self.char_images["?"]).get(style, "regular")
+
+    def render_mask(self, message, style="regular", scale=None):
+        lines = message.split("\n")
+        line_count = len(lines)
+
+        max_character_count = 0
+        for line in lines:
+            max_character_count = max(max_character_count, len(line))
+
+        image = np.zeros(shape=(line_count * self.char_height, max_character_count * self.char_width), dtype=np.uint8)
+
+        for (n_row, line) in enumerate(lines):
+            row_offset = n_row * self.char_height
+
+            for (n_col, char) in enumerate(line):
+                col_offset = n_col * self.char_width
+
+                char_image = self.get_char_image(char=char, style=style)
+                image[row_offset:(row_offset + self.char_height), col_offset:(col_offset + self.char_width)] = char_image
+
+        # rescale image if requested
+        if scale is not None:
+            image = dito.core.resize(image=image, scale_or_size=scale, interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_AREA)
+
+        # convert uint8 image to [0, 1]-float mask
+        mask = dito.core.convert(image=image, dtype=np.float32)
+
+        return mask
+
+    @staticmethod
+    def place_rendered_image(target_image, rendered_image, position=(0.0, 0.0), anchor="lt", color=(255, 255, 255), background_color=(40, 40, 40), opacity=1.0):
+        # base offset (based on given position)
+        offset = np.array([
+            position[0] * target_image.shape[1],
+            position[1] * (target_image.shape[0]),
+        ])
+
+        # adjust offset based on the specified anchor type
+        if not (isinstance(anchor, str) and (len(anchor) == 2) and (anchor[0] in ("l", "c", "r")) and (anchor[1] in ("t", "c", "b"))):
+            raise ValueError("Argument 'anchor' must be a string of length two (pattern: '[lcr][tcb]') , but is '{}'".format(anchor))
+        (anchor_h, anchor_v) = anchor
+        if anchor_h == "l":
+            pass
+        elif anchor_h == "c":
+            offset[0] -= rendered_image.shape[1] * 0.5
+        elif anchor_h == "r":
+            offset[0] -= rendered_image.shape[1]
+        if anchor_v == "t":
+            pass
+        elif anchor_v == "c":
+            offset[1] -= rendered_image.shape[0] * 0.5
+        elif anchor_v == "b":
+            offset[1] -= rendered_image.shape[0]
+
+        # convert offset to integers
+        offset = dito.core.tir(*offset)
+
+        # ensure that the target image has a channel axis
+        target_image = target_image.copy()
+        if dito.core.is_gray(image=target_image):
+            target_image.shape += (1,)
+        channel_count = target_image.shape[2]
+
+        # extract target region
+        target_indices = (
+            slice(max(0, offset[1]), min(target_image.shape[0], offset[1] + rendered_image.shape[0])),
+            slice(max(0, offset[0]), min(target_image.shape[1], offset[0] + rendered_image.shape[1])),
+        )
+        target_region = target_image[target_indices + (Ellipsis,)]
+
+        # fill target region with the background color, if given
+        if background_color is not None:
+            for n_channel in range(channel_count):
+                target_region[:, :, n_channel] = opacity * background_color[n_channel] + (1.0 - opacity) * target_region[:, :, n_channel]
+
+        # apply opacity to the rendered image
+        rendered_image = rendered_image * opacity
+
+        # cut out the matching part of the rendered image
+        rendered_offset = (max(0, -offset[0]), max(0, -offset[1]))
+        rendered_indices = (
+            slice(rendered_offset[1], rendered_offset[1] + target_region.shape[0]),
+            slice(rendered_offset[0], rendered_offset[0] + target_region.shape[1]),
+        )
+        rendered_region = rendered_image[rendered_indices]
+
+        # insert rendered image into the target image
+        for n_channel in range(channel_count):
+            target_image[target_indices + (n_channel,)] = rendered_image[rendered_indices] * color[n_channel] + (1.0 - rendered_image[rendered_indices]) * target_region[:, :, n_channel]
+
+        # remove channel axis for gray scale images
+        if (len(target_image.shape) == 3) and (target_image.shape[2] == 1):
+            target_image = target_image[:, :, 0]
+
+        return target_image
+
+
+def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(255, 255, 255), background_color=(40, 40, 40), opacity=1.0, scale=None):
     """
     Draws the text `message` into the given `image`.
 
@@ -180,91 +378,33 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="sans", scale=1.
     baseline height.
     """
 
-    # keep input image unchanged
-    image = image.copy()
+    if isinstance(font, str):
+        # font is given as name -> resolve
+        font = MonospaceBitmapFont.init_from_name(name=font)
+    elif not isinstance(font, MonospaceBitmapFont):
+        raise TypeError("Argument 'font' must be either an instance of 'MonospaceBitmapFont' or a string (the name of the font)")
 
-    # font
-    if font == "sans":
-        font_face = cv2.FONT_HERSHEY_DUPLEX
-    elif font == "serif":
-        font_face = cv2.FONT_HERSHEY_TRIPLEX
-    else:
-        raise ValueError("Invalid font '{}'".format(font))
-    font_scale = scale
-    font_thickness = thickness
-
-    # calculate width and height of the text
-    ((text_width, text_height), baseline) = cv2.getTextSize(
-        text=message,
-        fontFace=font_face,
-        fontScale=font_scale,
-        thickness=font_thickness,
+    # render text
+    rendered_mask = font.render_mask(
+        message=message,
+        style=style,
+        scale=scale,
     )
 
-    # base offset derived from the specified position
-    offset = np.array([
-        position[0] * image.shape[1],
-        position[1] * (image.shape[0] - baseline),
-    ])
-
-    # adjust offset based on the specified anchor type
-    if not (isinstance(anchor, str) and (len(anchor) == 2) and (anchor[0] in ("l", "c", "r")) and (anchor[1] in ("t", "c", "b"))):
-        raise ValueError("Argument 'anchor' must be a string of length two (pattern: '[lcr][tcb]') , but is '{}'".format(anchor))
-    (anchor_h, anchor_v) = anchor
-    if anchor_h == "l":
-        pass
-    elif anchor_h == "c":
-        offset[0] -= text_width * 0.5
-    elif anchor_h == "r":
-        offset[0] -= text_width
-    if anchor_v == "t":
-        offset[1] += text_height
-    elif anchor_v == "c":
-        offset[1] += text_height * 0.5
-    elif anchor_v == "b":
-        pass
-
-    # finalize offset
-    offset = dito.core.tir(*offset)
-
-    # add padding to offset
-    padding_abs = round(padding_rel * baseline)
-
-    # draw background rectangle
-    if background_color is not None:
-        # TODO: allow actual BGR color, not just one intensity value (use cv2.rectangle for drawing)
-        image[max(0, offset[1] - text_height - padding_abs):min(image.shape[0], offset[1] + max(baseline, padding_abs)), max(0, offset[0] - padding_abs):min(image.shape[1], offset[0] + text_width + padding_abs), ...] = background_color
-
-    # draw text
-    if outer_color is not None:
-        cv2.putText(
-            img=image,
-            text=message,
-            org=offset,
-            fontFace=font_face,
-            fontScale=font_scale,
-            color=outer_color,
-            thickness=font_thickness + 2,
-            lineType=line_type,
-            bottomLeftOrigin=False,
-        )
-    cv2.putText(
-        img=image,
-        text=message,
-        org=offset,
-        fontFace=font_face,
-        fontScale=font_scale,
-        color=inner_color,
-        thickness=font_thickness,
-        lineType=line_type,
-        bottomLeftOrigin=False,
+    # place rendered text in image
+    return font.place_rendered_image(
+        target_image=image,
+        rendered_image=rendered_mask,
+        position=position,
+        anchor=anchor,
+        color=color,
+        background_color=background_color,
+        opacity=opacity,
     )
-
-    return image
 
 
 ####
-#%%% image visualization
+#%%% image display
 ####
 
 
