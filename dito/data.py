@@ -20,6 +20,16 @@ RESOURCES_FILENAMES = {
     "font:tamzen-16": os.path.join(RESOURCES_DIR, "fonts", "tamzen", "Tamzen8x16_lh4rb.png"),
     "font:tamzen-20": os.path.join(RESOURCES_DIR, "fonts", "tamzen", "Tamzen10x20_lh4rb.png"),
 
+    "font:terminus-12": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u12_lh4rb.png"),
+    "font:terminus-14": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u14_lh4rb.png"),
+    "font:terminus-16": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u16_lh4rb.png"),
+    "font:terminus-18": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u18_lh4rb.png"),
+    "font:terminus-20": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u20_lh4rb.png"),
+    "font:terminus-22": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u22_lh4rb.png"),
+    "font:terminus-24": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u24_lh4rb.png"),
+    "font:terminus-28": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u28_lh4rb.png"),
+    "font:terminus-32": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u32_lh4rb.png"),
+
     "image:PM5544": os.path.join(RESOURCES_DIR, "images", "PM5544.png"),
 }
 

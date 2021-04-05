@@ -64,6 +64,7 @@ setup(
         "resources/colormaps/*.png",
         "resources/fonts/*/LICENSE.txt",
         "resources/fonts/tamzen/*.png",
+        "resources/fonts/terminus/*.png",
         "resources/images/*.png",
     ]},
     scripts=["bin/dito_images_to_video.py"],
