@@ -342,8 +342,8 @@ class MonospaceBitmapFont():
 
         # extract target region
         target_indices = (
-            slice(max(0, offset[1]), min(target_image.shape[0], offset[1] + rendered_image.shape[0])),
-            slice(max(0, offset[0]), min(target_image.shape[1], offset[0] + rendered_image.shape[1])),
+            slice(max(0, offset[1]), max(0, min(target_image.shape[0], offset[1] + rendered_image.shape[0]))),
+            slice(max(0, offset[0]), max(0, min(target_image.shape[1], offset[0] + rendered_image.shape[1]))),
         )
         target_region = target_image[target_indices + (Ellipsis,)]
 
