@@ -300,11 +300,19 @@ class MonospaceBitmapFont():
 
     @staticmethod
     def place_rendered_image(target_image, rendered_image, position=(0.0, 0.0), anchor="lt", color=(255, 255, 255), background_color=(40, 40, 40), opacity=1.0):
-        # base offset (based on given position)
-        offset = np.array([
-            position[0] * target_image.shape[1],
-            position[1] * (target_image.shape[0]),
-        ])
+        # check argument 'position'
+        if not (isinstance(position, (tuple, list)) and (len(position) == 2) and isinstance(position[0], (int, float)) and isinstance(position[1], (int, float))):
+            raise ValueError("Argument 'position' must be a 2-tuple (or list) of int (absolute) or float (relative) values")
+
+        # determine base offset based on argument 'position'
+        offset = np.zeros(shape=(2,), dtype=np.float32)
+        for (n_dim, dim_position) in enumerate(position):
+            if isinstance(dim_position, int):
+                # int -> absolute position
+                offset[n_dim] = float(dim_position)
+            else:
+                # float -> relative position
+                offset[n_dim] = dim_position * target_image.shape[1 - n_dim]
 
         # adjust offset based on the specified anchor type
         if not (isinstance(anchor, str) and (len(anchor) == 2) and (anchor[0] in ("l", "c", "r")) and (anchor[1] in ("t", "c", "b"))):
