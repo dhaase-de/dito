@@ -46,6 +46,14 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.2.0 (2021-04-09) ###
+* added/improved support for other (optional) image showing engines (`IPython`, `matplotlib.pyplot`, `pygame`)
+* added support for bitmap font handling (class `MonospaceBitmapFont`)
+* added bitmap fonts "Scientifica", "Source Code Pro", "Tamzen", and "Terminus"
+* changed `text` to use bitmap fonts instead of OpenCV's font handling and improved text drawing functionality (e.g., support for opacity, color, absolute positioning)
+* added many smaller improvements and fixes (e.g., `colorize` working with custom colormaps for OpenCV<3.3.0)
+* added several helper functions (e.g., `as_channels`)
+
 ### v2.1.0 (2021-03-14) ###
 * added `MultiShow` as extension of `show` which can also interactively re-show or save images
 * added `VideoSaver`and script `dito_images_to_video.py`
