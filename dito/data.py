@@ -14,6 +14,8 @@ RESOURCES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resour
 RESOURCES_FILENAMES = {
     "colormap:plot": os.path.join(RESOURCES_DIR, "colormaps", "plot.png"),
 
+    "font:scientifica-12": os.path.join(RESOURCES_DIR, "fonts", "scientifica", "scientifica_lh4rb.png"),
+
     "font:source-10": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "10_lh4rb.png"),
     "font:source-15": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "15_lh4rb.png"),
     "font:source-20": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "20_lh4rb.png"),
