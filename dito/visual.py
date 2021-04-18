@@ -68,7 +68,7 @@ def colorize(image, colormap):
 
 
 ####
-#%%% image stacking
+#%%% image combination
 ####
 
 
@@ -163,6 +163,110 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
             stacked_image = np.vstack(tup=(stacked_image, row_image))
 
     return stacked_image
+
+
+def insert(target_image, source_image, position=(0, 0), anchor="lt", opacity=None):
+    # check argument 'position'
+    if not (isinstance(position, (tuple, list)) and (len(position) == 2) and isinstance(position[0], (int, float)) and isinstance(position[1], (int, float))):
+        raise ValueError("Argument 'position' must be a 2-tuple (or list) of int (absolute) or float (relative) values")
+
+    # check if source and target are images
+    if not dito.core.is_image(image=target_image):
+        raise ValueError("Argument 'target_image' must be valid image")
+    if not dito.core.is_image(image=source_image):
+            raise ValueError("Argument 'source_image' must be valid image")
+
+    # check if source and target have the same dtype
+    if target_image.dtype != source_image.dtype:
+        raise ValueError("Arguments 'target_image' and 'source_image' must have the same dtypes")
+
+    # transform opacity into source mask
+    if opacity is None:
+        source_mask = None
+    elif isinstance(opacity, float):
+        source_mask = np.zeros(shape=source_image.shape[:2], dtype=np.float32) + opacity
+    elif isinstance(opacity, np.ndarray):
+        source_mask = opacity.copy()
+    else:
+        raise ValueError("Argument 'opacity' must be (i) `None` (meaning full opacity), (ii) a float (same opacity for all pixels), or (iii) a float image (individual opacity for each pixel)")
+
+    # check source mask
+    if source_mask is not None:
+        if not np.issubdtype(source_mask.dtype, np.floating):
+            raise ValueError("Source mask (derived from argument 'opacity') must be a float image")
+        if (not np.all(0.0 <= source_mask)) or (not np.all(source_mask <= 1.0)):
+            raise ValueError("Source mask (derived from argument 'opacity') must have values between 0.0 and 1.0")
+
+    # make sure source and target have a channel axis and that its value is identical
+    target_image = target_image.copy()
+    source_image = source_image.copy()
+    if dito.core.is_gray(image=target_image):
+        if not dito.core.is_gray(image=source_image):
+            raise ValueError("Target image is a grayscale image, but source image is a color image")
+        target_image.shape += (1,)
+        source_image.shape += (1,)
+    else:
+        if dito.core.is_gray(image=source_image):
+            source_image = dito.core.as_color(image=source_image)
+    channel_count = target_image.shape[2]
+
+    # determine base offset based on argument 'position'
+    offset = np.zeros(shape=(2,), dtype=np.float32)
+    for (n_dim, dim_position) in enumerate(position):
+        if isinstance(dim_position, int):
+            # int -> absolute position
+            offset[n_dim] = float(dim_position)
+        else:
+            # float -> relative position
+            offset[n_dim] = dim_position * target_image.shape[1 - n_dim]
+
+    # adjust offset based on the specified anchor type
+    if not (isinstance(anchor, str) and (len(anchor) == 2) and (anchor[0] in ("l", "c", "r")) and (anchor[1] in ("t", "c", "b"))):
+        raise ValueError("Argument 'anchor' must be a string of length two (pattern: '[lcr][tcb]') , but is '{}'".format(anchor))
+    (anchor_h, anchor_v) = anchor
+    if anchor_h == "l":
+        pass
+    elif anchor_h == "c":
+        offset[0] -= source_image.shape[1] * 0.5
+    elif anchor_h == "r":
+        offset[0] -= source_image.shape[1]
+    if anchor_v == "t":
+        pass
+    elif anchor_v == "c":
+        offset[1] -= source_image.shape[0] * 0.5
+    elif anchor_v == "b":
+        offset[1] -= source_image.shape[0]
+
+    # convert offset to integers
+    offset = dito.core.tir(*offset)
+
+    # extract target region
+    target_indices = (
+        slice(max(0, offset[1]), max(0, min(target_image.shape[0], offset[1] + source_image.shape[0]))),
+        slice(max(0, offset[0]), max(0, min(target_image.shape[1], offset[0] + source_image.shape[1]))),
+    )
+    target_region = target_image[target_indices + (Ellipsis,)]
+
+    # cut out the matching part of the rendered image
+    source_offset = (max(0, -offset[0]), max(0, -offset[1]))
+    source_indices = (
+        slice(source_offset[1], source_offset[1] + target_region.shape[0]),
+        slice(source_offset[0], source_offset[0] + target_region.shape[1]),
+    )
+    source_region = source_image[source_indices + (Ellipsis,)]
+
+    # insert rendered image into the target image
+    if source_mask is None:
+        target_image[target_indices + (Ellipsis,)] = source_region
+    else:
+        for n_channel in range(channel_count):
+            target_image[target_indices + (n_channel,)] = (source_mask[source_indices] * source_region[:, :, n_channel] + (1.0 - source_mask[source_indices]) * target_region[:, :, n_channel]).astype(target_image.dtype)
+
+    # remove channel axis for gray scale images
+    if (len(target_image.shape) == 3) and (target_image.shape[2] == 1):
+        target_image = target_image[:, :, 0]
+
+    return target_image
 
 
 ####
