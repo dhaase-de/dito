@@ -165,7 +165,7 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
     return stacked_image
 
 
-def insert(target_image, source_image, position=(0, 0), anchor="lt", opacity=None):
+def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask=None):
     # check argument 'position'
     if not (isinstance(position, (tuple, list)) and (len(position) == 2) and isinstance(position[0], (int, float)) and isinstance(position[1], (int, float))):
         raise ValueError("Argument 'position' must be a 2-tuple (or list) of int (absolute) or float (relative) values")
@@ -180,22 +180,22 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", opacity=Non
     if target_image.dtype != source_image.dtype:
         raise ValueError("Arguments 'target_image' and 'source_image' must have the same dtypes")
 
-    # transform opacity into source mask
-    if opacity is None:
-        source_mask = None
-    elif isinstance(opacity, float):
-        source_mask = np.zeros(shape=source_image.shape[:2], dtype=np.float32) + opacity
-    elif isinstance(opacity, np.ndarray):
-        source_mask = opacity.copy()
+    # make sure that source_mask is either None or a NumPy array
+    if source_mask is None:
+        pass
+    elif isinstance(source_mask, float):
+        source_mask = np.zeros(shape=source_image.shape[:2], dtype=np.float32) + source_mask
+    elif isinstance(source_mask, np.ndarray):
+        source_mask = source_mask.copy()
     else:
-        raise ValueError("Argument 'opacity' must be (i) `None` (meaning full opacity), (ii) a float (same opacity for all pixels), or (iii) a float image (individual opacity for each pixel)")
+        raise ValueError("Argument 'source_mask' must be (i) `None` (meaning full opacity), (ii) a float (same opacity for all pixels), or (iii) a float image (individual opacity for each pixel)")
 
     # check source mask
     if source_mask is not None:
         if not np.issubdtype(source_mask.dtype, np.floating):
-            raise ValueError("Source mask (derived from argument 'opacity') must be a float image")
+            raise ValueError("Source mask must be a float image")
         if (not np.all(0.0 <= source_mask)) or (not np.all(source_mask <= 1.0)):
-            raise ValueError("Source mask (derived from argument 'opacity') must have values between 0.0 and 1.0")
+            raise ValueError("Source mask must have values between 0.0 and 1.0")
 
     # make sure source and target have a channel axis and that its value is identical
     target_image = target_image.copy()
