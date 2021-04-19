@@ -333,6 +333,170 @@ class human_bytes_Tests(TestCase):
             self.assertEqual(result, expected_result)
 
 
+class insert_Tests(TestCase):
+    def setUp(self):
+        self.target_image = dito.pm5544()
+        self.source_image = dito.random_image(size=dito.size(image=self.target_image))
+        self.source_mask = dito.convert(image=dito.random_image(size=dito.size(image=self.target_image), color=False), dtype=np.float32)
+
+    def test_insert_raise_on_int(self):
+        self.assertRaises(
+            ValueError,
+            lambda: dito.insert(
+                target_image=self.target_image,
+                source_image=self.source_image,
+                position=(0, 0),
+                anchor="lt",
+                source_mask=1,
+            ),
+        )
+
+    def test_insert_full_replace_on_None(self):
+        result_image = dito.insert(
+            target_image=self.target_image,
+            source_image=self.source_image,
+            position=(0, 0),
+            anchor="lt",
+            source_mask=None,
+        )
+        self.assertEqualImages(result_image, self.source_image)
+
+    def test_insert_full_replace_on_1(self):
+        result_image = dito.insert(
+            target_image=self.target_image,
+            source_image=self.source_image,
+            position=(0, 0),
+            anchor="lt",
+            source_mask=1.0,
+        )
+        self.assertEqualImages(result_image, self.source_image)
+
+    def test_insert_full_replace_on_1_mask(self):
+        result_image = dito.insert(
+            target_image=self.target_image,
+            source_image=self.source_image,
+            position=(0, 0),
+            anchor="lt",
+            source_mask=np.ones(shape=self.source_image.shape[:2], dtype=np.float32),
+        )
+        self.assertEqualImages(result_image, self.source_image)
+
+    def test_insert_full_retain_on_0(self):
+        result_image = dito.insert(
+            target_image=self.target_image,
+            source_image=self.source_image,
+            position=(0, 0),
+            anchor="lt",
+            source_mask=0.0,
+        )
+        self.assertEqualImages(result_image, self.target_image)
+
+    def test_insert_full_retain_on_0_mask(self):
+        result_image = dito.insert(
+            target_image=self.target_image,
+            source_image=self.source_image,
+            position=(0, 0),
+            anchor="lt",
+            source_mask=np.zeros(shape=self.source_image.shape[:2], dtype=np.float32),
+        )
+        self.assertEqualImages(result_image, self.target_image)
+
+    def test_insert_identical_lt_position_float_int(self):
+        result_image_1 = dito.insert(
+            target_image=self.target_image,
+            source_image=self.source_image,
+            position=(0, 0),
+            anchor="lt",
+            source_mask=None,
+        )
+        result_image_2 = dito.insert(
+            target_image=self.target_image,
+            source_image=self.source_image,
+            position=(0.0, 0.0),
+            anchor="lt",
+            source_mask=None,
+        )
+        self.assertEqualImages(result_image_1, result_image_2)
+
+    def test_insert_identical_rb_position_float_int(self):
+        result_image_1 = dito.insert(
+            target_image=self.target_image,
+            source_image=self.source_image,
+            position=(self.target_image.shape[1], self.target_image.shape[0]),
+            anchor="lt",
+            source_mask=None,
+        )
+        result_image_2 = dito.insert(
+            target_image=self.target_image,
+            source_image=self.source_image,
+            position=(1.0, 1.0),
+            anchor="lt",
+            source_mask=None,
+        )
+        self.assertEqualImages(result_image_1, result_image_2)
+
+    def test_insert_quadrants(self):
+        target_size = dito.size(image=self.target_image)
+        source_size = (target_size[0] // 2, target_size[1] // 2)
+
+        source_image_1 = dito.random_image(size=source_size)
+        source_image_2 = dito.random_image(size=source_size)
+        source_image_3 = dito.random_image(size=source_size)
+        source_image_4 = dito.random_image(size=source_size)
+
+        result_image = self.target_image.copy()
+
+        result_image = dito.insert(
+            target_image=result_image,
+            source_image=source_image_1,
+            position=(0.0, 0.0),
+            anchor="lt",
+            source_mask=None,
+        )
+        result_image = dito.insert(
+            target_image=result_image,
+            source_image=source_image_2,
+            position=(1.0, 0.0),
+            anchor="rt",
+            source_mask=None,
+        )
+        result_image = dito.insert(
+            target_image=result_image,
+            source_image=source_image_3,
+            position=(0.0, 1.0),
+            anchor="lb",
+            source_mask=None,
+        )
+        result_image = dito.insert(
+            target_image=result_image,
+            source_image=source_image_4,
+            position=(1.0, 1.0),
+            anchor="rb",
+            source_mask=None,
+        )
+
+        self.assertEqualImages(result_image[:source_size[1], :source_size[0], ...], source_image_1)
+        self.assertEqualImages(result_image[:source_size[1], source_size[0]:, ...], source_image_2)
+        self.assertEqualImages(result_image[source_size[1]:, :source_size[0]:, ...], source_image_3)
+        self.assertEqualImages(result_image[source_size[1]:, source_size[0]:, ...], source_image_4)
+
+    def test_insert_inputs_unchanged(self):
+        target_image_copy = self.target_image.copy()
+        source_image_copy = self.source_image.copy()
+        source_mask_copy = self.source_mask.copy()
+
+        _ = dito.insert(
+            target_image=self.target_image,
+            source_image=self.source_image,
+            position=(0, 0),
+            anchor="lt",
+            source_mask=self.source_mask,
+        )
+        self.assertEqualImages(self.target_image, target_image_copy)
+        self.assertEqualImages(self.source_image, source_image_copy)
+        self.assertEqualImages(self.source_mask, source_mask_copy)
+
+
 class MultiShow_Tests(TempDirTestCase):
     def get_random_image(self):
         return dito.random_image(size=(256, 128))
