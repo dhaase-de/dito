@@ -439,7 +439,7 @@ class MonospaceBitmapFont():
         return result_image
 
 
-def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(255, 255, 255), background_color=(40, 40, 40), opacity=1.0, scale=None):
+def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(255, 255, 255), background_color=(40, 40, 40), opacity=1.0, scale=None, shrink_to_width=None):
     """
     Draws the text `message` into the given `image`.
 
@@ -463,6 +463,11 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", sty
         style=style,
         scale=scale,
     )
+
+    if (shrink_to_width is not None) and (rendered_mask.shape[1] > shrink_to_width):
+        interpolation = cv2.INTER_AREA
+        rendered_mask = dito.core.resize(image=rendered_mask, scale_or_size=(shrink_to_width, rendered_mask.shape[0]), interpolation_down=interpolation, interpolation_up=interpolation)
+        rendered_mask = dito.core.clip_01(image=rendered_mask)
 
     # place rendered text in image
     return font.insert_into_image(
