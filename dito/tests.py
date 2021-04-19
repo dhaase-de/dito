@@ -155,6 +155,29 @@ class colorize_Tests(TestCase):
             self.assertEqualImages(image_colorized_dito, image_colorized_applyColormap)
 
 
+class constant_image_Tests(TestCase):
+    def setUp(self):
+        self.size = (128, 64)
+        self.color = (50, 100, 200)
+        self.result_image = dito.constant_image(size=self.size, color=self.color)
+
+    def test_constant_image_size(self):
+        self.assertEqual(dito.size(image=self.result_image), self.size)
+
+    def test_constant_image_gray(self):
+        result_image = dito.constant_image(size=self.size, color=self.color[:1])
+        self.assertEqual(len(result_image.shape), 2)
+
+    def test_constant_image_color(self):
+        self.assertEqual(len(self.result_image.shape), 3)
+        self.assertEqual(self.result_image.shape[2], 3)
+
+    def test_constant_image_values(self):
+        channel_count = len(self.color)
+        for n_channel in range(channel_count):
+            self.assertTrue(np.all(self.result_image[:, :, n_channel] == self.color[n_channel]))
+
+
 class convert_Tests(TestCase):
     def test_convert_identical(self):
         image = dito.xslope(height=32, width=256)

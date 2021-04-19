@@ -102,6 +102,20 @@ def background_checkerboard(size=(512, 288), block_size=16):
     return checkerboard(size=size, block_size=block_size, low=80, high=120)
 
 
+def constant_image(size=(512, 288), color=(0, 255, 0), dtype=np.uint8):
+    """
+    Returns an image where each color channel is constant (but the channel
+    values may vary).
+    """
+    channel_count = len(color)
+    image = np.zeros(shape=(size[1], size[0]) + (channel_count,), dtype=dtype)
+    for n_channel in range(channel_count):
+        image[:, :, n_channel] = color[n_channel]
+    if channel_count == 1:
+        image = image[:, :, 0]
+    return image
+
+
 def random_image(size=(512, 288), color=True):
     """
     Returns a random `uint8` image of the given `shape`.
