@@ -403,79 +403,40 @@ class MonospaceBitmapFont():
         return mask
 
     @staticmethod
-    def place_rendered_image(target_image, rendered_image, position=(0.0, 0.0), anchor="lt", color=(255, 255, 255), background_color=(40, 40, 40), opacity=1.0):
-        # check argument 'position'
-        if not (isinstance(position, (tuple, list)) and (len(position) == 2) and isinstance(position[0], (int, float)) and isinstance(position[1], (int, float))):
-            raise ValueError("Argument 'position' must be a 2-tuple (or list) of int (absolute) or float (relative) values")
+    def insert_into_image(target_image, rendered_mask, position, anchor, color, background_color, opacity):
+        # prepare image containing the foreground color
+        rendered_size = dito.core.size(image=rendered_mask)
+        foreground_image = dito.data.constant_image(size=rendered_size, color=color, dtype=target_image.dtype)
 
-        # determine base offset based on argument 'position'
-        offset = np.zeros(shape=(2,), dtype=np.float32)
-        for (n_dim, dim_position) in enumerate(position):
-            if isinstance(dim_position, int):
-                # int -> absolute position
-                offset[n_dim] = float(dim_position)
-            else:
-                # float -> relative position
-                offset[n_dim] = dim_position * target_image.shape[1 - n_dim]
-
-        # adjust offset based on the specified anchor type
-        if not (isinstance(anchor, str) and (len(anchor) == 2) and (anchor[0] in ("l", "c", "r")) and (anchor[1] in ("t", "c", "b"))):
-            raise ValueError("Argument 'anchor' must be a string of length two (pattern: '[lcr][tcb]') , but is '{}'".format(anchor))
-        (anchor_h, anchor_v) = anchor
-        if anchor_h == "l":
-            pass
-        elif anchor_h == "c":
-            offset[0] -= rendered_image.shape[1] * 0.5
-        elif anchor_h == "r":
-            offset[0] -= rendered_image.shape[1]
-        if anchor_v == "t":
-            pass
-        elif anchor_v == "c":
-            offset[1] -= rendered_image.shape[0] * 0.5
-        elif anchor_v == "b":
-            offset[1] -= rendered_image.shape[0]
-
-        # convert offset to integers
-        offset = dito.core.tir(*offset)
-
-        # ensure that the target image has a channel axis
         target_image = target_image.copy()
-        if dito.core.is_gray(image=target_image):
-            target_image.shape += (1,)
-        channel_count = target_image.shape[2]
+        if background_color is None:
+            # case 1: no background - render text directly into the target image
+            result_image = insert(
+                target_image=target_image,
+                source_image=foreground_image,
+                position=position,
+                anchor=anchor,
+                source_mask=rendered_mask if opacity is None else rendered_mask * opacity,
+            )
+        else:
+            # case 2: with background - first render text into background image, then render the result into the target image
+            background_image = dito.data.constant_image(size=rendered_size, color=background_color, dtype=target_image.dtype)
+            text_image = insert(
+                target_image=background_image,
+                source_image=foreground_image,
+                position=(0, 0),
+                anchor="lt",
+                source_mask=rendered_mask,
+            )
+            result_image = insert(
+                target_image=target_image,
+                source_image=text_image,
+                position=position,
+                anchor=anchor,
+                source_mask=opacity,
+            )
 
-        # extract target region
-        target_indices = (
-            slice(max(0, offset[1]), max(0, min(target_image.shape[0], offset[1] + rendered_image.shape[0]))),
-            slice(max(0, offset[0]), max(0, min(target_image.shape[1], offset[0] + rendered_image.shape[1]))),
-        )
-        target_region = target_image[target_indices + (Ellipsis,)]
-
-        # fill target region with the background color, if given
-        if background_color is not None:
-            for n_channel in range(channel_count):
-                target_region[:, :, n_channel] = opacity * background_color[n_channel] + (1.0 - opacity) * target_region[:, :, n_channel]
-
-        # apply opacity to the rendered image
-        rendered_image = rendered_image * opacity
-
-        # cut out the matching part of the rendered image
-        rendered_offset = (max(0, -offset[0]), max(0, -offset[1]))
-        rendered_indices = (
-            slice(rendered_offset[1], rendered_offset[1] + target_region.shape[0]),
-            slice(rendered_offset[0], rendered_offset[0] + target_region.shape[1]),
-        )
-        rendered_region = rendered_image[rendered_indices]
-
-        # insert rendered image into the target image
-        for n_channel in range(channel_count):
-            target_image[target_indices + (n_channel,)] = rendered_image[rendered_indices] * color[n_channel] + (1.0 - rendered_image[rendered_indices]) * target_region[:, :, n_channel]
-
-        # remove channel axis for gray scale images
-        if (len(target_image.shape) == 3) and (target_image.shape[2] == 1):
-            target_image = target_image[:, :, 0]
-
-        return target_image
+        return result_image
 
 
 def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(255, 255, 255), background_color=(40, 40, 40), opacity=1.0, scale=None):
@@ -504,9 +465,9 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", sty
     )
 
     # place rendered text in image
-    return font.place_rendered_image(
+    return font.insert_into_image(
         target_image=image,
-        rendered_image=rendered_mask,
+        rendered_mask=rendered_mask,
         position=position,
         anchor=anchor,
         color=color,
