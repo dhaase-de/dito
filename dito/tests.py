@@ -32,6 +32,10 @@ class TestCase(unittest.TestCase):
         else:
             self.assertTrue(np.all(x == y))
 
+    def assertDifferingImages(self, x, y):
+        self.assertEqualImageContainers(x=x, y=y)
+        self.assertTrue(np.any(x != y))
+
 
 class TempDirTestCase(TestCase):
     def setUp(self):
@@ -752,29 +756,59 @@ class stack_Tests(TestCase):
 
 
 class text_Tests(TestCase):
+    def setUp(self):
+        self.image = dito.pm5544()
+        self.text_kwargs = {
+            "font": "source-25",
+            "position": (0.5, 0.5),
+            "anchor": "cc"
+        }
+
     def test_text_input_unchanged(self):
-        image = dito.pm5544()
-        image_copy = image.copy()
-        dito.text(image=image, message="Hello World", position=(0.5, 0.5), anchor="cc")
-        self.assertEqualImages(image, image_copy)
+        image_copy = self.image.copy()
+        dito.text(image=self.image, message="Hello World", **self.text_kwargs)
+        self.assertEqualImages(self.image, image_copy)
 
     def test_text_output_different(self):
-        image = dito.pm5544()
-        text_image = dito.text(image=image, message="Hello World", position=(0.5, 0.5), anchor="cc")
-        self.assertEqualImageContainers(image, text_image)
-        self.assertFalse(np.all(image == text_image))
+        text_image = dito.text(image=self.image, message="Hello World", **self.text_kwargs)
+        self.assertDifferingImages(self.image, text_image)
 
-    def test_text_opacity_0(self):
-        image = dito.pm5544()
-        text_image = dito.text(image=image, message="Hello World", position=(0.5, 0.5), anchor="cc", opacity=0.0)
-        self.assertEqualImages(image, text_image)
+    def test_text_transparent(self):
+        text_image = dito.text(image=self.image, message="Hello World", opacity=0.0, **self.text_kwargs)
+        self.assertEqualImages(self.image, text_image)
 
-    def test_text_escape_bold_escape_sequence(self):
-        image = dito.pm5544()
-        text_image_regular = dito.text(image=image, message="Hello World", position=(0.5, 0.5), anchor="cc")
-        text_image_bold = dito.text(image=image, message="Hello " + dito.MonospaceBitmapFont.TEXT_STYLE_BOLD + "World", position=(0.5, 0.5), anchor="cc")
-        self.assertEqualImageContainers(text_image_regular, text_image_bold)
-        self.assertTrue(np.any(text_image_regular != text_image_bold))
+    def test_text_background(self):
+        text_image = dito.text(image=self.image, message=" ", background_color=(40, 40, 40), **self.text_kwargs)
+        self.assertDifferingImages(self.image, text_image)
+
+    def test_text_no_background(self):
+        text_image = dito.text(image=self.image, message=" ", background_color=None, **self.text_kwargs)
+        self.assertEqualImages(self.image, text_image)
+
+    def test_text_escape_bold(self):
+        text_image_regular = dito.text(image=self.image, message="Hello World", **self.text_kwargs)
+        text_image_bold = dito.text(image=self.image, message="Hello " + dito.Font.TEXT_STYLE_BOLD + "World", **self.text_kwargs)
+        self.assertDifferingImages(text_image_regular, text_image_bold)
+
+    def test_text_escape_regular(self):
+        text_image_regular = dito.text(image=self.image, message="Hello World", **self.text_kwargs)
+        text_image_bold_regular = dito.text(image=self.image, message="Hello " + dito.Font.TEXT_STYLE_BOLD + dito.Font.TEXT_STYLE_REGULAR + "World", **self.text_kwargs)
+        self.assertEqualImages(text_image_regular, text_image_bold_regular)
+
+    def test_text_escape_reset(self):
+        text_image_regular = dito.text(image=self.image, message="Hello World", color=(255, 255, 255), background_color=(40, 40, 40), **self.text_kwargs)
+        text_image_reset = dito.text(image=self.image, message="Hello " + dito.Font.TEXT_STYLE_BOLD + dito.Font.TEXT_FOREGROUND_COLOR_BGR(0, 255, 0) + dito.Font.TEXT_BACKGROUND_COLOR_BGR(127, 127, 0) + dito.Font.TEXT_RESET + "World", **self.text_kwargs)
+        self.assertEqualImages(text_image_regular, text_image_reset)
+
+    def test_text_escape_foregound_color(self):
+        text_image = dito.text(image=self.image, message="Hello World", color=(0, 127, 255), **self.text_kwargs)
+        text_image_foreground = dito.text(image=self.image, message="Hello " + dito.Font.TEXT_FOREGROUND_COLOR_BGR(200, 100, 50) + "World", color=(0, 127, 255), **self.text_kwargs)
+        self.assertDifferingImages(text_image, text_image_foreground)
+
+    def test_text_escape_backgound_color(self):
+        text_image = dito.text(image=self.image, message="Hello World", background_color=(0, 127, 255), **self.text_kwargs)
+        text_image_background = dito.text(image=self.image, message="Hello " + dito.Font.TEXT_BACKGROUND_COLOR_BGR(200, 100, 50) + "World", background_color=(0, 127, 255), **self.text_kwargs)
+        self.assertDifferingImages(text_image, text_image_background)
 
 
 class VideoSaver_Tests(TempDirTestCase):
@@ -900,9 +934,8 @@ class core_Tests(TestCase):
     def test_flip_channels_once_neq(self):
         image = dito.pm5544()
         image_flipped = dito.flip_channels(image=image)
-        self.assertEqualImageContainers(image, image_flipped)
-        self.assertFalse(np.all(image == image_flipped))
-        
+        self.assertDifferingImages(image, image_flipped)
+
     def test_flip_channels_twice(self):
         image = dito.pm5544()
         image_flipped = dito.flip_channels(image=image)
