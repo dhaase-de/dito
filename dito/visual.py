@@ -275,11 +275,29 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
 ####
 
 
-class MonospaceBitmapFont():
-    TEXT_STYLE_RESET = "\033[0m"
+class Font():
+    TEXT_RESET = "\033[0m"
+
     TEXT_STYLE_REGULAR = "\033[22m"
     TEXT_STYLE_BOLD = "\033[1m"
 
+    @staticmethod
+    def TEXT_COLOR_BGR(b, g, r, foreground=True):
+        for value in (b, g, r):
+            if not (isinstance(value, int) and (0 <= value <= 255)):
+                raise ValueError("BGR values must be integers in the range [0, 255]")
+        return "\033[{};2;{};{};{}m".format(38 if foreground else 48, r, g, b)
+
+    @classmethod
+    def TEXT_FOREGROUND_COLOR_BGR(cls, b, g, r):
+        return cls.TEXT_COLOR_BGR(b=b, g=g, r=r, foreground=True)
+
+    @classmethod
+    def TEXT_BACKGROUND_COLOR_BGR(cls, b, g, r):
+        return cls.TEXT_COLOR_BGR(b=b, g=g, r=r, foreground=False)
+
+
+class MonospaceBitmapFont(Font):
     def __init__(self, filename):
         self.filename = filename
         (self.char_width, self.char_height, self.char_images) = self.load_lh4rb(filename=self.filename)
@@ -380,15 +398,24 @@ class MonospaceBitmapFont():
         return self.char_images.get(char, self.char_images["?"]).get(style, "regular")
 
     @staticmethod
-    def parse_message(raw_message, initial_style):
+    def parse_message(raw_message, initial_style, initial_foreground_color, initial_background_color):
         raw_lines = raw_message.split("\n")
-        current_style = initial_style
 
-        lines = []
-        styles = []
+        charss = []
+        styless = []
+        foreground_colorss = []
+        background_colorss = []
+
+        current_style = initial_style
+        current_foreground_color = initial_foreground_color
+        current_background_color = initial_background_color
+
         for raw_line in raw_lines:
-            line = ""
-            line_style = []
+            chars = ""
+            styles = []
+            foreground_colors = []
+            background_colors = []
+
             while len(raw_line) > 0:
                 # determine begin and end of leftmost escape pattern
                 escape_begin_index = raw_line.find("\033[")
@@ -406,81 +433,121 @@ class MonospaceBitmapFont():
                 post_escape = raw_line[escape_end_index:]
 
                 # append text before the escape sequence to the line and update the remaining raw line
-                line += pre_escape
-                line_style += [current_style] * escape_begin_index
+                chars += pre_escape
+                styles += [current_style] * escape_begin_index
+                foreground_colors += [current_foreground_color] * escape_begin_index
+                background_colors += [current_background_color] * escape_begin_index
                 raw_line = post_escape
 
-                # handle escape codes
+                # handle escape codes (see https://en.wikipedia.org/wiki/ANSI_escape_code)
                 if escape_sequence != "":
                     if escape_code == "0":
+                        # reset
                         current_style = initial_style
+                        current_foreground_color = initial_foreground_color
+                        current_background_color = initial_background_color
                     elif escape_code == "1":
+                        # bold style
                         current_style = "bold"
                     elif escape_code == "22":
+                        # regular (non-bold) style
                         current_style = "regular"
+                    elif escape_code.startswith("38;2;"):
+                        # foreground color (bgr)
+                        current_foreground_color = [int(value) for value in escape_code.split(";")[2:]][::-1]
+                    elif escape_code.startswith("48;2;"):
+                        # background color (bgr)
+                        current_background_color = [int(value) for value in escape_code.split(";")[2:]][::-1]
                     else:
                         raise RuntimeError("Escape sequence '{}' is not supported".format(escape_sequence))
 
-            lines.append(line)
-            styles.append(line_style)
+            charss.append(chars)
+            styless.append(styles)
+            foreground_colorss.append(foreground_colors)
+            background_colorss.append(background_colors)
 
-        return {"lines": lines, "styles": styles}
+        return {"lines": charss, "styles": styless, "foreground_colors": foreground_colorss, "background_colors": background_colorss}
 
-    def render_mask(self, message, style="regular", scale=None):
-        parse_result = self.parse_message(raw_message=message, initial_style=style)
+    def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, opacity, scale=None, shrink_to_width=None):
+        # parse message (to get the raw text plus style and color information)
+        parse_result = self.parse_message(raw_message=message, initial_style=style, initial_foreground_color=foreground_color, initial_background_color=background_color)
         lines = parse_result["lines"]
-        line_count = len(lines)
         styles = parse_result["styles"]
+        foreground_colors = parse_result["foreground_colors"]
+        background_colors = parse_result["background_colors"]
 
+        # determine max character count per line to get the image size
+        line_count = len(lines)
         max_character_count = 0
         for line in lines:
             max_character_count = max(max_character_count, len(line))
 
-        image = np.zeros(shape=(line_count * self.char_height, max_character_count * self.char_width), dtype=np.uint8)
+        # create empty mask, foreground, and background images
+        mask_size = (max_character_count * self.char_width, line_count * self.char_height)
+        mask = np.zeros(shape=mask_size[::-1], dtype=np.uint8)
+        foreground_image = dito.data.constant_image(size=mask_size, color=foreground_color)
+        if background_color is None:
+            background_image = None
+        else:
+            background_image = dito.data.constant_image(size=mask_size, color=background_color)
 
+        # fill mask, foregound, and background image
         for (n_row, line) in enumerate(lines):
             row_offset = n_row * self.char_height
 
             for (n_col, char) in enumerate(line):
                 col_offset = n_col * self.char_width
+                indices = (slice(row_offset, row_offset + self.char_height), slice(col_offset, col_offset + self.char_width))
 
                 char_image = self.get_char_image(char=char, style=styles[n_row][n_col])
-                image[row_offset:(row_offset + self.char_height), col_offset:(col_offset + self.char_width)] = char_image
+                mask[indices] = char_image
+                foreground_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=foreground_colors[n_row][n_col])
+                if background_image is not None:
+                    background_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=background_colors[n_row][n_col])
 
         # rescale image if requested
         if scale is not None:
-            image = dito.core.resize(image=image, scale_or_size=scale, interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_AREA)
+            mask = dito.core.resize(image=mask, scale_or_size=scale, interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_AREA)
+            foreground_image = dito.core.resize(image=foreground_image, scale_or_size=scale, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
+            if background_image is not None:
+                background_image = dito.core.resize(image=background_image, scale_or_size=scale, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
 
-        # convert uint8 image to [0, 1]-float mask
-        mask = dito.core.convert(image=image, dtype=np.float32)
+        # shrink to specified width if requested
+        if (shrink_to_width is not None) and (mask.shape[1] > shrink_to_width):
+            target_size = (shrink_to_width, mask.shape[0])
+            mask = dito.core.resize(image=mask, scale_or_size=target_size, interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_AREA)
+            foreground_image = dito.core.resize(image=foreground_image, scale_or_size=target_size, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
+            if background_image is not None:
+                background_image = dito.core.resize(image=background_image, scale_or_size=target_size, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
 
-        return mask
+        # convert uint8 mask to [0, 1]-float mask
+        mask = dito.core.convert(image=mask, dtype=np.float32)
 
-    @staticmethod
-    def insert_into_image(target_image, rendered_mask, position, anchor, color, background_color, opacity):
-        # prepare image containing the foreground color
-        rendered_size = dito.core.size(image=rendered_mask)
-        foreground_image = dito.data.constant_image(size=rendered_size, color=color, dtype=target_image.dtype)
+        # if target image is grayscale, also convert fore- and background images
+        if dito.core.is_gray(image=target_image):
+            foreground_image = dito.core.as_gray(image=foreground_image)
+            if background_image is not None:
+                background_image = dito.core.as_gray(image=background_image)
 
+        # insert text into target image
         target_image = target_image.copy()
-        if background_color is None:
+        if background_image is None:
             # case 1: no background - render text directly into the target image
             result_image = insert(
                 target_image=target_image,
                 source_image=foreground_image,
                 position=position,
                 anchor=anchor,
-                source_mask=rendered_mask if opacity is None else rendered_mask * opacity,
+                source_mask=mask if opacity is None else mask * opacity,
             )
         else:
             # case 2: with background - first render text into background image, then render the result into the target image
-            background_image = dito.data.constant_image(size=rendered_size, color=background_color, dtype=target_image.dtype)
             text_image = insert(
                 target_image=background_image,
                 source_image=foreground_image,
                 position=(0, 0),
                 anchor="lt",
-                source_mask=rendered_mask,
+                source_mask=mask,
             )
             result_image = insert(
                 target_image=target_image,
@@ -505,33 +572,25 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", sty
     baseline height.
     """
 
+    # get font
     if isinstance(font, str):
         # font is given as name -> resolve
         font = MonospaceBitmapFont.init_from_name(name=font)
     elif not isinstance(font, MonospaceBitmapFont):
         raise TypeError("Argument 'font' must be either an instance of 'MonospaceBitmapFont' or a string (the name of the font)")
 
-    # render text
-    rendered_mask = font.render_mask(
+    # render message into image
+    return font.render_into_image(
+        target_image=image,
         message=message,
         style=style,
-        scale=scale,
-    )
-
-    if (shrink_to_width is not None) and (rendered_mask.shape[1] > shrink_to_width):
-        interpolation = cv2.INTER_AREA
-        rendered_mask = dito.core.resize(image=rendered_mask, scale_or_size=(shrink_to_width, rendered_mask.shape[0]), interpolation_down=interpolation, interpolation_up=interpolation)
-        rendered_mask = dito.core.clip_01(image=rendered_mask)
-
-    # place rendered text in image
-    return font.insert_into_image(
-        target_image=image,
-        rendered_mask=rendered_mask,
         position=position,
         anchor=anchor,
-        color=color,
+        foreground_color=color,
         background_color=background_color,
         opacity=opacity,
+        scale=scale,
+        shrink_to_width=shrink_to_width,
     )
 
 
