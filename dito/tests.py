@@ -769,6 +769,13 @@ class text_Tests(TestCase):
         text_image = dito.text(image=image, message="Hello World", position=(0.5, 0.5), anchor="cc", opacity=0.0)
         self.assertEqualImages(image, text_image)
 
+    def test_text_escape_bold_escape_sequence(self):
+        image = dito.pm5544()
+        text_image_regular = dito.text(image=image, message="Hello World", position=(0.5, 0.5), anchor="cc")
+        text_image_bold = dito.text(image=image, message="Hello " + dito.MonospaceBitmapFont.TEXT_STYLE_BOLD + "World", position=(0.5, 0.5), anchor="cc")
+        self.assertEqualImageContainers(text_image_regular, text_image_bold)
+        self.assertTrue(np.any(text_image_regular != text_image_bold))
+
 
 class VideoSaver_Tests(TempDirTestCase):
     def test_VideoSaver_random_video(self):

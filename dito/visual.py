@@ -1,6 +1,7 @@
 import collections
 import math
 import os.path
+import re
 
 import cv2
 import numpy as np
@@ -275,6 +276,10 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
 
 
 class MonospaceBitmapFont():
+    TEXT_STYLE_RESET = "\033[0m"
+    TEXT_STYLE_REGULAR = "\033[22m"
+    TEXT_STYLE_BOLD = "\033[1m"
+
     def __init__(self, filename):
         self.filename = filename
         (self.char_width, self.char_height, self.char_images) = self.load_lh4rb(filename=self.filename)
@@ -374,9 +379,58 @@ class MonospaceBitmapFont():
     def get_char_image(self, char, style="regular"):
         return self.char_images.get(char, self.char_images["?"]).get(style, "regular")
 
+    @staticmethod
+    def parse_message(raw_message, initial_style):
+        raw_lines = raw_message.split("\n")
+        current_style = initial_style
+
+        lines = []
+        styles = []
+        for raw_line in raw_lines:
+            line = ""
+            line_style = []
+            while len(raw_line) > 0:
+                # determine begin and end of leftmost escape pattern
+                escape_begin_index = raw_line.find("\033[")
+                if escape_begin_index == -1:
+                    # no escape pattern was found in the remaining raw line
+                    escape_begin_index = len(raw_line)
+                    escape_end_index = escape_begin_index
+                else:
+                    escape_end_index = escape_begin_index + raw_line[escape_begin_index:].find("m") + 1
+
+                # split line into part before the next escape sequence, the escape sequence, the "argument" part of the escape sequence, and the part after the escape sequence
+                pre_escape = raw_line[:escape_begin_index]
+                escape_sequence = raw_line[escape_begin_index:escape_end_index]
+                escape_code = escape_sequence[2:-1]
+                post_escape = raw_line[escape_end_index:]
+
+                # append text before the escape sequence to the line and update the remaining raw line
+                line += pre_escape
+                line_style += [current_style] * escape_begin_index
+                raw_line = post_escape
+
+                # handle escape codes
+                if escape_sequence != "":
+                    if escape_code == "0":
+                        current_style = initial_style
+                    elif escape_code == "1":
+                        current_style = "bold"
+                    elif escape_code == "22":
+                        current_style = "regular"
+                    else:
+                        raise RuntimeError("Escape sequence '{}' is not supported".format(escape_sequence))
+
+            lines.append(line)
+            styles.append(line_style)
+
+        return {"lines": lines, "styles": styles}
+
     def render_mask(self, message, style="regular", scale=None):
-        lines = message.split("\n")
+        parse_result = self.parse_message(raw_message=message, initial_style=style)
+        lines = parse_result["lines"]
         line_count = len(lines)
+        styles = parse_result["styles"]
 
         max_character_count = 0
         for line in lines:
@@ -390,7 +444,7 @@ class MonospaceBitmapFont():
             for (n_col, char) in enumerate(line):
                 col_offset = n_col * self.char_width
 
-                char_image = self.get_char_image(char=char, style=style)
+                char_image = self.get_char_image(char=char, style=styles[n_row][n_col])
                 image[row_offset:(row_offset + self.char_height), col_offset:(col_offset + self.char_width)] = char_image
 
         # rescale image if requested
