@@ -468,7 +468,7 @@ class MonospaceBitmapFont(Font):
 
         return {"lines": charss, "styles": styless, "foreground_colors": foreground_colorss, "background_colors": background_colorss}
 
-    def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, opacity, scale=None, shrink_to_width=None):
+    def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, margin, padding, opacity, scale, shrink_to_width):
         # parse message (to get the raw text plus style and color information)
         parse_result = self.parse_message(raw_message=message, initial_style=style, initial_foreground_color=foreground_color, initial_background_color=background_color)
         lines = parse_result["lines"]
@@ -482,8 +482,25 @@ class MonospaceBitmapFont(Font):
         for line in lines:
             max_character_count = max(max_character_count, len(line))
 
+        # check margin
+        if isinstance(margin, int):
+            margin = (margin, margin, margin, margin)
+        if not (isinstance(margin, (tuple, list)) and (len(margin) == 4) and all(isinstance(item, int) for item in margin)):
+            raise ValueError("Argument 'margin' must be a single integer (same margin for all four sides) or a 4-tuple of integers (specifying the top, right, bottom, and left margin).")
+        (margin_top, margin_right, margin_bottom, margin_left) = margin
+
+        # check padding
+        if isinstance(padding, int):
+            padding = (padding, padding)
+        if not (isinstance(padding, (tuple, list)) and (len(padding) == 2) and all(isinstance(item, int) for item in padding)):
+            raise ValueError("Argument 'padding' must be a single integer (same padding for both sides) or a 2-tuple of integers (specifying the vertical and horizontal padding).")
+        (padding_vertical, padding_horizontal) = padding
+
         # create empty mask, foreground, and background images
-        mask_size = (max_character_count * self.char_width, line_count * self.char_height)
+        mask_size = (
+            max_character_count * self.char_width + margin_left + margin_right + max(0, max_character_count - 1) * padding_horizontal,
+            line_count * self.char_height + margin_top + margin_bottom + max(0, line_count - 1) * padding_vertical,
+        )
         mask = np.zeros(shape=mask_size[::-1], dtype=np.uint8)
         foreground_image = dito.data.constant_image(size=mask_size, color=foreground_color)
         if background_color is None:
@@ -493,10 +510,10 @@ class MonospaceBitmapFont(Font):
 
         # fill mask, foregound, and background image
         for (n_row, line) in enumerate(lines):
-            row_offset = n_row * self.char_height
+            row_offset = n_row * self.char_height + margin_top + n_row * padding_vertical
 
             for (n_col, char) in enumerate(line):
-                col_offset = n_col * self.char_width
+                col_offset = n_col * self.char_width + margin_left + n_col * padding_horizontal
                 indices = (slice(row_offset, row_offset + self.char_height), slice(col_offset, col_offset + self.char_width))
 
                 char_image = self.get_char_image(char=char, style=styles[n_row][n_col])
@@ -560,7 +577,7 @@ class MonospaceBitmapFont(Font):
         return result_image
 
 
-def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(255, 255, 255), background_color=(40, 40, 40), opacity=1.0, scale=None, shrink_to_width=None):
+def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(255, 255, 255), background_color=(40, 40, 40), margin=(0, 0, 0, 0), padding=(0, 0), opacity=1.0, scale=None, shrink_to_width=None):
     """
     Draws the text `message` into the given `image`.
 
@@ -588,6 +605,8 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", sty
         anchor=anchor,
         foreground_color=color,
         background_color=background_color,
+        margin=margin,
+        padding=padding,
         opacity=opacity,
         scale=scale,
         shrink_to_width=shrink_to_width,

@@ -810,6 +810,16 @@ class text_Tests(TestCase):
         text_image_background = dito.text(image=self.image, message="Hello " + dito.Font.TEXT_BACKGROUND_COLOR_BGR(200, 100, 50) + "World", background_color=(0, 127, 255), **self.text_kwargs)
         self.assertDifferingImages(text_image, text_image_background)
 
+    def test_text_margin_different(self):
+        text_image_no_margin = dito.text(image=self.image, message="Hello World", margin=0, **self.text_kwargs)
+        text_image_margin = dito.text(image=self.image, message="Hello World", margin=1, **self.text_kwargs)
+        self.assertDifferingImages(text_image_no_margin, text_image_margin)
+
+    def test_text_padding_different(self):
+        text_image_no_padding = dito.text(image=self.image, message="Hello World", padding=0, **self.text_kwargs)
+        text_image_padding = dito.text(image=self.image, message="Hello World", padding=1, **self.text_kwargs)
+        self.assertDifferingImages(text_image_no_padding, text_image_padding)
+
 
 class VideoSaver_Tests(TempDirTestCase):
     def test_VideoSaver_random_video(self):
