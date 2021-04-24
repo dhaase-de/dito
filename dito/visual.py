@@ -468,7 +468,7 @@ class MonospaceBitmapFont(Font):
 
         return {"lines": charss, "styles": styless, "foreground_colors": foreground_colorss, "background_colors": background_colorss}
 
-    def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, margin, padding, opacity, scale, shrink_to_width):
+    def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, border_color, border, margin, padding, opacity, scale, shrink_to_width):
         # parse message (to get the raw text plus style and color information)
         parse_result = self.parse_message(raw_message=message, initial_style=style, initial_foreground_color=foreground_color, initial_background_color=background_color)
         lines = parse_result["lines"]
@@ -482,24 +482,34 @@ class MonospaceBitmapFont(Font):
         for line in lines:
             max_character_count = max(max_character_count, len(line))
 
+        # check colors
+        for (color, none_allowed) in ((foreground_color, False), (background_color, True), (border_color, False)):
+            if (not none_allowed) and (not (isinstance(color, (tuple, list)) and (len(color) == 3) and all(isinstance(value, int) for value in color) and all(0 <= value <= 255 for value in color))):
+                raise ValueError("Arguments 'foreground_color', 'background_color', and 'border_color' must be 3-tuples (8 bit BGR).")
+
+        # check border
+        try:
+            (border_top, border_right, border_bottom, border_left) = dito.utils.get_validated_tuple(x=border, type_=int, count=4, min_value=0, max_value=None)
+        except ValueError:
+            raise ValueError("Argument 'border' must be a single non-negative integer (same border for all four sides) or a 4-tuple of non-negative integers (specifying the top, right, bottom, and left border).")
+
         # check margin
-        if isinstance(margin, int):
-            margin = (margin, margin, margin, margin)
-        if not (isinstance(margin, (tuple, list)) and (len(margin) == 4) and all(isinstance(item, int) for item in margin)):
-            raise ValueError("Argument 'margin' must be a single integer (same margin for all four sides) or a 4-tuple of integers (specifying the top, right, bottom, and left margin).")
-        (margin_top, margin_right, margin_bottom, margin_left) = margin
+        try:
+            (margin_top, margin_right, margin_bottom, margin_left) = dito.utils.get_validated_tuple(x=margin, type_=int, count=4, min_value=0, max_value=None)
+        except ValueError:
+            raise ValueError(
+                "Argument 'margin' must be a single non-negative integer (same margin for all four sides) or a 4-tuple of non-negative integers (specifying the top, right, bottom, and left margin).")
 
         # check padding
-        if isinstance(padding, int):
-            padding = (padding, padding)
-        if not (isinstance(padding, (tuple, list)) and (len(padding) == 2) and all(isinstance(item, int) for item in padding)):
-            raise ValueError("Argument 'padding' must be a single integer (same padding for both sides) or a 2-tuple of integers (specifying the vertical and horizontal padding).")
-        (padding_vertical, padding_horizontal) = padding
+        try:
+            (padding_vertical, padding_horizontal) = dito.utils.get_validated_tuple(x=padding, type_=int, count=2, min_value=0, max_value=None)
+        except ValueError:
+            raise ValueError("Argument 'padding' must be a single non-negative integer (same padding for both sides) or a 2-tuple of non-negative integers (specifying the vertical and horizontal padding).")
 
         # create empty mask, foreground, and background images
         mask_size = (
-            max_character_count * self.char_width + margin_left + margin_right + max(0, max_character_count - 1) * padding_horizontal,
-            line_count * self.char_height + margin_top + margin_bottom + max(0, line_count - 1) * padding_vertical,
+            (max_character_count * self.char_width) + (border_left + border_right) + (margin_left + margin_right) + max(0, max_character_count - 1) * padding_horizontal,
+            (line_count * self.char_height) + (border_top + border_bottom) + (margin_top + margin_bottom) + max(0, line_count - 1) * padding_vertical,
         )
         mask = np.zeros(shape=mask_size[::-1], dtype=np.uint8)
         foreground_image = dito.data.constant_image(size=mask_size, color=foreground_color)
@@ -510,10 +520,10 @@ class MonospaceBitmapFont(Font):
 
         # fill mask, foregound, and background image
         for (n_row, line) in enumerate(lines):
-            row_offset = n_row * self.char_height + margin_top + n_row * padding_vertical
+            row_offset = n_row * self.char_height + border_top + margin_top + n_row * padding_vertical
 
             for (n_col, char) in enumerate(line):
-                col_offset = n_col * self.char_width + margin_left + n_col * padding_horizontal
+                col_offset = n_col * self.char_width + border_left + margin_left + n_col * padding_horizontal
                 indices = (slice(row_offset, row_offset + self.char_height), slice(col_offset, col_offset + self.char_width))
 
                 char_image = self.get_char_image(char=char, style=styles[n_row][n_col])
@@ -521,6 +531,17 @@ class MonospaceBitmapFont(Font):
                 foreground_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=foreground_colors[n_row][n_col])
                 if background_image is not None:
                     background_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=background_colors[n_row][n_col])
+
+        # draw border
+        mask[:border_top, :] = 255
+        mask[(mask.shape[0] - border_bottom):, :] = 255
+        mask[:, :border_left] = 255
+        mask[:, (mask.shape[1] - border_right):] = 255
+        for (n_channel, value) in enumerate(border_color):
+            foreground_image[:border_top, :, n_channel] = value
+            foreground_image[(foreground_image.shape[0] - border_bottom):, :, n_channel] = value
+            foreground_image[:, :border_left, n_channel] = value
+            foreground_image[:, (foreground_image.shape[1] - border_right):, n_channel] = value
 
         # rescale image if requested
         if scale is not None:
@@ -577,7 +598,7 @@ class MonospaceBitmapFont(Font):
         return result_image
 
 
-def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(255, 255, 255), background_color=(40, 40, 40), margin=(0, 0, 0, 0), padding=(0, 0), opacity=1.0, scale=None, shrink_to_width=None):
+def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(235, 235, 235), background_color=(45, 45, 45), border_color=(255, 255, 255), border=(0, 0, 0, 0), margin=(0, 0, 0, 0), padding=(0, 0), opacity=1.0, scale=None, shrink_to_width=None):
     """
     Draws the text `message` into the given `image`.
 
@@ -605,6 +626,8 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", sty
         anchor=anchor,
         foreground_color=color,
         background_color=background_color,
+        border_color=border_color,
+        border=border,
         margin=margin,
         padding=padding,
         opacity=opacity,

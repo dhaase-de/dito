@@ -17,6 +17,36 @@ def cv2_version():
 
 
 ####
+#%%% checks
+####
+
+
+def get_validated_tuple(x, type_, count, min_value=None, max_value=None):
+    error_text = "Argument must be a scalar or a {}-tuple/list of type '{}' (min_value={}, max_value={})".format(count, type_, min_value, max_value)
+
+    # check tuple/list
+    if isinstance(x, tuple):
+        pass
+    elif isinstance(x, list):
+        x = tuple(x)
+    elif isinstance(x, type_):
+        x = (x,) * count
+    else:
+        raise ValueError(error_text)
+
+    # check length
+    if len(x) != count:
+        raise ValueError(error_text)
+
+    # check value ranges
+    for value in x:
+        if ((min_value is not None) and (value < min_value)) or ((max_value is not None) and (value > max_value)):
+            raise ValueError(error_text)
+
+    return x
+
+
+####
 #%%% file-related
 ####
 
