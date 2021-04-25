@@ -695,6 +695,51 @@ class random_image_Tests(TestCase):
         self.assertNumpyShape(image, (image_size[1], image_size[0]))
 
 
+class rotate_Tests(TestCase):
+    def setUp(self):
+        self.image = dito.pm5544()
+
+    def test_rotate_180_input_unchanged(self):
+        image_copy = self.image.copy()
+        dito.rotate_180(image=self.image)
+        self.assertEqualImages(self.image, image_copy)
+
+    def test_rotate_90_cw_dtype_shape(self):
+        image_rotated = dito.rotate_90_cw(image=self.image)
+        self.assertEqual(self.image.dtype, image_rotated.dtype)
+        self.assertNumpyShape(image_rotated, self.image.shape[1::-1] + self.image.shape[2:])
+
+    def test_rotate_180_gray(self):
+        image_rotated = dito.rotate_180(image=self.image)
+        image_rotated_gray = dito.as_gray(image=image_rotated)
+
+        image_gray = dito.as_gray(image=self.image)
+        image_gray_rotated = dito.rotate_180(image=image_gray)
+
+        self.assertEqualImages(image_rotated_gray, image_gray_rotated)
+
+    def test_rotate_90_cw_4_times(self):
+        image_rotated = self.image.copy()
+        for n_rotation in range(4):
+            image_rotated = dito.rotate_90_cw(image=image_rotated)
+        self.assertEqualImages(self.image, image_rotated)
+
+    def test_rotate_90_cw_ccw(self):
+        image_rotated = dito.rotate_90_cw(image=self.image)
+        image_rotated_2 = dito.rotate_90_ccw(image=image_rotated)
+        self.assertEqualImages(self.image, image_rotated_2)
+
+    def test_rotate_all_to_180(self):
+        image_rotated_90_cw_2x = dito.rotate_90_cw(image=dito.rotate_90_cw(image=self.image))
+        image_rotated_90_ccw_2x = dito.rotate_90_ccw(image=dito.rotate_90_ccw(image=self.image))
+        image_rotated_180 = dito.rotate_180(image=self.image)
+        self.assertEqualImages(image_rotated_90_cw_2x, image_rotated_180)
+        self.assertEqualImages(image_rotated_90_ccw_2x, image_rotated_180)
+
+    def test_rotate_90_cw_gray(self):
+        image_gray = dito.as_gray(image=self.image)
+
+
 class save_Tests(TempDirTestCase):
     def _test_save_load(self, extension):
         image = dito.pm5544()
