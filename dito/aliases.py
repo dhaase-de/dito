@@ -18,15 +18,3 @@ def otsu_theta(image):
 def otsu_image(image):
     (theta, image2) = otsu(image=image)
     return image2
-
-
-def rotate_90_cw(image):
-    return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_CLOCKWISE)
-
-
-def rotate_90_ccw(image):
-    return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_COUNTERCLOCKWISE)
-
-
-def rotate_180(image):
-    return cv2.rotate(src=image, rotateCode=cv2.ROTATE_180)

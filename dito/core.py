@@ -176,6 +176,18 @@ def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
     return cv2.warpAffine(src=image, M=rotation_matrix, dsize=target_size, flags=interpolation)
 
 
+def rotate_90_cw(image):
+    return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_CLOCKWISE)
+
+
+def rotate_90_ccw(image):
+    return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_COUNTERCLOCKWISE)
+
+
+def rotate_180(image):
+    return cv2.rotate(src=image, rotateCode=cv2.ROTATE_180)
+
+
 ####
 #%%% channel-related
 ####
