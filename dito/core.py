@@ -146,6 +146,20 @@ def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolati
         raise ValueError("Expected a float (= scale factor) or a 2-tuple (= target size) for argument 'scale_or_size', but got type '{}'".format(type(scale_or_size)))
 
 
+def pad(image, count, mode=cv2.BORDER_CONSTANT, constant_value=0):
+    if isinstance(mode, int):
+        # assume mode to be one of cv2.BORDER_*
+        pass
+    elif isinstance(mode, str):
+        attr_name = "BORDER_{}".format(mode.upper())
+        mode = getattr(cv2, attr_name)
+    else:
+        raise ValueError("Invalid border mode '{}'".format(mode))
+
+    (count_top, count_right, count_bottom, count_left) = dito.utils.get_validated_tuple(x=count, type_=int, count=4, min_value=0, max_value=None)
+    return cv2.copyMakeBorder(src=image, top=count_top, bottom=count_bottom, left=count_left, right=count_right, borderType=mode, value=constant_value)
+
+
 def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
     """
     Rotate the given `image` by an arbitrary angle given in degrees.
@@ -176,20 +190,6 @@ def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
     rotation_matrix[1, 2] += target_size[1] // 2 - image_size[1] // 2
 
     return cv2.warpAffine(src=image, M=rotation_matrix, dsize=target_size, flags=interpolation)
-
-
-def pad(image, count, mode=cv2.BORDER_CONSTANT, constant_value=0):
-    if isinstance(mode, int):
-        # assume mode to be one of cv2.BORDER_*
-        pass
-    elif isinstance(mode, str):
-        attr_name = "BORDER_{}".format(mode.upper())
-        mode = getattr(cv2, attr_name)
-    else:
-        raise ValueError("Invalid border mode '{}'".format(mode))
-
-    (count_top, count_right, count_bottom, count_left) = dito.utils.get_validated_tuple(x=count, type_=int, count=4, min_value=0, max_value=None)
-    return cv2.copyMakeBorder(src=image, top=count_top, bottom=count_bottom, left=count_left, right=count_right, borderType=mode, value=constant_value)
 
 
 def rotate_90(image):
