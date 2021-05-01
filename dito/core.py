@@ -192,16 +192,16 @@ def pad(image, count, mode=cv2.BORDER_CONSTANT, constant_value=0):
     return cv2.copyMakeBorder(src=image, top=count_top, bottom=count_bottom, left=count_left, right=count_right, borderType=mode, value=constant_value)
 
 
-def rotate_90_cw(image):
-    return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_CLOCKWISE)
-
-
-def rotate_90_ccw(image):
+def rotate_90(image):
     return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_COUNTERCLOCKWISE)
 
 
 def rotate_180(image):
     return cv2.rotate(src=image, rotateCode=cv2.ROTATE_180)
+
+
+def rotate_270(image):
+    return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_CLOCKWISE)
 
 
 ####
