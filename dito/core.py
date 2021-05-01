@@ -119,7 +119,7 @@ def tir(*args):
 
 
 ####
-#%%% size-related
+#%%% geometry related
 ####
 
 
@@ -142,6 +142,38 @@ def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolati
     
     else:
         raise ValueError("Expected a float (= scale factor) or a 2-tuple (= target size) for argument 'scale_or_size', but got type '{}'".format(type(scale_or_size)))
+
+
+def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
+    """
+    Rotate the given `image` by an arbitrary angle given in degrees.
+    """
+    image_size = size(image=image)
+
+    # determine target image size based on padding mode
+    if padding_mode is None:
+        # no padding
+        target_size = image_size
+    elif padding_mode == "tight":
+        angle_rad = angle_deg * np.pi / 180.0
+        sin_angle = np.abs(np.sin(angle_rad))
+        cos_angle = np.abs(np.cos(angle_rad))
+        target_size = (
+            int(np.ceil(cos_angle * image_size[0] + sin_angle * image_size[1])),
+            int(np.ceil(cos_angle * image_size[1] + sin_angle * image_size[0])),
+        )
+    elif padding_mode == "full":
+        diag = int(np.ceil(np.sqrt(image_size[0]**2 + image_size[1]**2)))
+        target_size = (diag, diag)
+    else:
+        raise ValueError("Invalid padding mode '{}'".format(padding_mode))
+
+    # get rotation matrix and change the translation to match the target image size
+    rotation_matrix = cv2.getRotationMatrix2D(center=(image.shape[1] // 2, image.shape[0] // 2), angle=angle_deg, scale=1.0)
+    rotation_matrix[0, 2] += target_size[0] // 2 - image_size[0] // 2
+    rotation_matrix[1, 2] += target_size[1] // 2 - image_size[1] // 2
+
+    return cv2.warpAffine(src=image, M=rotation_matrix, dsize=target_size, flags=interpolation)
 
 
 ####
