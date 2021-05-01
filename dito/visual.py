@@ -468,7 +468,7 @@ class MonospaceBitmapFont(Font):
 
         return {"lines": charss, "styles": styless, "foreground_colors": foreground_colorss, "background_colors": background_colorss}
 
-    def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, border_color, border, margin, padding, opacity, scale, rotation, shrink_to_width):
+    def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, border_color, border, margin, padding, opacity, alignment, scale, rotation, shrink_to_width):
         # parse message (to get the raw text plus style and color information)
         parse_result = self.parse_message(raw_message=message, initial_style=style, initial_foreground_color=foreground_color, initial_background_color=background_color)
         lines = parse_result["lines"]
@@ -478,9 +478,8 @@ class MonospaceBitmapFont(Font):
 
         # determine max character count per line to get the image size
         line_count = len(lines)
-        max_character_count = 0
-        for line in lines:
-            max_character_count = max(max_character_count, len(line))
+        character_counts = tuple(len(line) for line in lines)
+        max_character_count = max(character_counts)
 
         # check colors
         for (color, none_allowed) in ((foreground_color, False), (background_color, True), (border_color, False)):
@@ -522,8 +521,18 @@ class MonospaceBitmapFont(Font):
         for (n_row, line) in enumerate(lines):
             row_offset = n_row * self.char_height + border_top + margin_top + n_row * padding_vertical
 
+            # determine column offset due to alignment
+            if alignment == "left":
+                alignment_col_offset = 0
+            elif alignment == "center":
+                alignment_col_offset = (max_character_count - character_counts[n_row]) // 2
+            elif alignment == "right":
+                alignment_col_offset = max_character_count - character_counts[n_row]
+            else:
+                raise ValueError("Invalid alignment '{}'".format(alignment))
+
             for (n_col, char) in enumerate(line):
-                col_offset = n_col * self.char_width + border_left + margin_left + n_col * padding_horizontal
+                col_offset = (n_col + alignment_col_offset) * self.char_width + border_left + margin_left + n_col * padding_horizontal
                 indices = (slice(row_offset, row_offset + self.char_height), slice(col_offset, col_offset + self.char_width))
 
                 char_image = self.get_char_image(char=char, style=styles[n_row][n_col])
@@ -620,7 +629,7 @@ class MonospaceBitmapFont(Font):
         return result_image
 
 
-def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(235, 235, 235), background_color=(45, 45, 45), border_color=(255, 255, 255), border=(0, 0, 0, 0), margin=(0, 0, 0, 0), padding=(0, 0), opacity=1.0, scale=None, rotation=None, shrink_to_width=None):
+def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(235, 235, 235), background_color=(45, 45, 45), border_color=(255, 255, 255), border=(0, 0, 0, 0), margin=(0, 0, 0, 0), padding=(0, 0), opacity=1.0, alignment="left", scale=None, rotation=None, shrink_to_width=None):
     """
     Draws the text `message` into the given `image`.
 
@@ -653,6 +662,7 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", sty
         margin=margin,
         padding=padding,
         opacity=opacity,
+        alignment=alignment,
         scale=scale,
         rotation=rotation,
         shrink_to_width=shrink_to_width,
