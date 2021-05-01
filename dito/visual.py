@@ -468,7 +468,7 @@ class MonospaceBitmapFont(Font):
 
         return {"lines": charss, "styles": styless, "foreground_colors": foreground_colorss, "background_colors": background_colorss}
 
-    def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, border_color, border, margin, padding, opacity, scale, shrink_to_width, rotation_mode):
+    def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, border_color, border, margin, padding, opacity, scale, rotation, shrink_to_width):
         # parse message (to get the raw text plus style and color information)
         parse_result = self.parse_message(raw_message=message, initial_style=style, initial_foreground_color=foreground_color, initial_background_color=background_color)
         lines = parse_result["lines"]
@@ -568,19 +568,26 @@ class MonospaceBitmapFont(Font):
                 background_image = dito.core.as_gray(image=background_image)
 
         # rotate if requested
-        if rotation_mode is not None:
-            if rotation_mode == "90_cw":
-                rotation_func = dito.aliases.rotate_90_cw
-            elif rotation_mode == "90_ccw":
-                rotation_func = dito.aliases.rotate_90_ccw
-            elif rotation_mode == "180":
-                rotation_func = dito.aliases.rotate_180
+        if rotation is not None:
+            if isinstance(rotation, int) and ((rotation % 90) == 0):
+                angle_normed = rotation % 360
+                if angle_normed == 0:
+                    rotation_func = None
+                elif angle_normed == 90:
+                    rotation_func = dito.core.rotate_90
+                elif angle_normed == 180:
+                    rotation_func = dito.core.rotate_180
+                elif angle_normed == 270:
+                    rotation_func = dito.core.rotate_270
             else:
-                raise ValueError("Invalid rotation mode '{}'".format(rotation_mode))
+                rotation_func = lambda image: dito.core.rotate(image=image, angle_deg=rotation, padding_mode="tight")
 
-            mask = rotation_func(image=mask)
-            foreground_image = rotation_func(image=foreground_image)
-            background_image = rotation_func(image=background_image)
+            if rotation_func is not None:
+                mask = rotation_func(image=mask)
+                mask = dito.core.clip_01(image=mask)
+                foreground_image = rotation_func(image=foreground_image)
+                if background_image is not None:
+                    background_image = rotation_func(image=background_image)
 
         # insert text into target image
         target_image = target_image.copy()
@@ -613,7 +620,7 @@ class MonospaceBitmapFont(Font):
         return result_image
 
 
-def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(235, 235, 235), background_color=(45, 45, 45), border_color=(255, 255, 255), border=(0, 0, 0, 0), margin=(0, 0, 0, 0), padding=(0, 0), opacity=1.0, scale=None, shrink_to_width=None, rotation_mode=None):
+def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(235, 235, 235), background_color=(45, 45, 45), border_color=(255, 255, 255), border=(0, 0, 0, 0), margin=(0, 0, 0, 0), padding=(0, 0), opacity=1.0, scale=None, rotation=None, shrink_to_width=None):
     """
     Draws the text `message` into the given `image`.
 
@@ -647,8 +654,8 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", sty
         padding=padding,
         opacity=opacity,
         scale=scale,
+        rotation=rotation,
         shrink_to_width=shrink_to_width,
-        rotation_mode=rotation_mode,
     )
 
 
