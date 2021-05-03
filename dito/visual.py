@@ -276,6 +276,7 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
 
 
 class Font():
+    # ANSI escape codes - see https://en.wikipedia.org/wiki/ANSI_escape_code
     TEXT_RESET = "\033[0m"
 
     TEXT_STYLE_REGULAR = "\033[22m"
@@ -289,11 +290,11 @@ class Font():
         return "\033[{};2;{};{};{}m".format(38 if foreground else 48, r, g, b)
 
     @classmethod
-    def TEXT_FOREGROUND_COLOR_BGR(cls, b, g, r):
+    def TEXT_FOREGROUND_BGR(cls, b, g, r):
         return cls.TEXT_COLOR_BGR(b=b, g=g, r=r, foreground=True)
 
     @classmethod
-    def TEXT_BACKGROUND_COLOR_BGR(cls, b, g, r):
+    def TEXT_BACKGROUND_BGR(cls, b, g, r):
         return cls.TEXT_COLOR_BGR(b=b, g=g, r=r, foreground=False)
 
 
