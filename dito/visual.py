@@ -282,6 +282,45 @@ class Font():
     TEXT_STYLE_REGULAR = "\033[22m"
     TEXT_STYLE_BOLD = "\033[1m"
 
+    TEXT_FOREGROUND_DEFAULT = "\033[39m"
+    TEXT_BACKGROUND_DEFAULT = "\033[49m"
+
+    TEXT_FOREGROUND_BLACK   = "\033[30m"
+    TEXT_FOREGROUND_RED     = "\033[31m"
+    TEXT_FOREGROUND_GREEN   = "\033[32m"
+    TEXT_FOREGROUND_YELLOW  = "\033[33m"
+    TEXT_FOREGROUND_BLUE    = "\033[34m"
+    TEXT_FOREGROUND_MAGENTA = "\033[35m"
+    TEXT_FOREGROUND_CYAN    = "\033[36m"
+    TEXT_FOREGROUND_WHITE   = "\033[37m"
+
+    TEXT_BACKGROUND_BLACK   = "\033[40m"
+    TEXT_BACKGROUND_RED     = "\033[41m"
+    TEXT_BACKGROUND_GREEN   = "\033[42m"
+    TEXT_BACKGROUND_YELLOW  = "\033[43m"
+    TEXT_BACKGROUND_BLUE    = "\033[44m"
+    TEXT_BACKGROUND_MAGENTA = "\033[45m"
+    TEXT_BACKGROUND_CYAN    = "\033[46m"
+    TEXT_BACKGROUND_WHITE   = "\033[47m"
+
+    TEXT_FOREGROUND_BRIGHT_BLACK   = "\033[90m"
+    TEXT_FOREGROUND_BRIGHT_RED     = "\033[91m"
+    TEXT_FOREGROUND_BRIGHT_GREEN   = "\033[92m"
+    TEXT_FOREGROUND_BRIGHT_YELLOW  = "\033[93m"
+    TEXT_FOREGROUND_BRIGHT_BLUE    = "\033[94m"
+    TEXT_FOREGROUND_BRIGHT_MAGENTA = "\033[95m"
+    TEXT_FOREGROUND_BRIGHT_CYAN    = "\033[96m"
+    TEXT_FOREGROUND_BRIGHT_WHITE   = "\033[97m"
+
+    TEXT_BACKGROUND_BRIGHT_BLACK   = "\033[100m"
+    TEXT_BACKGROUND_BRIGHT_RED     = "\033[101m"
+    TEXT_BACKGROUND_BRIGHT_GREEN   = "\033[102m"
+    TEXT_BACKGROUND_BRIGHT_YELLOW  = "\033[103m"
+    TEXT_BACKGROUND_BRIGHT_BLUE    = "\033[104m"
+    TEXT_BACKGROUND_BRIGHT_MAGENTA = "\033[105m"
+    TEXT_BACKGROUND_BRIGHT_CYAN    = "\033[106m"
+    TEXT_BACKGROUND_BRIGHT_WHITE   = "\033[107m"
+
     @staticmethod
     def TEXT_COLOR_BGR(b, g, r, foreground=True):
         for value in (b, g, r):
@@ -430,7 +469,7 @@ class MonospaceBitmapFont(Font):
                 # split line into part before the next escape sequence, the escape sequence, the "argument" part of the escape sequence, and the part after the escape sequence
                 pre_escape = raw_line[:escape_begin_index]
                 escape_sequence = raw_line[escape_begin_index:escape_end_index]
-                escape_code = escape_sequence[2:-1]
+                escape_codes = tuple(int(code) for code in escape_sequence[2:-1].split(";") if code != "")
                 post_escape = raw_line[escape_end_index:]
 
                 # append text before the escape sequence to the line and update the remaining raw line
@@ -441,24 +480,83 @@ class MonospaceBitmapFont(Font):
                 raw_line = post_escape
 
                 # handle escape codes (see https://en.wikipedia.org/wiki/ANSI_escape_code)
-                if escape_sequence != "":
-                    if escape_code == "0":
+                while len(escape_codes) > 0:
+                    escape_code = escape_codes[0]
+                    escape_codes = escape_codes[1:]
+
+                    if escape_code == 0:
                         # reset
                         current_style = initial_style
                         current_foreground_color = initial_foreground_color
                         current_background_color = initial_background_color
-                    elif escape_code == "1":
+
+                    elif escape_code == 1:
                         # bold style
                         current_style = "bold"
-                    elif escape_code == "22":
+
+                    elif escape_code == 22:
                         # regular (non-bold) style
                         current_style = "regular"
-                    elif escape_code.startswith("38;2;"):
-                        # foreground color (bgr)
-                        current_foreground_color = [int(value) for value in escape_code.split(";")[2:]][::-1]
-                    elif escape_code.startswith("48;2;"):
-                        # background color (bgr)
-                        current_background_color = [int(value) for value in escape_code.split(";")[2:]][::-1]
+
+                    elif (30 <= escape_code <= 37) or (40 <= escape_code <= 47) or (90 <= escape_code <= 97) or (100 <= escape_code <= 107):
+                        # set foreground/background color via index
+
+                        first_digits = escape_code // 10
+                        last_digit = escape_code % 10
+
+                        # distinguish between "normal" and "bright" colors
+                        if first_digits in (3, 4):
+                            # normal colors
+                            color_lut = {
+                                0: (  0,   0,   0), # black
+                                1: (  0,   0, 205), # red
+                                2: (  0, 205,   0), # green
+                                3: (  0, 205, 205), # yellow
+                                4: (238,   0,   0), # blue
+                                5: (205,   0, 205), # magenta
+                                6: (205, 205,   0), # cyan
+                                7: (229, 229, 229), # white
+                            }
+                        else:
+                            # bright colors
+                            color_lut = {
+                                0: (127, 127, 127),  # gray
+                                1: (  0,   0, 255),  # bright red
+                                2: (  0, 255,   0),  # bright green
+                                3: (  0, 255, 255),  # bright yellow
+                                4: (255,  92,  92),  # bright blue
+                                5: (255,   0, 255),  # bright magenta
+                                6: (255, 255,   0),  # bright cyan
+                                7: (255, 255, 255),  # bright white
+                            }
+
+                        # determine what color to set
+                        color = color_lut[last_digit]
+                        if first_digits in (3, 9):
+                            current_foreground_color = color
+                        else:
+                            current_background_color = color
+
+                    elif (escape_code in (38, 48)) and (len(escape_codes) >= 4) and (escape_codes[0] == 2):
+                        # set foreground/background color via BGR
+                        bgr_values = escape_codes[1:4][::-1]
+                        escape_codes = escape_codes[4:]
+
+                        if escape_code == 38:
+                            # foreground color (bgr)
+                            current_foreground_color = bgr_values
+                        else:
+                            # background color (bgr)
+                            current_background_color = bgr_values
+
+                    elif escape_code == 39:
+                        # reset foreground color
+                        current_foreground_color = initial_foreground_color
+
+                    elif escape_code == 49:
+                        # reset background color
+                        current_background_color = initial_background_color
+
                     else:
                         raise RuntimeError("Escape sequence '{}' is not supported".format(escape_sequence))
 
