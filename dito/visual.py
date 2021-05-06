@@ -473,7 +473,10 @@ class MonospaceBitmapFont(Font):
                 # split line into part before the next escape sequence, the escape sequence, the "argument" part of the escape sequence, and the part after the escape sequence
                 pre_escape = raw_line[:escape_begin_index]
                 escape_sequence = raw_line[escape_begin_index:escape_end_index]
-                escape_codes = tuple(int(code) for code in escape_sequence[2:-1].split(";") if code != "")
+                if escape_sequence != "":
+                    escape_codes = tuple(int(code) if code != "" else 0 for code in escape_sequence[2:-1].split(";"))
+                else:
+                    escape_codes = tuple()
                 post_escape = raw_line[escape_end_index:]
 
                 # append text before the escape sequence to the line and update the remaining raw line
