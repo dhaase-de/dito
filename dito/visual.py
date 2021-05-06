@@ -2,6 +2,7 @@ import collections
 import math
 import os.path
 import re
+import warnings
 
 import cv2
 import numpy as np
@@ -574,7 +575,7 @@ class MonospaceBitmapFont(Font):
                         current_background_color = initial_background_color
 
                     else:
-                        raise RuntimeError("Escape sequence '{}' is not supported".format(escape_sequence))
+                        warnings.warn("Escape code '{}' (full escape sequence: {}) is not supported".format(escape_code, bytes(escape_sequence, "utf-8")))
 
             charss.append(chars)
             styless.append(styles)
