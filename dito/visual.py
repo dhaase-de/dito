@@ -282,6 +282,9 @@ class Font():
     TEXT_STYLE_REGULAR = "\033[22m"
     TEXT_STYLE_BOLD = "\033[1m"
 
+    TEXT_REVERSE_ON = "\033[7m"
+    TEXT_REVERSE_OFF = "\033[27m"
+
     TEXT_FOREGROUND_DEFAULT = "\033[39m"
     TEXT_BACKGROUND_DEFAULT = "\033[49m"
 
@@ -449,6 +452,7 @@ class MonospaceBitmapFont(Font):
         current_style = initial_style
         current_foreground_color = initial_foreground_color
         current_background_color = initial_background_color
+        current_reverse_state = False
 
         for raw_line in raw_lines:
             chars = ""
@@ -475,8 +479,8 @@ class MonospaceBitmapFont(Font):
                 # append text before the escape sequence to the line and update the remaining raw line
                 chars += pre_escape
                 styles += [current_style] * escape_begin_index
-                foreground_colors += [current_foreground_color] * escape_begin_index
-                background_colors += [current_background_color] * escape_begin_index
+                foreground_colors += [current_foreground_color if (current_reverse_state is False) else current_background_color] * escape_begin_index
+                background_colors += [current_background_color if (current_reverse_state is False) else current_foreground_color] * escape_begin_index
                 raw_line = post_escape
 
                 # handle escape codes (see https://en.wikipedia.org/wiki/ANSI_escape_code)
@@ -489,14 +493,23 @@ class MonospaceBitmapFont(Font):
                         current_style = initial_style
                         current_foreground_color = initial_foreground_color
                         current_background_color = initial_background_color
+                        current_reverse_state = False
 
                     elif escape_code == 1:
                         # bold style
                         current_style = "bold"
 
+                    elif escape_code == 7:
+                        # turn on reverse mode (foreground and background colors are switched)
+                        current_reverse_state = True
+
                     elif escape_code == 22:
                         # regular (non-bold) style
                         current_style = "regular"
+
+                    elif escape_code == 27:
+                        # turn on reverse mode (foreground and background colors are switched)
+                        current_reverse_state = False
 
                     elif (30 <= escape_code <= 37) or (40 <= escape_code <= 47) or (90 <= escape_code <= 97) or (100 <= escape_code <= 107):
                         # set foreground/background color via index
