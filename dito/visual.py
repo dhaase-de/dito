@@ -1,7 +1,6 @@
 import collections
 import math
 import os.path
-import re
 import warnings
 
 import cv2
