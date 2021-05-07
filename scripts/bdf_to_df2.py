@@ -13,7 +13,7 @@ import dito
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description="Convert font(s) given in the Glyph Bitmap Distribution Format (BDF) into dito's internal monospace bitmap font format ('lh4rb').", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description="Convert font(s) given in the Glyph Bitmap Distribution Format (BDF) into dito's internal monospace bitmap font format ('df2').", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-d", "--debug", action="store_true", help="If set, show full stack trace for errors.")
     parser.add_argument("-r", "--font-filenames-regular", type=str, nargs="+", required=True, help="Filenames of the regular font (should end on '.bdf').")
     parser.add_argument("-b", "--font-filenames-bold", type=str, nargs="+", required=True, help="Filenames of the bold font (should end on '.bdf'). Must match the corresponsing regular fonts.")
@@ -37,7 +37,7 @@ def get_out_filename(output_dirname, filename_regular, filename_bold):
     basename_regular = os.path.basename(filename_regular)
     basename_bold = os.path.basename(filename_bold)
     out_basename = "".join(item_regular for (item_regular, item_bold) in zip(basename_regular, basename_bold) if item_regular == item_bold)
-    out_basename = os.path.splitext(out_basename)[0] + "_lh4rb.png"
+    out_basename = os.path.splitext(out_basename)[0] + "_df2.png"
     out_filename = os.path.join(output_dirname, out_basename)
     return out_filename
 
@@ -45,7 +45,7 @@ def get_out_filename(output_dirname, filename_regular, filename_bold):
 def font_to_char_images(filename):
     font = bdfparser.Font(filename)
     default_glyph = font.glyph("?")
-    chars = dito.MonospaceBitmapFont.get_iso_8859_1_chars()
+    chars = dito.MonospaceBitmapFont.get_supported_chars()
     char_images = collections.OrderedDict()
     for char in chars:
         bitmap = font.draw(string=char, linelimit=font.headers["fbbx"], mode=0, missing=default_glyph)
@@ -73,7 +73,7 @@ def main():
 
         char_images_regular = font_to_char_images(filename=filename_regular)
         char_images_bold = font_to_char_images(filename=filename_bold)
-        dito.MonospaceBitmapFont.save_lh4rb(filename=out_filename, char_images_regular=char_images_regular, char_images_bold=char_images_bold)
+        dito.MonospaceBitmapFont.save_df2(filename=out_filename, char_images_regular=char_images_regular, char_images_bold=char_images_bold)
 
 
 if __name__ == "__main__":

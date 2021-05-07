@@ -343,7 +343,7 @@ class Font():
 class MonospaceBitmapFont(Font):
     def __init__(self, filename):
         self.filename = filename
-        (self.char_width, self.char_height, self.char_images) = self.load_lh4rb(filename=self.filename)
+        (self.char_width, self.char_height, self.char_images) = self.load_df2(filename=self.filename)
 
     @classmethod
     def init_from_name(cls, name):
@@ -355,39 +355,14 @@ class MonospaceBitmapFont(Font):
         return cls(filename=filename)
 
     @classmethod
-    def save_lh1rb(cls, filename, char_images_regular, char_images_bold):
+    def save_df2(cls, filename, char_images_regular, char_images_bold):
         """
-        Currently unused - just here for documentation purposes.
-        When used, the quantization should be fixed (see `save_lh4rb`).
-        """
-        chars = cls.get_iso_8859_1_chars()
-        char_count = len(chars)
-        chars_per_position = 4
+        Save the given character images in dito's own monospace bitmap font format ('df2').
 
-        position_count = math.ceil(char_count / chars_per_position)
-        position_images = []
-        for n_position in range(position_count):
-            position_image = char_images_regular[" "] * 0
-            for n_position_char in range(chars_per_position):
-                n_char = n_position * chars_per_position + n_position_char
-                if n_char < char_count:
-                    char = chars[n_char]
-                    position_image += (char_images_regular[char] // 255) << (7 - n_position_char * 2)
-                    position_image += (char_images_bold[char] // 255) << (6 - n_position_char * 2)
-            position_images.append(position_image)
-
-        out_image = stack([position_images])
-        dito.io.save(filename=filename, image=out_image)
-
-    @classmethod
-    def save_lh4rb(cls, filename, char_images_regular, char_images_bold):
-        """
-        Save the given character images in dito's own monospace bitmap font format ('lh4rb').
-
-        For a description of the format, see `load_lh4rb`.
+        For a description of the format, see `load_df2`.
         This method is usually only called when adding new fonts to dito.
         """
-        chars = cls.get_iso_8859_1_chars()
+        chars = cls.get_supported_chars()
         position_images = []
         for char in chars:
             position_image = (np.round(char_images_regular[char].astype(np.float32) / 17.0).astype(np.uint8) << 4) + np.round(char_images_bold[char].astype(np.float32) / 17.0).astype(np.uint8)
@@ -396,21 +371,15 @@ class MonospaceBitmapFont(Font):
         dito.io.save(filename=filename, image=out_image)
 
     @classmethod
-    def load_lh4rb(cls, filename):
+    def load_df2(cls, filename):
         """
-        Load the font from dito's own monospace bitmap font format ('lh4rb').
+        Load the font from dito's own monospace bitmap font format ('df2').
 
-        In principle, it is just a PNG image which contains all ISO-8859-1 (= Latin-1) characters in regular and
-        bold style, stacked horizontally. The regular and bold variants of each character are stacked on top of another,
-        each using a depth of four bit. This saves quite some space (especially when using a PNG optimizer).
-
-        Hence the name 'lh4rb' stands for:
-            l:  latin-1 (ISO-8859-1) character set
-            h:  characters are stacked horizontally
-            4:  each character style has a bit depth of four
-            rb: each character is available in a regular and bold style
+        In principle, it is just a PNG image which contains all ISO-8859-1 (= Latin-1) and some other characters in
+        regular and bold style, stacked horizontally. The regular and bold variants of each character are stacked on top
+        of another, each using a depth of four bit. This saves quite some space (especially when using a PNG optimizer).
         """
-        chars = cls.get_iso_8859_1_chars()
+        chars = cls.get_supported_chars()
         char_count = len(chars)
         chars_per_position = 1
 
@@ -429,12 +398,23 @@ class MonospaceBitmapFont(Font):
         return (char_width, char_height, char_images)
 
     @staticmethod
-    def get_iso_8859_1_codes():
-        return tuple(range(32, 127)) + tuple(range(160, 256))
+    def get_supported_char_codes():
+        codes = tuple()
+
+        # ISO-8859-1 (= Latin-1)
+        codes += tuple(range(32, 127))
+        codes += tuple(range(160, 256))
+
+        # Greek alphabet
+        codes += tuple(range(913, 930))
+        codes += tuple(range(931, 938))
+        codes += tuple(range(945, 970))
+
+        return codes
 
     @classmethod
-    def get_iso_8859_1_chars(cls):
-        codes = cls.get_iso_8859_1_codes()
+    def get_supported_chars(cls):
+        codes = cls.get_supported_char_codes()
         return tuple(chr(code) for code in codes)
 
     def get_char_image(self, char, style="regular"):
