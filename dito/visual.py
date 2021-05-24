@@ -563,7 +563,7 @@ class MonospaceBitmapFont(Font):
 
         return {"lines": charss, "styles": styless, "foreground_colors": foreground_colorss, "background_colors": background_colorss}
 
-    def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, border_color, border, margin, padding, opacity, alignment, scale, rotation, shrink_to_width):
+    def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, background_as_outline, border_color, border, margin, padding, opacity, alignment, scale, rotation, shrink_to_width):
         # parse message (to get the raw text plus style and color information)
         parse_result = self.parse_message(raw_message=message, initial_style=style, initial_foreground_color=foreground_color, initial_background_color=background_color)
         lines = parse_result["lines"]
@@ -633,6 +633,9 @@ class MonospaceBitmapFont(Font):
                 col_offset = (n_col + alignment_col_offset) * self.char_width + border_left + margin_left + n_col * padding_horizontal
                 indices = (slice(row_offset, row_offset + self.char_height), slice(col_offset, col_offset + self.char_width))
 
+                # get current character image
+                char_image = self.get_char_image(char=char, style=styles[n_row][n_col])
+
                 # update background mask and image
                 current_background_color = background_colors[n_row][n_col]
                 if current_background_color != background_color:
@@ -643,7 +646,6 @@ class MonospaceBitmapFont(Font):
                         background_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=current_background_color)
 
                 # update foreground mask
-                char_image = self.get_char_image(char=char, style=styles[n_row][n_col])
                 foreground_mask[indices] = char_image
 
                 # update foreground image (= foreground color)
@@ -654,6 +656,10 @@ class MonospaceBitmapFont(Font):
                     else:
                         background_mask[indices] = np.minimum(background_mask[indices], 255 - foreground_mask[indices])
                         foreground_mask[indices] = 0
+
+        # if using outline background mode, dilate text mask to get background mask
+        if background_as_outline:
+            background_mask = np.minimum(background_mask, dito.aliases.dilate(image=foreground_mask, shape=cv2.MORPH_ELLIPSE, size=char_image.shape[0] // 5))
 
         # draw border
         foreground_mask[:border_top, :] = 255
@@ -734,7 +740,7 @@ class MonospaceBitmapFont(Font):
         return result_image
 
 
-def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(235, 235, 235), background_color=(45, 45, 45), border_color=(255, 255, 255), border=(0, 0, 0, 0), margin=(0, 0, 0, 0), padding=(0, 0), opacity=1.0, alignment="left", scale=None, rotation=None, shrink_to_width=None):
+def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(235, 235, 235), background_color=(45, 45, 45), background_as_outline=False, border_color=(255, 255, 255), border=(0, 0, 0, 0), margin=(0, 0, 0, 0), padding=(0, 0), opacity=1.0, alignment="left", scale=None, rotation=None, shrink_to_width=None):
     """
     Draws the text `message` into the given `image`.
 
@@ -762,6 +768,7 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", sty
         anchor=anchor,
         foreground_color=color,
         background_color=background_color,
+        background_as_outline=background_as_outline,
         border_color=border_color,
         border=border,
         margin=margin,
