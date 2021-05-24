@@ -734,7 +734,7 @@ class MonospaceBitmapFont(Font):
             source_image=text_image,
             position=position,
             anchor=anchor,
-            source_mask=text_mask,
+            source_mask=text_mask * opacity if opacity is not None else text_mask,
         )
 
         return result_image
