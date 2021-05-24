@@ -710,8 +710,6 @@ class MonospaceBitmapFont(Font):
                 background_mask = dito.core.clip_01(image=background_mask)
                 background_image = rotation_func(image=background_image)
 
-        dito.show([foreground_mask, foreground_image, background_mask, background_image], wait=0)
-
         # insert text into target image
         text_image = insert(
             target_image=background_image,
