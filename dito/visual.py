@@ -633,15 +633,6 @@ class MonospaceBitmapFont(Font):
                 col_offset = (n_col + alignment_col_offset) * self.char_width + border_left + margin_left + n_col * padding_horizontal
                 indices = (slice(row_offset, row_offset + self.char_height), slice(col_offset, col_offset + self.char_width))
 
-                # update foreground mask
-                char_image = self.get_char_image(char=char, style=styles[n_row][n_col])
-                foreground_mask[indices] = char_image
-
-                # update foreground image (= foreground color)
-                current_foreground_color = foreground_colors[n_row][n_col]
-                if current_foreground_color != foreground_color:
-                    foreground_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=current_foreground_color)
-
                 # update background mask and image
                 current_background_color = background_colors[n_row][n_col]
                 if current_background_color != background_color:
@@ -650,6 +641,19 @@ class MonospaceBitmapFont(Font):
                     else:
                         background_mask[indices] = 255
                         background_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=current_background_color)
+
+                # update foreground mask
+                char_image = self.get_char_image(char=char, style=styles[n_row][n_col])
+                foreground_mask[indices] = char_image
+
+                # update foreground image (= foreground color)
+                current_foreground_color = foreground_colors[n_row][n_col]
+                if current_foreground_color != foreground_color:
+                    if current_foreground_color is not None:
+                        foreground_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=current_foreground_color)
+                    else:
+                        background_mask[indices] = np.minimum(background_mask[indices], 255 - foreground_mask[indices])
+                        foreground_mask[indices] = 0
 
         # draw border
         foreground_mask[:border_top, :] = 255
