@@ -18,3 +18,9 @@ def otsu_theta(image):
 def otsu_image(image):
     (theta, image2) = otsu(image=image)
     return image2
+
+
+def dilate(image, shape=cv2.MORPH_ELLIPSE, size=3, iterations=1):
+    ksize = dito.utils.get_validated_tuple(x=size, type_=int, count=2)
+    kernel = cv2.getStructuringElement(shape=shape, ksize=ksize, anchor=(-1, -1))
+    return cv2.dilate(src=image, kernel=kernel, iterations=iterations)
