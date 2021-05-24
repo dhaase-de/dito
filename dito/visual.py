@@ -659,7 +659,7 @@ class MonospaceBitmapFont(Font):
 
         # if using outline background mode, dilate text mask to get background mask
         if background_as_outline:
-            background_mask = np.minimum(background_mask, dito.aliases.dilate(image=foreground_mask, shape=cv2.MORPH_ELLIPSE, size=char_image.shape[0] // 5))
+            background_mask = np.minimum(background_mask, dito.aliases.dilate(image=foreground_mask, shape=cv2.MORPH_ELLIPSE, size=max(3, char_image.shape[0] // 5)))
 
         # draw border
         foreground_mask[:border_top, :] = 255
