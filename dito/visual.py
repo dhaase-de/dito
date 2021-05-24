@@ -277,67 +277,67 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
 
 class Font():
     # ANSI escape codes - see https://en.wikipedia.org/wiki/ANSI_escape_code
-    TEXT_RESET = "\033[0m"
+    RESET = "\033[0m"
 
-    TEXT_STYLE_REGULAR = "\033[22m"
-    TEXT_STYLE_BOLD = "\033[1m"
+    STYLE_REGULAR = "\033[22m"
+    STYLE_BOLD = "\033[1m"
 
-    TEXT_REVERSE_ON = "\033[7m"
-    TEXT_REVERSE_OFF = "\033[27m"
+    REVERSE_ON = "\033[7m"
+    REVERSE_OFF = "\033[27m"
 
-    TEXT_FOREGROUND_DEFAULT = "\033[39m"
-    TEXT_BACKGROUND_DEFAULT = "\033[49m"
+    FOREGROUND_DEFAULT = "\033[39m"
+    BACKGROUND_DEFAULT = "\033[49m"
 
-    TEXT_FOREGROUND_BLACK   = "\033[30m"
-    TEXT_FOREGROUND_RED     = "\033[31m"
-    TEXT_FOREGROUND_GREEN   = "\033[32m"
-    TEXT_FOREGROUND_YELLOW  = "\033[33m"
-    TEXT_FOREGROUND_BLUE    = "\033[34m"
-    TEXT_FOREGROUND_MAGENTA = "\033[35m"
-    TEXT_FOREGROUND_CYAN    = "\033[36m"
-    TEXT_FOREGROUND_WHITE   = "\033[37m"
+    FOREGROUND_BLACK   = "\033[30m"
+    FOREGROUND_RED     = "\033[31m"
+    FOREGROUND_GREEN   = "\033[32m"
+    FOREGROUND_YELLOW  = "\033[33m"
+    FOREGROUND_BLUE    = "\033[34m"
+    FOREGROUND_MAGENTA = "\033[35m"
+    FOREGROUND_CYAN    = "\033[36m"
+    FOREGROUND_WHITE   = "\033[37m"
 
-    TEXT_BACKGROUND_BLACK   = "\033[40m"
-    TEXT_BACKGROUND_RED     = "\033[41m"
-    TEXT_BACKGROUND_GREEN   = "\033[42m"
-    TEXT_BACKGROUND_YELLOW  = "\033[43m"
-    TEXT_BACKGROUND_BLUE    = "\033[44m"
-    TEXT_BACKGROUND_MAGENTA = "\033[45m"
-    TEXT_BACKGROUND_CYAN    = "\033[46m"
-    TEXT_BACKGROUND_WHITE   = "\033[47m"
+    BACKGROUND_BLACK   = "\033[40m"
+    BACKGROUND_RED     = "\033[41m"
+    BACKGROUND_GREEN   = "\033[42m"
+    BACKGROUND_YELLOW  = "\033[43m"
+    BACKGROUND_BLUE    = "\033[44m"
+    BACKGROUND_MAGENTA = "\033[45m"
+    BACKGROUND_CYAN    = "\033[46m"
+    BACKGROUND_WHITE   = "\033[47m"
 
-    TEXT_FOREGROUND_BRIGHT_BLACK   = "\033[90m"
-    TEXT_FOREGROUND_BRIGHT_RED     = "\033[91m"
-    TEXT_FOREGROUND_BRIGHT_GREEN   = "\033[92m"
-    TEXT_FOREGROUND_BRIGHT_YELLOW  = "\033[93m"
-    TEXT_FOREGROUND_BRIGHT_BLUE    = "\033[94m"
-    TEXT_FOREGROUND_BRIGHT_MAGENTA = "\033[95m"
-    TEXT_FOREGROUND_BRIGHT_CYAN    = "\033[96m"
-    TEXT_FOREGROUND_BRIGHT_WHITE   = "\033[97m"
+    FOREGROUND_BRIGHT_BLACK   = "\033[90m"
+    FOREGROUND_BRIGHT_RED     = "\033[91m"
+    FOREGROUND_BRIGHT_GREEN   = "\033[92m"
+    FOREGROUND_BRIGHT_YELLOW  = "\033[93m"
+    FOREGROUND_BRIGHT_BLUE    = "\033[94m"
+    FOREGROUND_BRIGHT_MAGENTA = "\033[95m"
+    FOREGROUND_BRIGHT_CYAN    = "\033[96m"
+    FOREGROUND_BRIGHT_WHITE   = "\033[97m"
 
-    TEXT_BACKGROUND_BRIGHT_BLACK   = "\033[100m"
-    TEXT_BACKGROUND_BRIGHT_RED     = "\033[101m"
-    TEXT_BACKGROUND_BRIGHT_GREEN   = "\033[102m"
-    TEXT_BACKGROUND_BRIGHT_YELLOW  = "\033[103m"
-    TEXT_BACKGROUND_BRIGHT_BLUE    = "\033[104m"
-    TEXT_BACKGROUND_BRIGHT_MAGENTA = "\033[105m"
-    TEXT_BACKGROUND_BRIGHT_CYAN    = "\033[106m"
-    TEXT_BACKGROUND_BRIGHT_WHITE   = "\033[107m"
+    BACKGROUND_BRIGHT_BLACK   = "\033[100m"
+    BACKGROUND_BRIGHT_RED     = "\033[101m"
+    BACKGROUND_BRIGHT_GREEN   = "\033[102m"
+    BACKGROUND_BRIGHT_YELLOW  = "\033[103m"
+    BACKGROUND_BRIGHT_BLUE    = "\033[104m"
+    BACKGROUND_BRIGHT_MAGENTA = "\033[105m"
+    BACKGROUND_BRIGHT_CYAN    = "\033[106m"
+    BACKGROUND_BRIGHT_WHITE   = "\033[107m"
 
     @staticmethod
-    def TEXT_COLOR_BGR(b, g, r, foreground=True):
+    def COLOR_BGR(b, g, r, foreground=True):
         for value in (b, g, r):
             if not (isinstance(value, int) and (0 <= value <= 255)):
                 raise ValueError("BGR values must be integers in the range [0, 255]")
         return "\033[{};2;{};{};{}m".format(38 if foreground else 48, r, g, b)
 
     @classmethod
-    def TEXT_FOREGROUND_BGR(cls, b, g, r):
-        return cls.TEXT_COLOR_BGR(b=b, g=g, r=r, foreground=True)
+    def FOREGROUND_BGR(cls, b, g, r):
+        return cls.COLOR_BGR(b=b, g=g, r=r, foreground=True)
 
     @classmethod
-    def TEXT_BACKGROUND_BGR(cls, b, g, r):
-        return cls.TEXT_COLOR_BGR(b=b, g=g, r=r, foreground=False)
+    def BACKGROUND_BGR(cls, b, g, r):
+        return cls.COLOR_BGR(b=b, g=g, r=r, foreground=False)
 
 
 class MonospaceBitmapFont(Font):

@@ -829,27 +829,27 @@ class text_Tests(TestCase):
 
     def test_text_escape_bold(self):
         text_image_regular = dito.text(image=self.image, message="Hello World", **self.text_kwargs)
-        text_image_bold = dito.text(image=self.image, message="Hello " + dito.Font.TEXT_STYLE_BOLD + "World", **self.text_kwargs)
+        text_image_bold = dito.text(image=self.image, message="Hello " + dito.Font.STYLE_BOLD + "World", **self.text_kwargs)
         self.assertDifferingImages(text_image_regular, text_image_bold)
 
     def test_text_escape_regular(self):
         text_image_regular = dito.text(image=self.image, message="Hello World", **self.text_kwargs)
-        text_image_bold_regular = dito.text(image=self.image, message="Hello " + dito.Font.TEXT_STYLE_BOLD + dito.Font.TEXT_STYLE_REGULAR + "World", **self.text_kwargs)
+        text_image_bold_regular = dito.text(image=self.image, message="Hello " + dito.Font.STYLE_BOLD + dito.Font.STYLE_REGULAR + "World", **self.text_kwargs)
         self.assertEqualImages(text_image_regular, text_image_bold_regular)
 
     def test_text_escape_reset(self):
         text_image_regular = dito.text(image=self.image, message="Hello World", color=(255, 255, 255), background_color=(40, 40, 40), **self.text_kwargs)
-        text_image_reset = dito.text(image=self.image, message="Hello " + dito.Font.TEXT_STYLE_BOLD + dito.Font.TEXT_FOREGROUND_BGR(0, 255, 0) + dito.Font.TEXT_BACKGROUND_BGR(127, 127, 0) + dito.Font.TEXT_RESET + "World", color=(255, 255, 255), background_color=(40, 40, 40), **self.text_kwargs)
+        text_image_reset = dito.text(image=self.image, message="Hello " + dito.Font.STYLE_BOLD + dito.Font.FOREGROUND_BGR(0, 255, 0) + dito.Font.BACKGROUND_BGR(127, 127, 0) + dito.Font.RESET + "World", color=(255, 255, 255), background_color=(40, 40, 40), **self.text_kwargs)
         self.assertEqualImages(text_image_regular, text_image_reset)
 
     def test_text_escape_foregound_color(self):
         text_image = dito.text(image=self.image, message="Hello World", color=(0, 127, 255), **self.text_kwargs)
-        text_image_foreground = dito.text(image=self.image, message="Hello " + dito.Font.TEXT_FOREGROUND_BGR(200, 100, 50) + "World", color=(0, 127, 255), **self.text_kwargs)
+        text_image_foreground = dito.text(image=self.image, message="Hello " + dito.Font.FOREGROUND_BGR(200, 100, 50) + "World", color=(0, 127, 255), **self.text_kwargs)
         self.assertDifferingImages(text_image, text_image_foreground)
 
     def test_text_escape_backgound_color(self):
         text_image = dito.text(image=self.image, message="Hello World", background_color=(0, 127, 255), **self.text_kwargs)
-        text_image_background = dito.text(image=self.image, message="Hello " + dito.Font.TEXT_BACKGROUND_BGR(200, 100, 50) + "World", background_color=(0, 127, 255), **self.text_kwargs)
+        text_image_background = dito.text(image=self.image, message="Hello " + dito.Font.BACKGROUND_BGR(200, 100, 50) + "World", background_color=(0, 127, 255), **self.text_kwargs)
         self.assertDifferingImages(text_image, text_image_background)
 
     def test_text_border_different(self):
