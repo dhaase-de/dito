@@ -600,17 +600,19 @@ class MonospaceBitmapFont(Font):
         except ValueError:
             raise ValueError("Argument 'padding' must be a single non-negative integer (same padding for both sides) or a 2-tuple of non-negative integers (specifying the vertical and horizontal padding).")
 
-        # create empty mask, foreground, and background images
-        mask_size = (
+        # create foreground and background masks and images
+        out_size = (
             (max_character_count * self.char_width) + (border_left + border_right) + (margin_left + margin_right) + max(0, max_character_count - 1) * padding_horizontal,
             (line_count * self.char_height) + (border_top + border_bottom) + (margin_top + margin_bottom) + max(0, line_count - 1) * padding_vertical,
         )
-        mask = np.zeros(shape=mask_size[::-1], dtype=np.uint8)
-        foreground_image = dito.data.constant_image(size=mask_size, color=foreground_color)
+        foreground_mask = np.zeros(shape=out_size[::-1], dtype=np.uint8)
+        foreground_image = dito.data.constant_image(size=out_size, color=foreground_color)
         if background_color is None:
-            background_image = None
+            background_mask = np.zeros(shape=out_size[::-1], dtype=np.uint8)
+            background_image = dito.data.constant_image(size=out_size, color=(0, 0, 0))
         else:
-            background_image = dito.data.constant_image(size=mask_size, color=background_color)
+            background_mask = np.zeros(shape=out_size[::-1], dtype=np.uint8) + 255
+            background_image = dito.data.constant_image(size=out_size, color=background_color)
 
         # fill mask, foregound, and background image
         for (n_row, line) in enumerate(lines):
@@ -627,49 +629,62 @@ class MonospaceBitmapFont(Font):
                 raise ValueError("Invalid alignment '{}'".format(alignment))
 
             for (n_col, char) in enumerate(line):
+                # determine mask indices for current character
                 col_offset = (n_col + alignment_col_offset) * self.char_width + border_left + margin_left + n_col * padding_horizontal
                 indices = (slice(row_offset, row_offset + self.char_height), slice(col_offset, col_offset + self.char_width))
 
+                # update foreground mask
                 char_image = self.get_char_image(char=char, style=styles[n_row][n_col])
-                mask[indices] = char_image
-                foreground_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=foreground_colors[n_row][n_col])
-                if background_image is not None:
-                    background_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=background_colors[n_row][n_col])
+                foreground_mask[indices] = char_image
+
+                # update foreground image (= foreground color)
+                current_foreground_color = foreground_colors[n_row][n_col]
+                if current_foreground_color != foreground_color:
+                    foreground_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=current_foreground_color)
+
+                # update background mask and image
+                current_background_color = background_colors[n_row][n_col]
+                if current_background_color != background_color:
+                    if current_background_color is None:
+                        background_mask[indices] = 0
+                    else:
+                        background_mask[indices] = 255
+                        background_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=current_background_color)
 
         # draw border
-        mask[:border_top, :] = 255
-        mask[(mask.shape[0] - border_bottom):, :] = 255
-        mask[:, :border_left] = 255
-        mask[:, (mask.shape[1] - border_right):] = 255
+        foreground_mask[:border_top, :] = 255
+        foreground_mask[(out_size[1] - border_bottom):, :] = 255
+        foreground_mask[:, :border_left] = 255
+        foreground_mask[:, (out_size[0] - border_right):] = 255
         for (n_channel, value) in enumerate(border_color):
             foreground_image[:border_top, :, n_channel] = value
-            foreground_image[(foreground_image.shape[0] - border_bottom):, :, n_channel] = value
+            foreground_image[(out_size[1] - border_bottom):, :, n_channel] = value
             foreground_image[:, :border_left, n_channel] = value
-            foreground_image[:, (foreground_image.shape[1] - border_right):, n_channel] = value
+            foreground_image[:, (out_size[0] - border_right):, n_channel] = value
 
         # rescale image if requested
         if scale is not None:
-            mask = dito.core.resize(image=mask, scale_or_size=scale, interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_AREA)
+            foreground_mask = dito.core.resize(image=foreground_mask, scale_or_size=scale, interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_AREA)
             foreground_image = dito.core.resize(image=foreground_image, scale_or_size=scale, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
-            if background_image is not None:
-                background_image = dito.core.resize(image=background_image, scale_or_size=scale, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
+            background_mask = dito.core.resize(image=background_mask, scale_or_size=scale, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
+            background_image = dito.core.resize(image=background_image, scale_or_size=scale, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
 
         # shrink to specified width if requested
-        if (shrink_to_width is not None) and (mask.shape[1] > shrink_to_width):
-            target_size = (shrink_to_width, mask.shape[0])
-            mask = dito.core.resize(image=mask, scale_or_size=target_size, interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_AREA)
+        if (shrink_to_width is not None) and (out_size[0] > shrink_to_width):
+            target_size = (shrink_to_width, out_size[1])
+            foreground_mask = dito.core.resize(image=foreground_mask, scale_or_size=target_size, interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_AREA)
             foreground_image = dito.core.resize(image=foreground_image, scale_or_size=target_size, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
-            if background_image is not None:
-                background_image = dito.core.resize(image=background_image, scale_or_size=target_size, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
+            background_mask = dito.core.resize(image=background_mask, scale_or_size=target_size, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
+            background_image = dito.core.resize(image=background_image, scale_or_size=target_size, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
 
-        # convert uint8 mask to [0, 1]-float mask
-        mask = dito.core.convert(image=mask, dtype=np.float32)
+        # convert uint8 masks to [0, 1]-float mask
+        foreground_mask = dito.core.convert(image=foreground_mask, dtype=np.float32)
+        background_mask = dito.core.convert(image=background_mask, dtype=np.float32)
 
         # if target image is grayscale, also convert fore- and background images
         if dito.core.is_gray(image=target_image):
             foreground_image = dito.core.as_gray(image=foreground_image)
-            if background_image is not None:
-                background_image = dito.core.as_gray(image=background_image)
+            background_image = dito.core.as_gray(image=background_image)
 
         # rotate if requested
         if rotation is not None:
@@ -687,39 +702,32 @@ class MonospaceBitmapFont(Font):
                 rotation_func = lambda image: dito.core.rotate(image=image, angle_deg=rotation, padding_mode="tight")
 
             if rotation_func is not None:
-                mask = rotation_func(image=mask)
-                mask = dito.core.clip_01(image=mask)
+                foreground_mask = rotation_func(image=foreground_mask)
+                foreground_mask = dito.core.clip_01(image=foreground_mask)
                 foreground_image = rotation_func(image=foreground_image)
-                if background_image is not None:
-                    background_image = rotation_func(image=background_image)
+
+                background_mask = rotation_func(image=background_mask)
+                background_mask = dito.core.clip_01(image=background_mask)
+                background_image = rotation_func(image=background_image)
+
+        dito.show([foreground_mask, foreground_image, background_mask, background_image], wait=0)
 
         # insert text into target image
-        target_image = target_image.copy()
-        if background_image is None:
-            # case 1: no background - render text directly into the target image
-            result_image = insert(
-                target_image=target_image,
-                source_image=foreground_image,
-                position=position,
-                anchor=anchor,
-                source_mask=mask if opacity is None else mask * opacity,
-            )
-        else:
-            # case 2: with background - first render text into background image, then render the result into the target image
-            text_image = insert(
-                target_image=background_image,
-                source_image=foreground_image,
-                position=(0, 0),
-                anchor="lt",
-                source_mask=mask,
-            )
-            result_image = insert(
-                target_image=target_image,
-                source_image=text_image,
-                position=position,
-                anchor=anchor,
-                source_mask=opacity,
-            )
+        text_image = insert(
+            target_image=background_image,
+            source_image=foreground_image,
+            position=(0, 0),
+            anchor="lt",
+            source_mask=foreground_mask,
+        )
+        text_mask = np.maximum(foreground_mask, background_mask)
+        result_image = insert(
+            target_image=target_image,
+            source_image=text_image,
+            position=position,
+            anchor=anchor,
+            source_mask=text_mask,
+        )
 
         return result_image
 
