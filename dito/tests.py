@@ -815,10 +815,6 @@ class text_Tests(TestCase):
         text_image = dito.text(image=self.image, message="Hello World", **self.text_kwargs)
         self.assertDifferingImages(self.image, text_image)
 
-    def test_text_transparent(self):
-        text_image = dito.text(image=self.image, message="Hello World", opacity=0.0, **self.text_kwargs)
-        self.assertEqualImages(self.image, text_image)
-
     def test_text_background(self):
         text_image = dito.text(image=self.image, message=" ", background_color=(40, 40, 40), **self.text_kwargs)
         self.assertDifferingImages(self.image, text_image)
@@ -826,6 +822,13 @@ class text_Tests(TestCase):
     def test_text_no_background(self):
         text_image = dito.text(image=self.image, message=" ", background_color=None, **self.text_kwargs)
         self.assertEqualImages(self.image, text_image)
+
+    def test_text_outline(self):
+        text_image_background_none = dito.text(image=self.image, message="Hello World", background_color=None, **self.text_kwargs)
+        text_image_background_outline = dito.text(image=self.image, message="Hello World", background_color=(40, 40, 40), background_as_outline=True, **self.text_kwargs)
+        text_image_background_full = dito.text(image=self.image, message="Hello World", background_color=(40, 40, 40), **self.text_kwargs)
+        self.assertDifferingImages(text_image_background_outline, text_image_background_none)
+        self.assertDifferingImages(text_image_background_outline, text_image_background_full)
 
     def test_text_escape_bold(self):
         text_image_regular = dito.text(image=self.image, message="Hello World", **self.text_kwargs)
@@ -866,6 +869,45 @@ class text_Tests(TestCase):
         text_image_no_padding = dito.text(image=self.image, message="Hello World", padding=0, **self.text_kwargs)
         text_image_padding = dito.text(image=self.image, message="Hello World", padding=1, **self.text_kwargs)
         self.assertDifferingImages(text_image_no_padding, text_image_padding)
+
+    def test_text_transparent(self):
+        text_image = dito.text(image=self.image, message="Hello World", opacity=0.0, **self.text_kwargs)
+        self.assertEqualImages(self.image, text_image)
+
+    def test_text_opaque(self):
+        text_image_opacity_1 = dito.text(image=self.image, message="Hello World", opacity=1.0, **self.text_kwargs)
+        text_image_opacity_none = dito.text(image=self.image, message="Hello World", opacity=None, **self.text_kwargs)
+        self.assertEqualImages(text_image_opacity_1, text_image_opacity_none)
+
+    def test_text_alignment(self):
+        text_image_left = dito.text(image=self.image, message="Hellooo\nWorld", alignment="left", **self.text_kwargs)
+        text_image_center = dito.text(image=self.image, message="Hellooo\nWorld", alignment="center", **self.text_kwargs)
+        text_image_right = dito.text(image=self.image, message="Hellooo\nWorld", alignment="right", **self.text_kwargs)
+        self.assertDifferingImages(text_image_left, text_image_center)
+        self.assertDifferingImages(text_image_left, text_image_right)
+        self.assertDifferingImages(text_image_center, text_image_right)
+
+    def test_text_scale_none(self):
+        text_image_scale_none = dito.text(image=self.image, message="Hello World", scale=None, **self.text_kwargs)
+        text_image_scale_0 = dito.text(image=self.image, message="Hello World", scale=1.0, **self.text_kwargs)
+        self.assertEqualImages(text_image_scale_none, text_image_scale_0)
+
+    def test_text_scale_different(self):
+        text_image_scale_none = dito.text(image=self.image, message="Hello World", scale=None, **self.text_kwargs)
+        text_image_scale_0 = dito.text(image=self.image, message="Hello World", scale=2.0, **self.text_kwargs)
+        self.assertDifferingImages(text_image_scale_none, text_image_scale_0)
+
+    def test_text_rotation_none(self):
+        text_image_rotation_none = dito.text(image=self.image, message="Hello World", rotation=None, **self.text_kwargs)
+        text_image_rotation_0 = dito.text(image=self.image, message="Hello World", rotation=0, **self.text_kwargs)
+        text_image_rotation_0_0 = dito.text(image=self.image, message="Hello World", rotation=0.0, **self.text_kwargs)
+        self.assertEqualImages(text_image_rotation_none, text_image_rotation_0)
+        self.assertEqualImages(text_image_rotation_none, text_image_rotation_0_0)
+
+    def test_text_rotation_different(self):
+        text_image_no_rotation = dito.text(image=self.image, message="Hello World", rotation=None, **self.text_kwargs)
+        text_image_rotation = dito.text(image=self.image, message="Hello World", rotation=90, **self.text_kwargs)
+        self.assertDifferingImages(text_image_no_rotation, text_image_rotation)
 
 
 class VideoSaver_Tests(TempDirTestCase):
