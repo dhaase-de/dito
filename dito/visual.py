@@ -906,7 +906,7 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
 
         # convert NumPy array of image to pygame surface
         image_show = dito.core.as_color(image=image_show)
-        image_pygame = pygame.image.frombuffer(image_show.tobytes(), dito.size(image_show), "BGR")
+        image_pygame = pygame.image.frombuffer(image_show.tobytes(), dito.core.size(image_show), "BGR")
 
         # set up pygame window
         pygame.display.set_caption(window_name)
