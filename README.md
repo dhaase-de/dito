@@ -46,6 +46,10 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.3.0 (2021-05-26) ###
+* improved text drawing (e.g. margin, padding, border, rotation, alignment, support for ANSI escape sequences, greek alphabet, outline background mode, width shrinking)
+* added some helper functions (which were needed for improved text drawing), e.g. `insert`, `constant_image`, `rotate*`, `dilate`, `pad`
+
 ### v2.2.0 (2021-04-09) ###
 * added/improved support for other (optional) image showing engines (`IPython`, `matplotlib.pyplot`, `pygame`)
 * added support for bitmap font handling (class `MonospaceBitmapFont`)
