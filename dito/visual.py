@@ -175,11 +175,11 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
     if not dito.core.is_image(image=target_image):
         raise ValueError("Argument 'target_image' must be valid image")
     if not dito.core.is_image(image=source_image):
-            raise ValueError("Argument 'source_image' must be valid image")
+        raise ValueError("Argument 'source_image' must be valid image")
 
     # check if source and target have the same dtype
     if target_image.dtype != source_image.dtype:
-        raise ValueError("Arguments 'target_image' and 'source_image' must have the same dtypes")
+        raise ValueError("Arguments 'target_image' and 'source_image' must have the same dtypes (but have dtypes '{}' and '{}')".format(target_image.dtype, source_image.dtype))
 
     # make sure that source_mask is either None or a NumPy array
     if source_mask is None:
