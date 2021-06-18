@@ -57,7 +57,7 @@ def xslope(height=32, width=256):
     """
     Return image containing values increasing from 0 to 255 along the x axis.
     """
-    
+
     slope = np.linspace(start=0, stop=255, num=width, endpoint=True, dtype=np.uint8)
     slope.shape = (1,) + slope.shape
     slope = np.repeat(a=slope, repeats=height, axis=0)
@@ -68,8 +68,22 @@ def yslope(width=32, height=256):
     """
     Return image containing values increasing from 0 to 255 along the y axis.
     """
-    
+
     return xslope(height=width, width=height).T
+
+
+def grid(size=(512, 288), grid_size=16, background_color=(0,), grid_color=(255,)):
+    """
+    Returns a gray-scale image of the given `size` containing a checkerboard
+    grid with squares of size `block_size`. The arguments `low` and `high`
+    specify the gray scale values to be used for the squares.
+    """
+    image = constant_image(size=size, color=background_color)
+    for x in range(0, size[0], grid_size):
+        image[:, x, ...] = grid_color
+    for y in range(0, size[1], grid_size):
+        image[y, :, ...] = grid_color
+    return image
 
 
 def checkerboard(size=(512, 288), block_size=16, low=0, high=255):
