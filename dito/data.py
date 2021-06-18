@@ -53,23 +53,18 @@ def pm5544():
 ####
 
 
-def xslope(height=32, width=256):
+def constant_image(size=(512, 288), color=(0, 255, 0), dtype=np.uint8):
     """
-    Return image containing values increasing from 0 to 255 along the x axis.
+    Returns an image where each color channel is constant (but the channel
+    values may vary).
     """
-
-    slope = np.linspace(start=0, stop=255, num=width, endpoint=True, dtype=np.uint8)
-    slope.shape = (1,) + slope.shape
-    slope = np.repeat(a=slope, repeats=height, axis=0)
-    return slope
-
-
-def yslope(width=32, height=256):
-    """
-    Return image containing values increasing from 0 to 255 along the y axis.
-    """
-
-    return xslope(height=width, width=height).T
+    channel_count = len(color)
+    image = np.zeros(shape=(size[1], size[0]) + (channel_count,), dtype=dtype)
+    for n_channel in range(channel_count):
+        image[:, :, n_channel] = color[n_channel]
+    if channel_count == 1:
+        image = image[:, :, 0]
+    return image
 
 
 def grid(size=(512, 288), grid_size=16, background_color=(0,), grid_color=(255,)):
@@ -110,18 +105,23 @@ def background_checkerboard(size=(512, 288), block_size=16):
     return checkerboard(size=size, block_size=block_size, low=80, high=120)
 
 
-def constant_image(size=(512, 288), color=(0, 255, 0), dtype=np.uint8):
+def xslope(height=32, width=256):
     """
-    Returns an image where each color channel is constant (but the channel
-    values may vary).
+    Return image containing values increasing from 0 to 255 along the x axis.
     """
-    channel_count = len(color)
-    image = np.zeros(shape=(size[1], size[0]) + (channel_count,), dtype=dtype)
-    for n_channel in range(channel_count):
-        image[:, :, n_channel] = color[n_channel]
-    if channel_count == 1:
-        image = image[:, :, 0]
-    return image
+
+    slope = np.linspace(start=0, stop=255, num=width, endpoint=True, dtype=np.uint8)
+    slope.shape = (1,) + slope.shape
+    slope = np.repeat(a=slope, repeats=height, axis=0)
+    return slope
+
+
+def yslope(width=32, height=256):
+    """
+    Return image containing values increasing from 0 to 255 along the y axis.
+    """
+
+    return xslope(height=width, width=height).T
 
 
 def random_image(size=(512, 288), color=True):
