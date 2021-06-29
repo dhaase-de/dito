@@ -39,14 +39,6 @@ RESOURCES_FILENAMES = {
     "image:PM5544": os.path.join(RESOURCES_DIR, "images", "PM5544.png"),
 }
 
-####
-#%%% real images
-####
-
-
-def pm5544():
-    return dito.io.load(filename=RESOURCES_FILENAMES["image:PM5544"])
-
 
 ####
 #%%% synthetic images
@@ -133,3 +125,12 @@ def random_image(size=(512, 288), color=True):
         shape = shape + (3,)
     image_random = np.random.rand(*shape)
     return dito.core.convert(image=image_random, dtype=np.uint8)
+
+
+####
+#%%% real images
+####
+
+
+def pm5544():
+    return dito.io.load(filename=RESOURCES_FILENAMES["image:PM5544"])
