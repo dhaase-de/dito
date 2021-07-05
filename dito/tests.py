@@ -321,6 +321,34 @@ class encode_Tests(TestCase):
         self.assertEqualImages(image, image_decoded)
 
 
+class gamma_Tests(TestCase):
+    def setUp(self):
+        self.image = dito.pm5544()
+
+    def test_gamma_input_unchanged(self):
+        image_copy = self.image.copy()
+        dito.gamma(image=self.image, exponent=0.5)
+        self.assertEqualImages(self.image, image_copy)
+
+    def test_gamma_shape(self):
+        image_gamma = dito.gamma(image=self.image, exponent=0.5)
+        self.assertEqualImageContainers(image_gamma, self.image)
+
+    def test_gamma_1_0_unchanged(self):
+        image_gamma = dito.gamma(image=self.image, exponent=1.0)
+        self.assertEqualImages(image_gamma, self.image)
+
+    def test_gamma_0_5_brighter(self):
+        image_gamma = dito.gamma(image=self.image, exponent=0.5)
+        self.assertEqualImageContainers(image_gamma, self.image)
+        self.assertTrue(np.mean(image_gamma) > np.mean(self.image))
+
+    def test_gamma_2_0_darker(self):
+        image_gamma = dito.gamma(image=self.image, exponent=2.0)
+        self.assertEqualImageContainers(image_gamma, self.image)
+        self.assertTrue(np.mean(image_gamma) < np.mean(self.image))
+
+
 class get_colormap_Tests(TestCase):
     def test_get_colormap_plot(self):
         result = dito.get_colormap("plot")
