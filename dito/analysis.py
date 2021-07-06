@@ -64,7 +64,7 @@ class ContourFinder():
     def filter_perimeter(self, min_value=None, max_value=None):
         self.filter(func=operator.methodcaller("area"), min_value=min_value, max_value=max_value)
 
-    def find_largest(self):
+    def find_largest(self, return_index=True):
         """
         Returns the index of the largest (area-wise) contour.
         """
@@ -75,7 +75,14 @@ class ContourFinder():
             if (max_area is None) or (area > max_area):
                 max_area = area
                 argmax_area = n_contour
-        return argmax_area
+
+        if argmax_area is None:
+            return None
+        else:
+            if return_index:
+                return argmax_area
+            else:
+                return self.contours[argmax_area]
 
 
 def contours(image):
