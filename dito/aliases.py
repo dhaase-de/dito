@@ -3,6 +3,10 @@ import cv2
 import dito.core
 
 
+def gaussian_blur(image, sigma):
+    return cv2.GaussianBlur(src=image, ksize=None, sigmaX=sigma)
+
+
 def otsu(image):
     if dito.core.is_color(image=image):
         raise ValueError("Expected gray image but got color image for Otsu thresholding")
