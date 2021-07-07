@@ -1,5 +1,6 @@
 import os.path
 
+import cv2
 import numpy as np
 
 import dito.io
@@ -125,6 +126,54 @@ def random_image(size=(512, 288), color=True):
         shape = shape + (3,)
     image_random = np.random.rand(*shape)
     return dito.core.convert(image=image_random, dtype=np.uint8)
+
+
+def test_image_segments():
+    image = np.zeros(shape=(288, 512), dtype=np.uint8)
+
+    sep = 8
+    count = 10
+    radii = [round(2**(2 + n_circle / 4)) for n_circle in range(count)]
+    color = (255,)
+
+    # draw series of circles
+    center_x = sep + max(radii)
+    center_y = sep
+    for radius in radii:
+        center_y += radius
+        cv2.circle(img=image, center=(center_x, center_y), radius=radius, color=color, thickness=cv2.FILLED, lineType=cv2.LINE_8)
+        center_y += radius + sep
+
+    # draw series of squares
+    center_x = 2 * sep + 3 * max(radii)
+    center_y = sep
+    for radius in radii:
+        center_y += radius
+        cv2.rectangle(img=image, pt1=dito.core.tir(center_x - radius, center_y - radius), pt2=dito.core.tir(center_x + radius, center_y + radius), color=color, thickness=cv2.FILLED, lineType=cv2.LINE_8)
+        center_y += radius + sep
+
+    # draw series of ellipses
+    center_x = 3 * sep + 6 * max(radii)
+    center_y = sep
+    for radius in radii:
+        center_y += radius
+        cv2.ellipse(img=image, center=(center_x, center_y), axes=(radius * 2, radius), angle=0.0, startAngle=0.0, endAngle=360.0, color=color, thickness=cv2.FILLED, lineType=cv2.LINE_8)
+        center_y += radius + sep
+
+    # draw series of rectangles
+    center_x = 4 * sep + 10 * max(radii)
+    center_y = sep
+    for radius in radii:
+        center_y += radius
+        cv2.rectangle(img=image, pt1=dito.core.tir(center_x - radius * 2, center_y - radius), pt2=dito.core.tir(center_x + radius * 2, center_y + radius), color=color, thickness=cv2.FILLED, lineType=cv2.LINE_8)
+        center_y += radius + sep
+
+    return image
+
+
+#def test_image(size=(768, 512)):
+#    image = np.zeros(shape=(size[1], size[0], 3), dtype=np.uint8)
+#    return image
 
 
 ####

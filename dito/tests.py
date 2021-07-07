@@ -182,6 +182,40 @@ class constant_image_Tests(TestCase):
             self.assertTrue(np.all(self.result_image[:, :, n_channel] == self.color[n_channel]))
 
 
+class ContourFinder_Tests(TestCase):
+    def setUp(self):
+        self.image = dito.test_image_segments()
+        self.contour_finder = dito.ContourFinder(image=self.image)
+
+    def test_CountourFinder_count(self):
+        self.assertEqual(len(self.contour_finder), 40)
+
+    def test_ContourFinder_filter_center_x(self):
+        self.contour_finder.filter_center_x(min_value=128)
+        self.assertEqual(len(self.contour_finder), 20)
+
+    def test_ContourFinder_filter_center_y(self):
+        self.contour_finder.filter_center_y(min_value=144)
+        self.assertEqual(len(self.contour_finder), 16)
+
+    def test_ContourFinder_filter_area(self):
+        self.contour_finder.filter_area(min_value=400, max_value=800)
+        self.assertEqual(len(self.contour_finder), 10)
+
+    def test_ContourFinder_filter_perimeter(self):
+        self.contour_finder.filter_perimeter(min_value=1000, max_value=2000)
+        self.assertEqual(len(self.contour_finder), 6)
+
+    def test_ContourFinder_filter_circularity(self):
+        self.contour_finder.filter_circularity(min_value=0.85)
+        self.assertEqual(len(self.contour_finder), 29)
+
+    def test_ContourFinder_filter_multiple(self):
+        self.contour_finder.filter_area(min_value=250)
+        self.contour_finder.filter_perimeter(max_value=950)
+        self.assertEqual(len(self.contour_finder), 16)
+
+
 class convert_Tests(TestCase):
     def test_convert_identical(self):
         image = dito.xslope(height=32, width=256)
