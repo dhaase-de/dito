@@ -58,11 +58,20 @@ class ContourFinder():
             contours_filtered.append(contour)
         self.contours = contours_filtered
 
+    def filter_center_x(self, min_value=None, max_value=None):
+        self.filter(func=operator.methodcaller("center_x"), min_value=min_value, max_value=max_value)
+
+    def filter_center_y(self, min_value=None, max_value=None):
+        self.filter(func=operator.methodcaller("center_y"), min_value=min_value, max_value=max_value)
+
     def filter_area(self, min_value=None, max_value=None):
         self.filter(func=operator.methodcaller("area"), min_value=min_value, max_value=max_value)
 
     def filter_perimeter(self, min_value=None, max_value=None):
         self.filter(func=operator.methodcaller("area"), min_value=min_value, max_value=max_value)
+
+    def filter_circularity(self, min_value=None, max_value=None):
+        self.filter(func=operator.methodcaller("circularity"), min_value=min_value, max_value=max_value)
 
     def find_largest(self, return_index=True):
         """
@@ -106,11 +115,22 @@ class Contour():
     def center(self):
         return np.mean(self.points, axis=0)
 
+    def center_x(self):
+        return np.mean(self.points[:, 0])
+
+    def center_y(self):
+        return np.mean(self.points[:, 1])
+
     def area(self):
         return cv2.contourArea(contour=self.points, oriented=None)
 
     def perimeter(self):
         return cv2.arcLength(curve=self.points, closed=True)
+
+    def circularity(self):
+        r_area = np.sqrt(self.area() / np.pi)
+        r_perimeter = self.perimeter() / (2.0 * np.pi)
+        return r_area / r_perimeter
 
     def draw(self, image, color, thickness=1, filled=True, antialias=False, offset=None):
         cv2.drawContours(image=image, contours=[self.points], contourIdx=0, color=color, thickness=cv2.FILLED if filled else thickness, lineType=cv2.LINE_AA if antialias else cv2.LINE_8, offset=offset)
