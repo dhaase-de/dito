@@ -11,12 +11,43 @@ import dito.core
 ##
 
 
-class ContourFinder():
-    def __init__(self, image):
-        self.image = image.copy()
-        if self.image.dtype == np.bool:
-            self.image = dito.core.convert(image=self.image, dtype=np.uint8)
-        self.contours = self.find_contours(image=self.image)
+class Contour():
+    def __init__(self, points):
+        self.points = points
+
+    def __len__(self):
+        """
+        Returns the number of points.
+        """
+        return len(self.points)
+
+    def center(self):
+        return np.mean(self.points, axis=0)
+
+    def center_x(self):
+        return np.mean(self.points[:, 0])
+
+    def center_y(self):
+        return np.mean(self.points[:, 1])
+
+    def area(self):
+        return cv2.contourArea(contour=self.points, oriented=None)
+
+    def perimeter(self):
+        return cv2.arcLength(curve=self.points, closed=True)
+
+    def circularity(self):
+        r_area = np.sqrt(self.area() / np.pi)
+        r_perimeter = self.perimeter() / (2.0 * np.pi)
+        return r_area / r_perimeter
+
+    def draw(self, image, color, thickness=1, filled=True, antialias=False, offset=None):
+        cv2.drawContours(image=image, contours=[np.round(self.points).astype(np.int)], contourIdx=0, color=color, thickness=cv2.FILLED if filled else thickness, lineType=cv2.LINE_AA if antialias else cv2.LINE_8, offset=offset)
+
+
+class ContourList():
+    def __init__(self, contours):
+        self.contours = contours
 
     def __len__(self):
         """
@@ -26,21 +57,6 @@ class ContourFinder():
 
     def __getitem__(self, key):
         return self.contours[key]
-
-    @staticmethod
-    def find_contours(image):
-        """
-        Called internally to find the contours in the given `image`.
-        """
-
-        # find raw contours
-        result = cv2.findContours(image=image, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_NONE)
-
-        # compatible with OpenCV 3.x and 4.x, see https://stackoverflow.com/a/53909713/1913780
-        contours_raw = result[-2]
-
-        # return tuple of instances of class `Contour`
-        return [Contour(points=contour_raw[:, 0, :]) for contour_raw in contours_raw]
 
     def filter(self, func, min_value=None, max_value=None):
         if (min_value is None) and (max_value is None):
@@ -93,6 +109,37 @@ class ContourFinder():
             else:
                 return self.contours[argmax_area]
 
+    def draw_all(self, image, colors=None, **kwargs):
+        if colors is None:
+            colors = tuple(dito.random_color() for _ in range(len(self)))
+
+        for (contour, color) in zip(self.contours, colors):
+            contour.draw(image=image, color=color, **kwargs)
+
+
+class ContourFinder(ContourList):
+    def __init__(self, image):
+        self.image = image.copy()
+        if self.image.dtype == np.bool:
+            self.image = dito.core.convert(image=self.image, dtype=np.uint8)
+        contours = self.find_contours(image=self.image)
+        super().__init__(contours=contours)
+
+    @staticmethod
+    def find_contours(image):
+        """
+        Called internally to find the contours in the given `image`.
+        """
+
+        # find raw contours
+        result = cv2.findContours(image=image, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_NONE)
+
+        # compatible with OpenCV 3.x and 4.x, see https://stackoverflow.com/a/53909713/1913780
+        contours_raw = result[-2]
+
+        # return tuple of instances of class `Contour`
+        return [Contour(points=contour_raw[:, 0, :]) for contour_raw in contours_raw]
+
 
 def contours(image):
     """
@@ -102,35 +149,20 @@ def contours(image):
     return contour_finder.contours
 
 
-class Contour():
-    def __init__(self, points):
-        self.points = points
+class VoronoiPartition(ContourList):
+    def __init__(self, image_size, points):
+        contours = self.get_facets(image_size=image_size, points=points)
+        super().__init__(contours=contours)
 
-    def __len__(self):
-        """
-        Returns the number of points.
-        """
-        return len(self.points)
+    @staticmethod
+    def get_facets(image_size, points):
+        subdiv = cv2.Subdiv2D((0, 0, image_size[0], image_size[1]))
+        for point in points:
+            subdiv.insert(pt=point)
+        (voronoi_facets, voronoi_centers) = subdiv.getVoronoiFacetList(idx=[])
+        return [Contour(voronoi_facet) for voronoi_facet in voronoi_facets]
 
-    def center(self):
-        return np.mean(self.points, axis=0)
 
-    def center_x(self):
-        return np.mean(self.points[:, 0])
-
-    def center_y(self):
-        return np.mean(self.points[:, 1])
-
-    def area(self):
-        return cv2.contourArea(contour=self.points, oriented=None)
-
-    def perimeter(self):
-        return cv2.arcLength(curve=self.points, closed=True)
-
-    def circularity(self):
-        r_area = np.sqrt(self.area() / np.pi)
-        r_perimeter = self.perimeter() / (2.0 * np.pi)
-        return r_area / r_perimeter
-
-    def draw(self, image, color, thickness=1, filled=True, antialias=False, offset=None):
-        cv2.drawContours(image=image, contours=[self.points], contourIdx=0, color=color, thickness=cv2.FILLED if filled else thickness, lineType=cv2.LINE_AA if antialias else cv2.LINE_8, offset=offset)
+def voronoi(image_size, points):
+    voronoi_partition = VoronoiPartition(image_size=image_size, points=points)
+    return voronoi_partition.contours
