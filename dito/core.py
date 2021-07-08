@@ -251,6 +251,27 @@ def as_color(image):
         return cv2.cvtColor(src=image, code=cv2.COLOR_GRAY2BGR)
 
 
+def convert_color(image_or_color, code):
+    if isinstance(image_or_color, tuple) and (1 <= len(image_or_color) <= 3):
+        # color mode
+        color_array = np.array(image_or_color, dtype=np.uint8)
+        color_array.shape = (1, 1, 3)
+        return tuple(cv2.cvtColor(src=color_array, code=code)[0, 0, ...].tolist())
+    elif dito.core.is_image(image_or_color):
+        # image mode
+        return cv2.cvtColor(src=image_or_color, code=code)
+    else:
+        raise ValueError("Argument 'image_or_color' must be an image or a color, but is '{}'".format(type(image_or_color)))
+
+
+def bgr_to_hsv(image_or_color):
+    return convert_color(image_or_color=image_or_color, code=cv2.COLOR_BGR2HSV)
+
+
+def hsv_to_bgr(image_or_color):
+    return convert_color(image_or_color=image_or_color, code=cv2.COLOR_HSV2BGR)
+
+
 def flip_channels(image):
     """
     Changes BGR channels to RGB channels and vice versa.

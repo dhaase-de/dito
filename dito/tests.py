@@ -260,6 +260,31 @@ class convert_Tests(TestCase):
         self.assertAlmostEqual(np.max(image_clipped), 1.0)
 
 
+class convert_color_Tests(TestCase):
+    def test_convert_color_argument_is_color(self):
+        bgr = (0, 255, 0)
+        hsv = dito.convert_color(image_or_color=bgr, code=cv2.COLOR_BGR2HSV)
+        self.assertEqual(hsv, (60, 255, 255))
+
+    def test_convert_color_argument_is_image(self):
+        image = dito.pm5544()
+        image_hsv = dito.convert_color(image_or_color=image, code=cv2.COLOR_BGR2HSV)
+        self.assertEqualImageContainers(image, image_hsv)
+
+    def test_convert_color_alias_bgr_to_hsv(self):
+        image = dito.pm5544()
+        image_hsv_1 = dito.convert_color(image_or_color=image, code=cv2.COLOR_BGR2HSV)
+        image_hsv_2 = dito.bgr_to_hsv(image_or_color=image)
+        self.assertEqualImages(image_hsv_1, image_hsv_2)
+
+
+    def test_convert_color_alias_hsv_to_bgr(self):
+        image = dito.pm5544()
+        image_bgr_1 = dito.convert_color(image_or_color=image, code=cv2.COLOR_HSV2BGR)
+        image_bgr_2 = dito.hsv_to_bgr(image_or_color=image)
+        self.assertEqualImages(image_bgr_1, image_bgr_2)
+
+
 class cv_version_Tests(TestCase):
     def test_cv2_version(self):
         version = dito.cv2_version()
