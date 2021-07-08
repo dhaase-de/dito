@@ -12,6 +12,23 @@ import dito.io
 import dito.utils
 
 
+def random_color(min_hue=0, max_hue=180, min_saturation=128, max_saturation=255, min_value=128, max_value=255):
+    # check arguments
+    if not (0 <= min_hue <= 180):
+        raise ValueError("Argument 'min_hue' must be a value between 0 and 180 (inclusive), but is '{}'".format(min_hue))
+
+    # wrap-around hue
+    while max_hue < min_hue:
+        max_hue += 180
+
+    random_hsv = (
+        np.random.randint(low=min_hue, high=max_hue + 1) % 180,
+        np.random.randint(low=min_saturation, high=max_saturation + 1),
+        np.random.randint(low=min_value, high=max_value + 1),
+    )
+    return dito.core.hsv_to_bgr(image_or_color=random_hsv)
+
+
 def get_colormap(name):
     """
     Returns the colormap specified by `name` as `uint8` NumPy array of size
