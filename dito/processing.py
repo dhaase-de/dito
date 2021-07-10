@@ -31,7 +31,7 @@ class Contour():
         return np.mean(self.points[:, 1])
 
     def area(self):
-        return cv2.contourArea(contour=self.points, oriented=None)
+        return cv2.contourArea(contour=self.points)
 
     def perimeter(self):
         return cv2.arcLength(curve=self.points, closed=True)
