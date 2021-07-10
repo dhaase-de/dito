@@ -618,6 +618,39 @@ class insert_Tests(TestCase):
         self.assertEqualImages(self.source_mask, source_mask_copy)
 
 
+class invert_Tests(TestCase):
+    def setUp(self):
+        self.image = dito.pm5544()
+
+    def test_invert_twice_identical(self):
+        image_inverted = dito.invert(image=self.image)
+        image_inverted_inverted = dito.invert(image=image_inverted)
+        self.assertEqualImages(self.image, image_inverted_inverted)
+
+    def test_invert_int_raise(self):
+        image_int16 = dito.convert(image=self.image, dtype=np.int16)
+        self.assertRaises(ValueError, lambda: dito.invert(image=image_int16))
+
+    def test_invert_uint8(self):
+        image_inverted = dito.invert(image=self.image)
+        self.assertEqualImages(image_inverted, 255 - self.image)
+
+    def test_invert_float32(self):
+        image_float = dito.convert(image=self.image, dtype=np.float32)
+        image_float_inverted = dito.invert(image=image_float)
+        self.assertEqualImages(image_float_inverted, 1.0 - image_float)
+
+    def test_invert_float64(self):
+        image_float = dito.convert(image=self.image, dtype=np.float64)
+        image_float_inverted = dito.invert(image=image_float)
+        self.assertEqualImages(image_float_inverted, 1.0 - image_float)
+
+    def test_invert_bool(self):
+        image_bool = (self.image > 127)
+        image_bool_inverted = dito.invert(image=image_bool)
+        self.assertEqualImages(image_bool_inverted, np.logical_not(image_bool))
+
+
 class MultiShow_Tests(TempDirTestCase):
     def get_random_image(self):
         return dito.random_image(size=(256, 128))

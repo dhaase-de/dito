@@ -23,6 +23,30 @@ def is_image(image):
 ####
 
 
+def is_integer_dtype(dtype):
+    return np.issubdtype(dtype, np.integer)
+
+
+def is_integer_image(image):
+    return is_integer_dtype(dtype=image.dtype)
+
+
+def is_float_dtype(dtype):
+    return np.issubdtype(dtype, np.floating)
+
+
+def is_float_image(image):
+    return is_float_dtype(dtype=image.dtype)
+
+
+def is_bool_dtype(dtype):
+    return np.issubdtype(dtype, np.bool_)
+
+
+def is_bool_image(image):
+    return is_bool_dtype(dtype=image.dtype)
+
+
 def dtype_range(dtype):
     """
     Returns the min and max intensity value of images for a given NumPy dtype.
@@ -31,15 +55,15 @@ def dtype_range(dtype):
     For floating dtypes, this corresponds to the range `(0.0, 1.0)`.
     For bool dtypes, this corresponds to the range (`False`, `True`).
     """
-    if np.issubdtype(dtype, np.integer):
+    if is_integer_dtype(dtype=dtype):
         info = np.iinfo(dtype)
         return (info.min, info.max)
-    elif np.issubdtype(dtype, np.floating):
+    elif is_float_dtype(dtype=dtype):
         return (0.0, 1.0)
-    elif np.issubdtype(dtype, np.bool_):
+    elif is_bool_dtype(dtype=dtype):
         return (False, True)
     else:
-        raise TypeError("Invalid dtype '{}'".format(dtype))
+        raise TypeError("Unsupported dtype '{}'".format(dtype))
 
 
 def dtype_common(dtypes):
@@ -388,3 +412,17 @@ def normalize(image, mode="minmax", **kwargs):
 
     else:
         raise ValueError("Invalid mode '{mode}'".format(mode=mode))
+
+
+def invert(image):
+    if is_integer_image(image=image) or is_float_image(image=image):
+        image_dtype_range = dtype_range(dtype=image.dtype)
+        if float(image_dtype_range[0]) != 0.0:
+            raise ValueError("Argument 'image' must have dtype with min value of zero (but has dtype '{}')".format(image.dtype))
+        return image_dtype_range[1] - image
+
+    elif is_bool_image(image=image):
+        return np.logical_not(image)
+
+    else:
+        raise ValueError("Unsupported image dtype '{}'".format(image.dtype))
