@@ -183,7 +183,7 @@ class ContourList():
         max_area = None
         argmax_area = None
         for (n_contour, contour) in enumerate(self.contours):
-            area = contour.area()
+            area = contour.get_area()
             if (max_area is None) or (area > max_area):
                 max_area = area
                 argmax_area = n_contour
