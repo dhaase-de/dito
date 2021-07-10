@@ -41,6 +41,16 @@ class Contour():
         r_perimeter = self.perimeter() / (2.0 * np.pi)
         return r_area / r_perimeter
 
+    def moments(self):
+        return cv2.moments(array=self.points, binaryImage=False)
+
+    def hu_moments(self, log=True):
+        hu_moments = cv2.HuMoments(m=self.moments())
+        if log:
+            return np.sign(hu_moments) * np.log10(np.abs(hu_moments))
+        else:
+            return hu_moments
+
     def draw(self, image, color, thickness=1, filled=True, antialias=False, offset=None):
         cv2.drawContours(image=image, contours=[np.round(self.points).astype(np.int)], contourIdx=0, color=color, thickness=cv2.FILLED if filled else thickness, lineType=cv2.LINE_AA if antialias else cv2.LINE_8, offset=offset)
 
