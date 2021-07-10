@@ -187,6 +187,13 @@ class ContourFinder_Tests(TestCase):
         self.image = dito.test_image_segments()
         self.contour_finder = dito.ContourFinder(image=self.image)
 
+    def test_ContourFinder_copy(self):
+        contour_finder_copy_1 = self.contour_finder.copy()
+        contour_finder_copy_2 = contour_finder_copy_1.copy()
+        contour_finder_copy_1[0].shift(offset_x=1)
+        self.assertEqual(len(contour_finder_copy_1), len(contour_finder_copy_2))
+        self.assertNotEqual(contour_finder_copy_1, contour_finder_copy_2)
+
     def test_CountourFinder_count(self):
         self.assertEqual(len(self.contour_finder), 40)
 
@@ -203,17 +210,17 @@ class ContourFinder_Tests(TestCase):
         self.assertEqual(len(self.contour_finder), 10)
 
     def test_ContourFinder_filter_perimeter(self):
-        self.contour_finder.filter_perimeter(min_value=1000, max_value=2000)
-        self.assertEqual(len(self.contour_finder), 6)
+        self.contour_finder.filter_perimeter(min_value=50, max_value=100)
+        self.assertEqual(len(self.contour_finder), 16)
 
     def test_ContourFinder_filter_circularity(self):
         self.contour_finder.filter_circularity(min_value=0.85)
         self.assertEqual(len(self.contour_finder), 29)
 
     def test_ContourFinder_filter_multiple(self):
-        self.contour_finder.filter_area(min_value=250)
-        self.contour_finder.filter_perimeter(max_value=950)
-        self.assertEqual(len(self.contour_finder), 16)
+        self.contour_finder.filter_area(min_value=250, max_value=350)
+        self.contour_finder.filter_perimeter(min_value=50, max_value=150)
+        self.assertEqual(len(self.contour_finder), 5)
 
 
 class convert_Tests(TestCase):

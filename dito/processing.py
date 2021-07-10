@@ -63,35 +63,53 @@ class Contour():
         """
         return len(self.points)
 
-    def center(self):
+    def __eq__(self, other):
+        if not isinstance(other, Contour):
+            raise TypeError("Argument 'other' must be a contour")
+
+        if len(self) != len(other):
+            return False
+
+        return np.array_equal(self.points, other.points)
+
+    def copy(self):
+        return Contour(points=self.points.copy())
+
+    def get_center(self):
         return np.mean(self.points, axis=0)
 
-    def center_x(self):
+    def get_center_x(self):
         return np.mean(self.points[:, 0])
 
-    def center_y(self):
+    def get_center_y(self):
         return np.mean(self.points[:, 1])
 
-    def area(self):
+    def get_area(self):
         return cv2.contourArea(contour=self.points)
 
-    def perimeter(self):
+    def get_perimeter(self):
         return cv2.arcLength(curve=self.points, closed=True)
 
-    def circularity(self):
-        r_area = np.sqrt(self.area() / np.pi)
-        r_perimeter = self.perimeter() / (2.0 * np.pi)
+    def get_circularity(self):
+        r_area = np.sqrt(self.get_area() / np.pi)
+        r_perimeter = self.get_perimeter() / (2.0 * np.pi)
         return r_area / r_perimeter
 
-    def moments(self):
+    def get_moments(self):
         return cv2.moments(array=self.points, binaryImage=False)
 
-    def hu_moments(self, log=True):
-        hu_moments = cv2.HuMoments(m=self.moments())
+    def get_hu_moments(self, log=True):
+        hu_moments = cv2.HuMoments(m=self.get_moments())
         if log:
             return np.sign(hu_moments) * np.log10(np.abs(hu_moments))
         else:
             return hu_moments
+
+    def shift(self, offset_x=None, offset_y=None):
+        if offset_x is not None:
+            self.points[:, 0] += offset_x
+        if offset_y is not None:
+            self.points[:, 1] += offset_y
 
     def draw(self, image, color, thickness=1, filled=True, antialias=False, offset=None):
         cv2.drawContours(image=image, contours=[np.round(self.points).astype(np.int)], contourIdx=0, color=color, thickness=cv2.FILLED if filled else thickness, lineType=cv2.LINE_AA if antialias else cv2.LINE_8, offset=offset)
@@ -107,8 +125,25 @@ class ContourList():
         """
         return len(self.contours)
 
+    def __eq__(self, other):
+        if not isinstance(other, ContourList):
+            raise TypeError("Argument 'other' must be a contour list")
+
+        if len(self) != len(other):
+            return False
+
+        for (contour_self, contour_other) in zip(self.contours, other.contours):
+            if contour_self != contour_other:
+                return False
+
+        return True
+
     def __getitem__(self, key):
         return self.contours[key]
+
+    def copy(self):
+        contours_copy = [contour.copy() for contour in self.contours]
+        return ContourList(contours=contours_copy)
 
     def filter(self, func, min_value=None, max_value=None):
         if (min_value is None) and (max_value is None):
@@ -127,19 +162,19 @@ class ContourList():
         self.contours = contours_filtered
 
     def filter_center_x(self, min_value=None, max_value=None):
-        self.filter(func=operator.methodcaller("center_x"), min_value=min_value, max_value=max_value)
+        self.filter(func=operator.methodcaller("get_center_x"), min_value=min_value, max_value=max_value)
 
     def filter_center_y(self, min_value=None, max_value=None):
-        self.filter(func=operator.methodcaller("center_y"), min_value=min_value, max_value=max_value)
+        self.filter(func=operator.methodcaller("get_center_y"), min_value=min_value, max_value=max_value)
 
     def filter_area(self, min_value=None, max_value=None):
-        self.filter(func=operator.methodcaller("area"), min_value=min_value, max_value=max_value)
+        self.filter(func=operator.methodcaller("get_area"), min_value=min_value, max_value=max_value)
 
     def filter_perimeter(self, min_value=None, max_value=None):
-        self.filter(func=operator.methodcaller("area"), min_value=min_value, max_value=max_value)
+        self.filter(func=operator.methodcaller("get_perimeter"), min_value=min_value, max_value=max_value)
 
     def filter_circularity(self, min_value=None, max_value=None):
-        self.filter(func=operator.methodcaller("circularity"), min_value=min_value, max_value=max_value)
+        self.filter(func=operator.methodcaller("get_circularity"), min_value=min_value, max_value=max_value)
 
     def find_largest(self, return_index=True):
         """
