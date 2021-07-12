@@ -1,6 +1,8 @@
 import functools
 import os.path
+import tempfile
 import time
+import uuid
 
 import cv2
 import numpy as np
@@ -66,6 +68,12 @@ def save(filename, image, mkdir=True):
     else:
         # use OpenCV
         cv2.imwrite(filename=filename, img=image)
+
+
+def save_tmp(image):
+    filename = os.path.join(tempfile.gettempdir(), "dito.save_tmp", "{}__{}.png".format(dito.utils.now_str(mode="readable"), str(uuid.uuid4()).split("-")[0]))
+    save(filename=filename, image=image, mkdir=True)
+    return filename
 
 
 def decode(b, color=None):
