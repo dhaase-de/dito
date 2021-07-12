@@ -779,7 +779,7 @@ class now_str_Tests(TestCase):
             {"kwargs": {"mode": "readable", "date": True, "time": False, "microtime": False}, "expected_length": 10},
             {"kwargs": {"mode": "print",    "date": True, "time": False, "microtime": False}, "expected_length": 10},
             {"kwargs": {"mode": "compact",  "date": True, "time": True,  "microtime": False}, "expected_length": 15},
-            {"kwargs": {"mode": "readable", "date": True, "time": True,  "microtime": False}, "expected_length": 19},
+            {"kwargs": {"mode": "readable", "date": True, "time": True,  "microtime": False}, "expected_length": 20},
             {"kwargs": {"mode": "print",    "date": True, "time": True,  "microtime": False}, "expected_length": 19},
         ]
         for case in cases:
