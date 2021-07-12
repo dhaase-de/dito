@@ -125,9 +125,9 @@ def now_str(mode="compact", date=True, time=True, microtime=True):
         micro_fmt = "%f"
     elif mode == "readable":
         date_fmt = "%Y-%m-%d"
-        time_sep = "_"
+        time_sep = "__"
         time_fmt = "%H-%M-%S"
-        micro_sep = "_"
+        micro_sep = "__"
         micro_fmt = "%f"
     elif mode == "print":
         date_fmt = "%Y-%m-%d"
