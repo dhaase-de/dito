@@ -1,3 +1,4 @@
+import math
 import operator
 
 import cv2
@@ -94,6 +95,17 @@ class Contour():
         r_area = np.sqrt(self.get_area() / np.pi)
         r_perimeter = self.get_perimeter() / (2.0 * np.pi)
         return r_area / r_perimeter
+
+    def get_ellipse(self):
+        return cv2.fitEllipse(points=self.points)
+
+    def get_eccentricity(self):
+        ellipse = self.get_ellipse()
+        (width, height) = ellipse[1]
+        semi_major_axis = max(width, height) * 0.5
+        semi_minor_axis = min(width, height) * 0.5
+        eccentricity = math.sqrt(1.0 - (semi_minor_axis / semi_major_axis)**2)
+        return eccentricity
 
     def get_moments(self):
         return cv2.moments(array=self.points, binaryImage=False)
