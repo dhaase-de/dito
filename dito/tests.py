@@ -887,6 +887,14 @@ class save_Tests(TempDirTestCase):
         self._test_save_load(extension="npy")
 
 
+class save_tmp_Tests(TestCase):
+    def test_save_tmp_reload(self):
+        image = dito.pm5544()
+        filename = dito.save_tmp(image=image)
+        image_loaded = dito.load(filename=filename)
+        self.assertEqualImages(image, image_loaded)
+
+
 class stack_Tests(TestCase):
     def test_stack_mixed(self):
         # TODO: create more individual tests
