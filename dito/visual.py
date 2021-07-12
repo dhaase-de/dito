@@ -301,6 +301,10 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
     return target_image
 
 
+def overlay(target_image, source_image, source_mask=None):
+    return insert(target_image=target_image, source_image=source_image, source_mask=source_mask)
+
+
 ####
 #%%% text
 ####
