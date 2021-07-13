@@ -46,6 +46,12 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.4.0 (2021-07-13) ###
+* added support for contour finding and handling (`Contour`, `ContourList`, `ContourFinder`, `VoronoiPartition`)
+* added aliases for color conversion (`convert_color`, `bgr_to_hsv`, `hsv_to_bgr`)
+* added efficient gamma function (`gamma`)
+* added several more helper functions and improvements (`grid`, `gaussian_blur`, `is_(integer|float|bool)_(dtype|image)`, `save_tmp`, ...)
+
 ### v2.3.0 (2021-05-26) ###
 * improved text drawing (e.g. margin, padding, border, rotation, alignment, support for ANSI escape sequences, greek alphabet, outline background mode, width shrinking)
 * added some helper functions (which were needed for improved text drawing), e.g. `insert`, `constant_image`, `rotate*`, `dilate`, `pad`
