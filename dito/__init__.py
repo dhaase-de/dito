@@ -1,4 +1,4 @@
-__version__ = "2.4.0.dev0"
+__version__ = "2.4.0"
 
 
 from dito.core import *
