@@ -85,8 +85,34 @@ class Contour():
     def get_center_y(self):
         return np.mean(self.points[:, 1])
 
-    def get_area(self):
-        return cv2.contourArea(contour=self.points)
+    def get_min_x(self):
+        return np.min(self.points[:, 0])
+
+    def get_max_x(self):
+        return np.max(self.points[:, 0])
+
+    def get_width(self):
+        return self.get_max_x() - self.get_min_x()
+
+    def get_min_y(self):
+        return np.min(self.points[:, 1])
+
+    def get_max_y(self):
+        return np.max(self.points[:, 1])
+
+    def get_height(self):
+        return self.get_max_y() - self.get_min_y()
+
+    def get_area(self, mode="draw"):
+        if mode == "draw":
+            image = self.draw_standalone(color=(1,), thickness=1, filled=True, antialias=False, border=2)
+            return np.sum(image)
+
+        elif mode == "calc":
+            return cv2.contourArea(contour=self.points)
+
+        else:
+            raise ValueError("Invalid value for argument 'mode': '{}'".format(mode))
 
     def get_perimeter(self):
         return cv2.arcLength(curve=self.points, closed=True)
@@ -125,6 +151,11 @@ class Contour():
 
     def draw(self, image, color, thickness=1, filled=True, antialias=False, offset=None):
         cv2.drawContours(image=image, contours=[np.round(self.points).astype(np.int)], contourIdx=0, color=color, thickness=cv2.FILLED if filled else thickness, lineType=cv2.LINE_AA if antialias else cv2.LINE_8, offset=offset)
+
+    def draw_standalone(self, color, thickness=1, filled=True, antialias=False, border=0):
+        image = np.zeros(shape=(2 * border + self.get_height(), 2 * border + self.get_width()), dtype=np.uint8)
+        self.draw(image=image, color=color, thickness=thickness, filled=filled, antialias=antialias, offset=(border - self.get_min_x(), border - self.get_min_y()))
+        return image
 
 
 class ContourList():
@@ -179,8 +210,8 @@ class ContourList():
     def filter_center_y(self, min_value=None, max_value=None):
         self.filter(func=operator.methodcaller("get_center_y"), min_value=min_value, max_value=max_value)
 
-    def filter_area(self, min_value=None, max_value=None):
-        self.filter(func=operator.methodcaller("get_area"), min_value=min_value, max_value=max_value)
+    def filter_area(self, min_value=None, max_value=None, mode="draw"):
+        self.filter(func=operator.methodcaller("get_area", mode=mode), min_value=min_value, max_value=max_value)
 
     def filter_perimeter(self, min_value=None, max_value=None):
         self.filter(func=operator.methodcaller("get_perimeter"), min_value=min_value, max_value=max_value)

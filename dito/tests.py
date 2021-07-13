@@ -207,6 +207,10 @@ class ContourFinder_Tests(TestCase):
 
     def test_ContourFinder_filter_area(self):
         self.contour_finder.filter_area(min_value=400, max_value=800)
+        self.assertEqual(len(self.contour_finder), 9)
+
+    def test_ContourFinder_filter_area_calc(self):
+        self.contour_finder.filter_area(min_value=400, max_value=800, mode="calc")
         self.assertEqual(len(self.contour_finder), 10)
 
     def test_ContourFinder_filter_perimeter(self):
@@ -214,8 +218,8 @@ class ContourFinder_Tests(TestCase):
         self.assertEqual(len(self.contour_finder), 16)
 
     def test_ContourFinder_filter_circularity(self):
-        self.contour_finder.filter_circularity(min_value=0.85)
-        self.assertEqual(len(self.contour_finder), 29)
+        self.contour_finder.filter_circularity(min_value=0.95)
+        self.assertEqual(len(self.contour_finder), 13)
 
     def test_ContourFinder_filter_multiple(self):
         self.contour_finder.filter_area(min_value=250, max_value=350)
