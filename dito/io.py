@@ -1,4 +1,5 @@
 import functools
+import glob
 import os.path
 import tempfile
 import time
@@ -45,6 +46,18 @@ def load(filename, color=None):
         raise TypeError("Image file '{}' exists, but has wrong type (expected object of type 'np.ndarray', but got '{}'".format(filename, type(image)))
 
     return image
+
+
+def load_multiple_iter(*args, color=None):
+    filename_pattern = os.path.join(*args)
+    filenames = sorted(glob.glob(filename_pattern))
+    for filename in filenames:
+        image = load(filename=filename, color=color)
+        yield image
+
+
+def load_multiple(*args, color=None):
+    return list(load_multiple_iter(*args, color=color))
 
 
 def save(filename, image, mkdir=True):
