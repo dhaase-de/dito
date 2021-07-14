@@ -43,10 +43,31 @@ def otsu_image(image):
 ##
 
 
-def dilate(image, shape=cv2.MORPH_ELLIPSE, size=3, iterations=1):
+def morpho_op_kernel(shape, size):
     ksize = dito.utils.get_validated_tuple(x=size, type_=int, count=2)
     kernel = cv2.getStructuringElement(shape=shape, ksize=ksize, anchor=(-1, -1))
-    return cv2.dilate(src=image, kernel=kernel, iterations=iterations)
+    return kernel
+
+
+def morpho_op(image, operation, shape=cv2.MORPH_ELLIPSE, size=3, anchor=(-1, -1), iterations=1):
+    kernel = morpho_op_kernel(shape=shape, size=size)
+    return cv2.morphologyEx(src=image, op=operation, kernel=kernel, anchor=anchor, iterations=iterations)
+
+
+def dilate(image, **kwargs):
+    return morpho_op(image=image, operation=cv2.MORPH_DILATE, **kwargs)
+
+
+def erode(image, **kwargs):
+    return morpho_op(image=image, operation=cv2.MORPH_ERODE, **kwargs)
+
+
+def blackhat(image, **kwargs):
+    return morpho_op(image=image, operation=cv2.MORPH_BLACKHAT, **kwargs)
+
+
+def tophat(image, **kwargs):
+    return morpho_op(image=image, operation=cv2.MORPH_TOPHAT, **kwargs)
 
 
 ##
