@@ -170,7 +170,7 @@ def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolati
         raise ValueError("Expected a float (= scale factor) or a 2-tuple (= target size) for argument 'scale_or_size', but got type '{}'".format(type(scale_or_size)))
 
 
-def pad(image, count, mode=cv2.BORDER_CONSTANT, constant_value=0):
+def pad(image, count=None, count_top=None, count_right=None, count_bottom=None, count_left=None, mode=cv2.BORDER_CONSTANT, constant_value=0):
     if isinstance(mode, int):
         # assume mode to be one of cv2.BORDER_*
         pass
@@ -180,7 +180,20 @@ def pad(image, count, mode=cv2.BORDER_CONSTANT, constant_value=0):
     else:
         raise ValueError("Invalid border mode '{}'".format(mode))
 
-    (count_top, count_right, count_bottom, count_left) = dito.utils.get_validated_tuple(x=count, type_=int, count=4, min_value=0, max_value=None)
+    trbl_all_none = (count_top is None) and (count_right is None) and (count_bottom is None) and (count_left is None)
+
+    if (count is not None) and trbl_all_none:
+        # padding counts are given by argument 'count'
+        (count_top, count_right, count_bottom, count_left) = dito.utils.get_validated_tuple(x=count, type_=int, count=4, min_value=0, max_value=None)
+    elif (count is None) and (not trbl_all_none):
+        # padding counts are given by argument 'count_*'
+        count_top = 0 if (count_top is None) else count_top
+        count_right = 0 if (count_right is None) else count_right
+        count_bottom = 0 if (count_bottom is None) else count_bottom
+        count_left = 0 if (count_left is None) else count_left
+    else:
+        raise ValueError("If argument 'count' is set, arguments 'top', 'right', 'bottom', 'left' must be unset (None) and vice versa")
+
     return cv2.copyMakeBorder(src=image, top=count_top, bottom=count_bottom, left=count_left, right=count_right, borderType=mode, value=constant_value)
 
 
