@@ -10,4 +10,4 @@ dist/
 
 # dev files
 dev/
-venv/
+venv*/
