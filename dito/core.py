@@ -197,6 +197,21 @@ def pad(image, count=None, count_top=None, count_right=None, count_bottom=None, 
     return cv2.copyMakeBorder(src=image, top=count_top, bottom=count_bottom, left=count_left, right=count_right, borderType=mode, value=constant_value)
 
 
+def pad_to(image, target_size, **kwargs):
+    """
+    Center pad `image` to the given `target_size` if it is smaller than this target size.
+    """
+    missing_width = max(0, target_size[0] - image.shape[1])
+    missing_height = max(0, target_size[1] - image.shape[0])
+
+    count_top = missing_height // 2
+    count_bottom = missing_height - count_top
+    count_left = missing_width // 2
+    count_right = missing_width - count_left
+
+    return pad(image=image, count=None, count_top=count_top, count_right=count_right, count_bottom=count_bottom, count_left=count_left, **kwargs)
+
+
 def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
     """
     Rotate the given `image` by an arbitrary angle given in degrees.
