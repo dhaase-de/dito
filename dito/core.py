@@ -197,7 +197,7 @@ def pad(image, count=None, count_top=None, count_right=None, count_bottom=None, 
     return cv2.copyMakeBorder(src=image, top=count_top, bottom=count_bottom, left=count_left, right=count_right, borderType=mode, value=constant_value)
 
 
-def pad_to(image, target_size, **kwargs):
+def center_pad_to(image, target_size, **kwargs):
     """
     Center pad `image` to the given `target_size` if it is smaller than this target size.
     """
