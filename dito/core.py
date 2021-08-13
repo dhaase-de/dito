@@ -218,7 +218,7 @@ def center_crop_to(image, target_size):
     for n_dim in range(2):
         offset = max(0, image_size[n_dim] - target_size[n_dim]) // 2
         indices[1 - n_dim] = slice(offset, min(image_size[n_dim], offset + target_size[n_dim]))
-    return image[indices]
+    return image[tuple(indices)]
 
 
 def center_pad_crop_to(image, target_size, **kwargs):
