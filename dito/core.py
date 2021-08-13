@@ -212,6 +212,21 @@ def center_pad_to(image, target_size, **kwargs):
     return pad(image=image, count=None, count_top=count_top, count_right=count_right, count_bottom=count_bottom, count_left=count_left, **kwargs)
 
 
+def center_crop_to(image, target_size):
+    image_size = size(image=image)
+    indices = [None, None, Ellipsis]
+    for n_dim in range(2):
+        offset = max(0, image_size[n_dim] - target_size[n_dim]) // 2
+        indices[1 - n_dim] = slice(offset, min(image_size[n_dim], offset + target_size[n_dim]))
+    return image[indices]
+
+
+def center_pad_crop_to(image, target_size, **kwargs):
+    image_padded = center_pad_to(image=image, target_size=target_size, **kwargs)
+    image_cropped = center_crop_to(image=image_padded, target_size=target_size)
+    return image_cropped
+
+
 def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
     """
     Rotate the given `image` by an arbitrary angle given in degrees.
