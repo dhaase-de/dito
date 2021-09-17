@@ -148,7 +148,8 @@ class FloatSlider(Slider):
         raise RuntimeError("Invalid initial value '{}'".format(initial_value))
 
     def raw_from_value(self, value):
-        return round((value - self.min_value) / (self.max_value - self.min_value) * (self.value_count - 1))
+        # int is required for the case that `value` is a NumPy float
+        return int(round((value - self.min_value) / (self.max_value - self.min_value) * (self.value_count - 1)))
 
     def value_from_raw(self, raw_value):
         return raw_value / (self.value_count - 1) * (self.max_value - self.min_value) + self.min_value
