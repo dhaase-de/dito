@@ -122,7 +122,7 @@ class IntegerSlider(Slider):
 
 
 class FloatSlider(Slider):
-    def __init__(self, window_name, name, min_value, max_value, value_count=100, initial_value=None):
+    def __init__(self, window_name, name, min_value, max_value, value_count=101, initial_value=None):
         self.min_value = min_value
         self.max_value = max_value
         self.value_count = value_count
@@ -131,7 +131,7 @@ class FloatSlider(Slider):
             name=name,
             window_name=window_name,
             initial_raw_value=self.raw_from_value(value=self.resolve_initial_value(initial_value=initial_value)),
-            max_raw_value=self.value_count,
+            max_raw_value=self.value_count - 1,
         )
 
     def resolve_initial_value(self, initial_value):
@@ -148,7 +148,7 @@ class FloatSlider(Slider):
         raise RuntimeError("Invalid initial value '{}'".format(initial_value))
 
     def raw_from_value(self, value):
-        return round((value - self.min_value) / (self.max_value - self.min_value) * self.value_count)
+        return round((value - self.min_value) / (self.max_value - self.min_value) * (self.value_count - 1))
 
     def value_from_raw(self, raw_value):
-        return raw_value / self.value_count * (self.max_value - self.min_value) + self.min_value
+        return raw_value / (self.value_count - 1) * (self.max_value - self.min_value) + self.min_value
