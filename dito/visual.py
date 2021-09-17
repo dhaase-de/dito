@@ -11,6 +11,9 @@ import dito.io
 import dito.utils
 
 
+DEFAULT_WINDOW_NAME = "dito.show"
+
+
 def random_color(min_hue=0, max_hue=180, min_saturation=128, max_saturation=255, min_value=128, max_value=255):
     # check arguments
     if not (0 <= min_hue <= 180):
@@ -893,7 +896,7 @@ def prepare_for_display(image, scale=None, normalize_mode=None, normalize_kwargs
     return image
 
 
-def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name="dito.show", close_window=False, engine=None):
+def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name=DEFAULT_WINDOW_NAME, close_window=False, engine=None):
     """
     Show `image` on the screen.
 
