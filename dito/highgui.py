@@ -53,7 +53,7 @@ class Slider(abc.ABC):
 
     def set_value(self, value):
         raw_value = self.raw_from_value(value=value)
-        return self.value_from_raw(raw_value=self.get_raw_value())
+        self.set_raw_value(raw_value=raw_value)
 
 
 class ChoiceSlider(Slider):
