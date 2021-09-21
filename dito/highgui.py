@@ -5,6 +5,7 @@ import cv2
 
 import dito.visual
 
+
 class Slider(abc.ABC):
     def __init__(self, window_name, name, initial_raw_value, max_raw_value):
         assert max_raw_value > 0
@@ -18,8 +19,13 @@ class Slider(abc.ABC):
         self.max_raw_value = max_raw_value
 
         self.create_trackbar()
+        self.changed = True
 
     def callback(self, raw_value):
+        self.changed = True
+        self.custom_callback()
+
+    def custom_callback(self):
         pass
 
     def create_trackbar(self):
@@ -27,6 +33,7 @@ class Slider(abc.ABC):
         cv2.createTrackbar(self.name, self.window_name, self.initial_raw_value, self.max_raw_value, self.callback)
 
     def get_raw_value(self):
+        self.changed = False
         return cv2.getTrackbarPos(trackbarname=self.name, winname=self.window_name)
 
     def set_raw_value(self, raw_value):
