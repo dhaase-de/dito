@@ -3,6 +3,7 @@ __version__ = "2.5.0.dev0"
 
 from dito.core import *
 from dito.data import *
+from dito.draw import *
 from dito.highgui import *
 from dito.inspect import *
 from dito.io import *
