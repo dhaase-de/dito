@@ -16,6 +16,10 @@ def gaussian_blur(image, sigma):
     return cv2.GaussianBlur(src=image, ksize=None, sigmaX=sigma)
 
 
+def median_blur(image, kernel_size):
+    return cv2.medianBlur(src=image, ksize=kernel_size)
+
+
 ##
 ## thresholding
 ##
