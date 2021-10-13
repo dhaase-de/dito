@@ -66,6 +66,14 @@ def erode(image, **kwargs):
     return morpho_op(image=image, operation=cv2.MORPH_ERODE, **kwargs)
 
 
+def open_(image, **kwargs):
+    return morpho_op(image=image, operation=cv2.MORPH_OPEN, **kwargs)
+
+
+def close(image, **kwargs):
+    return morpho_op(image=image, operation=cv2.MORPH_CLOSE, **kwargs)
+
+
 def blackhat(image, **kwargs):
     return morpho_op(image=image, operation=cv2.MORPH_BLACKHAT, **kwargs)
 
