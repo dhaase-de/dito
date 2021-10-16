@@ -7,6 +7,7 @@ import numpy as np
 
 import dito.core
 import dito.data
+import dito.exceptions
 import dito.io
 import dito.utils
 
@@ -896,7 +897,7 @@ def prepare_for_display(image, scale=None, normalize_mode=None, normalize_kwargs
     return image
 
 
-def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name=DEFAULT_WINDOW_NAME, close_window=False, engine=None):
+def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name=DEFAULT_WINDOW_NAME, close_window=False, engine=None, raise_on_qkey=False):
     """
     Show `image` on the screen.
 
@@ -979,6 +980,9 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
 
     else:
         raise RuntimeError("Unsupported engine '{}'".format(engine))
+
+    if raise_on_qkey and (key in qkeys()):
+        raise dito.exceptions.QkeyInterrupt()
 
     return key
 
