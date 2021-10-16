@@ -13,6 +13,8 @@ import dito.core
 
 
 def gaussian_blur(image, sigma):
+    if sigma <= 0.0:
+        return image
     return cv2.GaussianBlur(src=image, ksize=None, sigmaX=sigma)
 
 
@@ -80,6 +82,42 @@ def blackhat(image, **kwargs):
 
 def tophat(image, **kwargs):
     return morpho_op(image=image, operation=cv2.MORPH_TOPHAT, **kwargs)
+
+
+##
+## filters
+##
+
+
+def dog(image, sigma1, sigma2, return_raw=False):
+    blur1 = gaussian_blur(image=image, sigma=sigma1).astype(np.float32)
+    blur2 = gaussian_blur(image=image, sigma=sigma2).astype(np.float32)
+    diff = blur1 - blur2
+    if return_raw:
+        return diff
+    else:
+        diff_11 = diff / dito.core.dtype_range(dtype=image.dtype)[1]
+        diff_01 = (diff_11 + 1.0) * 0.5
+        return dito.convert(image=diff_01, dtype=image.dtype)
+
+
+def dog_interactive(image):
+    window_name = "dito.dog_interactive"
+    sliders = [dito.highgui.FloatSlider(window_name=window_name, name="sigma{}".format(n_slider + 1), min_value=0.0, max_value=15.0, value_count=1001) for n_slider in range(2)]
+    sliders[0].set_value(0.5)
+    sliders[1].set_value(0.8)
+
+    image_show = None
+    while True:
+        if (image_show is None) or any(slider.changed for slider in sliders):
+            sigmas = [sliders[n_slider].get_value() for n_slider in range(2)]
+            images_blur = [gaussian_blur(image=image, sigma=sigmas[n_slider]) for n_slider in range(2)]
+            images_blur = [dito.visual.text(image=image_blur, message="sigma{} = {:.2f}".format(n_slider + 1, sigmas[n_slider])) for (n_slider, image_blur) in enumerate(images_blur)]
+            image_dog = dog(image, sigma1=sigmas[0], sigma2=sigmas[1])
+            image_show = dito.stack([[image, image_dog], images_blur])
+        key = dito.show(image=image_show, window_name=window_name, wait=10)
+        if key in dito.qkeys():
+            return
 
 
 ##
