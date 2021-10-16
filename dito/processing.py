@@ -68,11 +68,11 @@ def erode(image, **kwargs):
     return morpho_op(image=image, operation=cv2.MORPH_ERODE, **kwargs)
 
 
-def open_(image, **kwargs):
+def morpho_open(image, **kwargs):
     return morpho_op(image=image, operation=cv2.MORPH_OPEN, **kwargs)
 
 
-def close(image, **kwargs):
+def morpho_close(image, **kwargs):
     return morpho_op(image=image, operation=cv2.MORPH_CLOSE, **kwargs)
 
 
