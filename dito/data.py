@@ -13,10 +13,51 @@ import dito.io
 
 RESOURCES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources")
 RESOURCES_FILENAMES = {
+    # colormaps (self-defined)
     "colormap:plot": os.path.join(RESOURCES_DIR, "colormaps", "plot.png"),
+    "colormap:plot2": os.path.join(RESOURCES_DIR, "colormaps", "plot2.png"),
 
+    # colorbrewer colormaps (note: this product includes color specifications and designs developed by Cynthia Brewer (http://colorbrewer.org/).)
+    "colormap:accent": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "accent.png"),
+    "colormap:blues": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "blues.png"),
+    "colormap:brbg": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "brbg.png"),
+    "colormap:bugn": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "bugn.png"),
+    "colormap:bupu": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "bupu.png"),
+    "colormap:dark2": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "dark2.png"),
+    "colormap:gnbu": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "gnbu.png"),
+    "colormap:greens": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "greens.png"),
+    "colormap:greys": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "greys.png"),
+    "colormap:orrd": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "orrd.png"),
+    "colormap:oranges": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "oranges.png"),
+    "colormap:prgn": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "prgn.png"),
+    "colormap:paired": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "paired.png"),
+    "colormap:pastel1": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "pastel1.png"),
+    "colormap:pastel2": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "pastel2.png"),
+    "colormap:piyg": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "piyg.png"),
+    "colormap:pubu": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "pubu.png"),
+    "colormap:pubugn": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "pubugn.png"),
+    "colormap:puor": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "puor.png"),
+    "colormap:purd": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "purd.png"),
+    "colormap:purples": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "purples.png"),
+    "colormap:rdbu": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "rdbu.png"),
+    "colormap:rdgy": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "rdgy.png"),
+    "colormap:rdpu": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "rdpu.png"),
+    "colormap:rdylbu": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "rdylbu.png"),
+    "colormap:rdylgn": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "rdylgn.png"),
+    "colormap:reds": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "reds.png"),
+    "colormap:set1": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "set1.png"),
+    "colormap:set2": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "set2.png"),
+    "colormap:set3": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "set3.png"),
+    "colormap:spectral": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "spectral.png"),
+    "colormap:ylgn": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "ylgn.png"),
+    "colormap:ylgnbu": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "ylgnbu.png"),
+    "colormap:ylorbr": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "ylorbr.png"),
+    "colormap:ylorrd": os.path.join(RESOURCES_DIR, "colormaps", "colorbrewer", "ylorrd.png"),
+
+    # fonts: Scientifica
     "font:scientifica-12": os.path.join(RESOURCES_DIR, "fonts", "scientifica", "scientifica_df2.png"),
 
+    # font: Source Code Pro
     "font:source-10": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "10_df2.png"),
     "font:source-15": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "15_df2.png"),
     "font:source-20": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "20_df2.png"),
@@ -27,6 +68,7 @@ RESOURCES_FILENAMES = {
     "font:source-50": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "50_df2.png"),
     "font:source-70": os.path.join(RESOURCES_DIR, "fonts", "source_code_pro", "70_df2.png"),
 
+    # font: Terminus
     "font:terminus-12": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u12_df2.png"),
     "font:terminus-14": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u14_df2.png"),
     "font:terminus-16": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u16_df2.png"),
@@ -37,6 +79,7 @@ RESOURCES_FILENAMES = {
     "font:terminus-28": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u28_df2.png"),
     "font:terminus-32": os.path.join(RESOURCES_DIR, "fonts", "terminus", "ter-u32_df2.png"),
 
+    # test images
     "image:PM5544": os.path.join(RESOURCES_DIR, "images", "PM5544.png"),
 }
 

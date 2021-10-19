@@ -62,6 +62,9 @@ setup(
     packages=[package_name],
     package_data={package_name: [
         "resources/colormaps/*.png",
+        "resources/colormaps/colorbrewer/LICENSE.txt",
+        "resources/colormaps/colorbrewer/colorbrewer.json",
+        "resources/colormaps/colorbrewer/*.png",
         "resources/fonts/*/LICENSE.txt",
         "resources/fonts/scientifica/*.png",
         "resources/fonts/source_code_pro/*.png",
