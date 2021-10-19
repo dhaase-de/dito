@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 
 import dito.core
+import dito.visual
 
 
 ##
@@ -89,7 +90,7 @@ def tophat(image, **kwargs):
 ##
 
 
-def dog(image, sigma1, sigma2, return_raw=False):
+def dog(image, sigma1, sigma2, return_raw=False, colormap=None):
     blur1 = gaussian_blur(image=image, sigma=sigma1).astype(np.float32)
     blur2 = gaussian_blur(image=image, sigma=sigma2).astype(np.float32)
     diff = blur1 - blur2
@@ -98,10 +99,13 @@ def dog(image, sigma1, sigma2, return_raw=False):
     else:
         diff_11 = diff / dito.core.dtype_range(dtype=image.dtype)[1]
         diff_01 = (diff_11 + 1.0) * 0.5
-        return dito.convert(image=diff_01, dtype=image.dtype)
+        result = dito.convert(image=diff_01, dtype=image.dtype)
+        if colormap is not None:
+            result = dito.visual.colorize(image=result, colormap=colormap)
+        return result
 
 
-def dog_interactive(image):
+def dog_interactive(image, colormap=None):
     window_name = "dito.dog_interactive"
     sliders = [dito.highgui.FloatSlider(window_name=window_name, name="sigma{}".format(n_slider + 1), min_value=0.0, max_value=15.0, value_count=1001) for n_slider in range(2)]
     sliders[0].set_value(0.5)
@@ -113,7 +117,7 @@ def dog_interactive(image):
             sigmas = [sliders[n_slider].get_value() for n_slider in range(2)]
             images_blur = [gaussian_blur(image=image, sigma=sigmas[n_slider]) for n_slider in range(2)]
             images_blur = [dito.visual.text(image=image_blur, message="sigma{} = {:.2f}".format(n_slider + 1, sigmas[n_slider])) for (n_slider, image_blur) in enumerate(images_blur)]
-            image_dog = dog(image, sigma1=sigmas[0], sigma2=sigmas[1])
+            image_dog = dog(image, sigma1=sigmas[0], sigma2=sigmas[1], return_raw=False, colormap=colormap)
             image_show = dito.stack([[image, image_dog], images_blur])
         key = dito.show(image=image_show, window_name=window_name, wait=10)
         if key in dito.qkeys():
