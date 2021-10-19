@@ -1,4 +1,5 @@
 import collections
+import math
 import os.path
 import warnings
 
@@ -66,6 +67,46 @@ def is_colormap(colormap):
     if colormap.shape != (256, 1, 3):
         return False
     return True
+
+
+def create_colormap(colors):
+    """
+    Create a colormap by interpolating between a given set of anchor colors.
+
+    The argument `colors` must be either (i) a dictionary, with integer keys
+    between `0` and `255` specifying the source intensity and 3-tuples as
+    corresponding values, specifying the BGR colors or (ii) a tuple of 3-tuples
+    (the BGR colors) which are spread evenly over the whole source intensity
+    range.
+
+    The given colors are the interpolated linearly in BGR color space.
+    """
+
+    # transform color list into color dict
+    if isinstance(colors, collections.abc.Sequence):
+        color_count = len(colors)
+        colors = {math.floor(255.0 * n_color / (color_count - 1)): color for (n_color, color) in enumerate(colors)}
+
+    # check argument 'colors'
+    if not isinstance(colors, collections.abc.Mapping):
+        raise TypeError("Argument 'colors' must be a dictionary, but is of type '{}'".format(type(colors)))
+    if len(colors) == 0:
+        raise ValueError("Argument 'colors' must be a non-empty dictionary, but is empty")
+    if not all(isinstance(key, int) and 0 <= key <= 255 for key in colors.keys()):
+        raise ValueError("Argument 'colors' must have integer keys, all between 0 and 255")
+    if not all(isinstance(value, collections.abc.Sequence) and (len(value) == 3) and (isinstance(item, int) and 0 <= item <= 255 for item in value) for value in colors.values()):
+        raise ValueError("Argument 'colors' must have 3-tuple values with integer items between 0 and 255")
+
+    # create colormap
+    sorted_keys = sorted(colors.keys())
+    sorted_values = tuple(colors[key] for key in sorted_keys)
+    colormap = np.zeros(shape=(256, 1, 3), dtype=np.uint8)
+    for n_channel in range(3):
+        sorted_channel_values = tuple(value[n_channel] for value in sorted_values)
+        for n_color in range(256):
+            colormap[n_color, 0, n_channel] = np.interp(x=n_color, xp=sorted_keys, fp=sorted_channel_values)
+
+    return colormap
 
 
 def colorize(image, colormap):
