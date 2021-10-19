@@ -68,7 +68,6 @@ setup(
         "resources/fonts/*/LICENSE.txt",
         "resources/fonts/scientifica/*.png",
         "resources/fonts/source_code_pro/*.png",
-        "resources/fonts/tamzen/*.png",
         "resources/fonts/terminus/*.png",
         "resources/images/*.png",
     ]},
