@@ -105,9 +105,8 @@ def constant_image(size=(512, 288), color=(0, 255, 0), dtype=np.uint8):
 
 def grid(size=(512, 288), grid_size=16, background_color=(0,), grid_color=(255,)):
     """
-    Returns a gray-scale image of the given `size` containing a checkerboard
-    grid with squares of size `block_size`. The arguments `low` and `high`
-    specify the gray scale values to be used for the squares.
+    Returns a gray-scale image of the given `size` containing a grid with a
+    pitch of size `block_size`.
     """
     image = constant_image(size=size, color=background_color)
     for x in range(0, size[0], grid_size):
