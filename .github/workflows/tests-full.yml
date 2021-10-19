@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
-        python-version: ['3.5', '3.6', '3.7', '3.8', '3.9']
+        python-version: ['3.5', '3.6', '3.7', '3.8', '3.9', '3.10']
         numpy-version: ['==1.13.3', '<1.20.0']
         opencv-version: ['>=3.2.0,<3.3.0', '>=3.0.0,<4.0.0', '>=4.0.0,<5.0.0']
         exclude:
@@ -31,6 +31,8 @@ jobs:
             python-version: '3.8'
           - opencv-version: '>=3.2.0,<3.3.0'
             python-version: '3.9'
+          - opencv-version: '>=3.2.0,<3.3.0'
+            python-version: '3.10'
     
     runs-on: ${{ matrix.os }}
     
