@@ -158,7 +158,7 @@ class VideoSaver():
     * the parent dir of the output file is created automatically
     * the codec can be given as a string
     * the frame size is taken from the first provided image
-    * the sizes of all following images are checked - id they do not match the size of the first image, an exception is
+    * the sizes of all following images are checked - if they do not match the size of the first image, an exception is
       raised
     * images are converted to gray/color mode automatically
     """
