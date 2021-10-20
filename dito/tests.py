@@ -94,6 +94,60 @@ class CachedImageLoader_Test(TempDirTestCase):
         self.assertRaises(FileNotFoundError, lambda: loader.load(filename=filename))
 
 
+class adaptive_round_Tests(TestCase):
+    def test_adaptive_round_python_float_zero(self):
+        number = 0.0
+        self.assertIsInstance(dito.adaptive_round(number=number, digit_count=4), float)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=1), 0.0)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=6), 0.0)
+
+    def test_adaptive_round_python_float(self):
+        number = 123.456789
+        self.assertIsInstance(dito.adaptive_round(number=number, digit_count=4), float)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=1), 100.0)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=2), 120.0)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=3), 123.0)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=4), 123.5)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=5), 123.46)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=6), 123.457)
+
+    def test_adaptive_round_python_int(self):
+        number = 123
+        self.assertIsInstance(dito.adaptive_round(number=number, digit_count=4), int)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=1), 100)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=2), 120)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=3), 123)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=4), 123)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=5), 123)
+        self.assertEqual(dito.adaptive_round(number=number, digit_count=6), 123)
+
+    def test_adaptive_round_numpy_float32_scalar(self):
+        number = np.float32(123.456789)
+        self.assertIsInstance(dito.adaptive_round(number=number, digit_count=4), np.float32)
+        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=1)), 100.0)
+        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=2)), 120.0)
+        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=3)), 123.0)
+        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=4)), 123.5)
+
+    def test_adaptive_round_numpy_float64_scalar(self):
+        number = np.float64(123.456789)
+        self.assertIsInstance(dito.adaptive_round(number=number, digit_count=4), np.float64)
+        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=1)), 100.0)
+        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=2)), 120.0)
+        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=3)), 123.0)
+        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=4)), 123.5)
+        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=5)), 123.46)
+        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=6)), 123.457)
+
+    def test_adaptive_round_numpy_uint8_scalar(self):
+        number = np.uint8(123)
+        self.assertIsInstance(dito.adaptive_round(number=number, digit_count=4), np.uint8)
+        self.assertEqual(int(dito.adaptive_round(number=number, digit_count=1)), 100)
+        self.assertEqual(int(dito.adaptive_round(number=number, digit_count=2)), 120)
+        self.assertEqual(int(dito.adaptive_round(number=number, digit_count=3)), 123)
+        self.assertEqual(int(dito.adaptive_round(number=number, digit_count=4)), 123)
+
+
 class as_channel_Tests(TestCase):
     def test_as_channels_raise_on_none(self):
         self.assertRaises(ValueError, lambda: dito.as_channels(b=None, g=None, r=None))
@@ -804,12 +858,12 @@ class pinfo_Tests(TempDirTestCase):
         image = dito.pm5544()
         info_filename = os.path.join(self.temp_dir.name, "pinfo.txt")
         with open(info_filename, "w") as f:
-            dito.pinfo(image=image, file=f)
+            dito.pinfo(image=image, file_=f)
 
         self.assertTrue(os.path.exists(info_filename))
         with open(info_filename, "r") as f:
             lines = f.readlines()
-        self.assertEqual(len(lines), 12)
+        self.assertEqual(len(lines), 5)
 
 
 class random_image_Tests(TestCase):
@@ -1248,7 +1302,7 @@ class geometry_Tests(TestCase):
 class infos_Tests(TestCase):
     def test_info(self):
         image = dito.pm5544()
-        info = dito.info(image)
+        info = dito.info(image, extended=True)
         self.assertEqual(info["shape"], (576, 768, 3))
         self.assertAlmostEqual(info["mean"], 121.3680261682581)
         self.assertAlmostEqual(info["std"], 91.194048489528782)

@@ -5,6 +5,7 @@ import os
 import tempfile
 
 import cv2
+import numpy as np
 
 
 ####
@@ -44,6 +45,32 @@ def get_validated_tuple(x, type_, count, min_value=None, max_value=None):
             raise ValueError(error_text)
 
     return x
+
+
+####
+#%%% number-related
+####
+
+
+def adaptive_round(number, digit_count=4):
+    """
+    Rounds a number to the first `digit_count` digits after the appearance of
+    the first non-zero digit.
+
+    This function supports Python `float`s and `int`s as well as NumPy scalars
+    of any type (e.g., `np.float32`, `np.uint8`, etc.).
+    """
+
+    with np.errstate(divide="ignore"):
+        try:
+            magnitude = np.floor(np.log10(np.abs(number)))
+        except ValueError:
+            magnitude = 0
+    if not np.isfinite(magnitude):
+        magnitude = 0
+
+    round_digit_count = int(digit_count - magnitude - 1)
+    return round(number, round_digit_count)
 
 
 ####
@@ -155,7 +182,7 @@ def now_str(mode="compact", date=True, time=True, microtime=True):
     return datetime.datetime.now().strftime(fmt)
 
 
-def ftable(rows):
+def ftable(rows, first_row_is_header=False):
     """
     Format the data specified in `rows` as table string.
     """
@@ -176,21 +203,28 @@ def ftable(rows):
     # transform rows into lines
     lines = []
     lines.append(sep_line)
-    for row in rows:
+    for (n_row, row) in enumerate(rows):
         col_strs = []
         for (col_length, col) in zip(col_lengths, row):
             col_str = "{{: <{}}}".format(col_length).format(str(col))
             col_strs.append(col_str)
         lines.append(col_sep.join(col_strs))
+        if first_row_is_header and (n_row == 0):
+            lines.append(sep_line)
     lines.append(sep_line)
     
     # return table as single string
     return "\n".join(lines)
     
 
-def ptable(rows, **kwargs):
+def ptable(rows, ftable_kwargs=None, print_kwargs=None):
     """
     Print the data specified in `rows` as table.
     """
-    
-    print(ftable(rows=rows), **kwargs)
+
+    if ftable_kwargs is None:
+        ftable_kwargs = {}
+    if print_kwargs is None:
+        print_kwargs = {}
+
+    print(ftable(rows=rows, **ftable_kwargs), **print_kwargs)

@@ -235,7 +235,7 @@ class VideoSaver():
     def get_file_size(self):
         return os.path.getsize(filename=self.filename)
 
-    def print_summary(self, **kwargs):
+    def print_summary(self, file=None):
         file_exists = self.file_exists()
         rows = [
             ["Output", ""],
@@ -249,4 +249,4 @@ class VideoSaver():
             ["..Color", self.color],
             ["..Count", self.frame_count],
         ]
-        dito.utils.ptable(rows=rows, **kwargs)
+        dito.utils.ptable(rows=rows, print_kwargs={"file": file})

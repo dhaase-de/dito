@@ -7,32 +7,55 @@ import dito.core
 import dito.utils
 
 
-def info(image):
+def info(image, extended=False):
     """
     Returns an ordered dictionary containing info about the given image.
     """
 
     result = collections.OrderedDict()
-    result["size"] = dito.utils.human_bytes(byte_count=image.size * image.itemsize)
+    if extended:
+        result["size"] = dito.utils.human_bytes(byte_count=image.size * image.itemsize)
     result["shape"] = image.shape
     result["dtype"] = image.dtype
     result["mean"] = np.mean(image)
     result["std"] = np.std(image)
     result["min"] = np.min(image)
-    result["1st quartile"] = np.percentile(image, 25.0)
-    result["median"] = np.median(image)
-    result["3rd quartile"] = np.percentile(image, 75.0)
+    if extended:
+        result["1st quartile"] = np.percentile(image, 25.0)
+        result["median"] = np.median(image)
+        result["3rd quartile"] = np.percentile(image, 75.0)
     result["max"] = np.max(image)
     return result
 
 
-def pinfo(image, **kwargs):
+def pinfo(*args, extended_=False, file_=None, **kwargs):
     """
-    Prints info about the given image.
+    Prints info about the given images.
     """
-    
-    result = info(image=image)
-    dito.utils.ptable(rows=result.items(), **kwargs)
+
+    # merge args and kwargs into one dictionary
+    all_kwargs = collections.OrderedDict()
+    for (n_image, image) in enumerate(args):
+        all_kwargs["{}".format(n_image)] = image
+    all_kwargs.update(kwargs)
+
+    header = None
+    rows = []
+    for (image_name, image) in all_kwargs.items():
+        image_info = info(image=image, extended=extended_)
+        if header is None:
+            header = ("Image",) + tuple(image_info.keys())
+            rows.append(header)
+        row = [image_name] + list(image_info.values())
+
+        # round float values to keep the table columns from exploding
+        for (n_col, col) in enumerate(row):
+            if isinstance(col, float):
+                row[n_col] = dito.utils.adaptive_round(number=col, digit_count=8)
+
+        rows.append(row)
+
+    dito.utils.ptable(rows=rows, ftable_kwargs={"first_row_is_header": True}, print_kwargs={"file": file_})
 
 
 def hist(image, bin_count=256):
