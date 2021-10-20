@@ -242,6 +242,53 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
     return stacked_image
 
 
+def astack(images, aspect=1.77, padding=0, **stack_kwargs):
+    """
+    Given a 1d image list `images`, returns a 2d-stacked image with an aspect
+    ratio as close as possible to the desired aspect ratio `aspect`.
+    """
+
+    # find the optimal image count per row
+    image_count = len(images)
+    best_image_count_per_row = 1
+    best_error = float("inf")
+    for image_count_per_row in range(1, image_count + 1):
+        total_height = 0
+        total_width = 0
+        n_image_row = 0
+        row_height = 0
+        row_width = 0
+        for (n_image, image) in enumerate(images):
+            row_height = max(row_height, image.shape[0] + padding)
+            row_width += image.shape[1] + padding
+            if ((n_image_row + 1) == image_count_per_row) or ((n_image + 1) == image_count):
+                total_height += row_height
+                total_width = max(total_width, row_width)
+                n_image_row = 0
+                row_height = 0
+                row_width = 0
+            else:
+                n_image_row += 1
+        total_height += padding
+        total_width += padding
+
+        error = abs(aspect - (total_width / total_height))
+        if error < best_error:
+            best_image_count_per_row = image_count_per_row
+            best_error = error
+
+    # construct 2d list of images
+    rows = []
+    row = []
+    for (n_image, image) in enumerate(images):
+        row.append(image)
+        if (len(row) == best_image_count_per_row) or ((n_image + 1) == image_count):
+            rows.append(row)
+            row = []
+
+    return stack(images=rows, padding=padding, **stack_kwargs)
+
+
 def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask=None):
     # check argument 'position'
     if not (isinstance(position, (tuple, list)) and (len(position) == 2) and isinstance(position[0], (int, float)) and isinstance(position[1], (int, float))):
