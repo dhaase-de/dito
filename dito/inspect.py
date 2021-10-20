@@ -36,12 +36,20 @@ def pinfo(*args, extended_=False, file_=None, **kwargs):
     # merge args and kwargs into one dictionary
     all_kwargs = collections.OrderedDict()
     for (n_image, image) in enumerate(args):
-        all_kwargs["{}".format(n_image)] = image
+        if isinstance(image, str):
+            # if `image` is a filename (str), use the filename as key
+            all_kwargs[image] = image
+        else:
+            # otherwise, use the position of the image in the argument list as key
+            all_kwargs["{}".format(n_image)] = image
     all_kwargs.update(kwargs)
 
     header = None
     rows = []
     for (image_name, image) in all_kwargs.items():
+        if isinstance(image, str):
+            # `image` is a filename -> load it first
+            image = dito.io.load(filename=image)
         image_info = info(image=image, extended=extended_)
         if header is None:
             header = ("Image",) + tuple(image_info.keys())
