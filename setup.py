@@ -71,5 +71,8 @@ setup(
         "resources/fonts/terminus/*.png",
         "resources/images/*.png",
     ]},
-    scripts=["bin/dito_images_to_video.py"],
+    scripts=[
+        "bin/dito_images_to_video.py",
+        "bin/dito_pinfo.py",
+    ],
 )
