@@ -170,6 +170,70 @@ def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolati
         raise ValueError("Expected a float (= scale factor) or a 2-tuple (= target size) for argument 'scale_or_size', but got type '{}'".format(type(scale_or_size)))
 
 
+class PaddedImageIndexer():
+    """
+    Wrapper for an `np.ndarray` which allows indexing out-of-bounds and returns
+    a padded image.
+    """
+
+    def __init__(self, image, pad_kwargs):
+        self.image = image
+        self.pad_kwargs = pad_kwargs
+
+        assert isinstance(self.image, np.ndarray)
+
+    def __getitem__(self, item):
+        indices = item
+        axis_count = len(self.image.shape)
+
+        if len(indices) != axis_count:
+            raise ValueError("The axis count is {}, and does not match the axis count of the image ({})".format(len(indices), axis_count))
+
+        # for each axis collect the in-bound cropping indices and the pad widths
+        in_bound_indices = []
+        pad_widths = []
+        for (n_axis, index) in enumerate(indices):
+            if not isinstance(index, slice):
+                raise TypeError("All indices must be slices, but index #{} is of type '{}'".format(n_axis, type(index).__name__))
+            if (index.step is not None) and (index.step != 1):
+                raise ValueError("Step sized != 1 are currently not supported, but index #{} has step size {}".format(n_axis, index.step))
+
+            axis_size = self.image.shape[n_axis]
+
+            # replace None entries of the slice with numbers
+            start = index.start if (index.start is not None) else 0
+            stop = index.stop if (index.stop is not None) else axis_size
+
+            if start >= stop:
+                raise ValueError("Slice start ({}) is not smaller than slice stop ({})".format(start, stop))
+
+            # determine padding at the start of the axis
+            if start >= 0:
+                pad_before = 0
+            else:
+                pad_before = -start
+                start = 0
+
+            # determine padding at the end of the axis
+            if stop <= axis_size:
+                pad_after = 0
+            else:
+                pad_after = stop - axis_size
+                stop = axis_size
+
+            # store pad widths and
+            in_bound_indices.append(slice(start, stop))
+            pad_widths.append((pad_before, pad_after))
+
+        # perform a valid crop within the original image
+        image_cropped = self.image[tuple(in_bound_indices)]
+
+        # apply padding where necessary
+        image_padded = np.pad(array=image_cropped, pad_width=pad_widths, **self.pad_kwargs)
+
+        return image_padded
+
+
 def pad(image, count=None, count_top=None, count_right=None, count_bottom=None, count_left=None, mode=cv2.BORDER_CONSTANT, constant_value=0):
     if isinstance(mode, int):
         # assume mode to be one of cv2.BORDER_*
