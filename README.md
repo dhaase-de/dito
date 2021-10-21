@@ -46,6 +46,19 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.5.0 (2021-10-21) ###
+* added funtion `draw_symbol` with support for various symbols
+* added ColorBrewer colormaps
+* added `mp_starmap` as an easy-to-use wrapper for parallel processing tasks
+* added `Slider` class for easy-to-use OpenCV trackbar abstractions (namely `ChoiceSlider`, `BoolSlider`, `IntegerSlider`, and `FloatSlider`)
+* added aliases for morphological operations and helper functions (`dilate`, `erode`, `tophat`, `morpho_op_kernel`, ...)
+* added commonly needed padding and cropping wrappers (`center_pad_to`, `center_crop_to`, `center_pad_crop_to`)
+* added `PaddedImageIndexer` which provides padded images when indexed beyond the image bounds
+* added `astack` to automatically stack images into an image of a given aspect ratio
+* improved `pinfo` (support for multiple possibly named images, filenames, short/extended infos, wrapper script `dito_pinfo.py`, ...)
+* added `dog` for getting the Difference-of-Gaussian of an image and its interactive version `dog_interactive`
+* added several more helper functions and improvements (e.g., `load_multiple`, `create_colormap`, raise of `dito.QkeyException`, ...)
+
 ### v2.4.0 (2021-07-13) ###
 * added support for contour finding and handling (`Contour`, `ContourList`, `ContourFinder`, `VoronoiPartition`)
 * added aliases for color conversion (`convert_color`, `bgr_to_hsv`, `hsv_to_bgr`)
