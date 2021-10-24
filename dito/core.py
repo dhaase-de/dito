@@ -176,9 +176,11 @@ class PaddedImageIndexer():
     a padded image.
     """
 
-    def __init__(self, image, pad_kwargs):
+    def __init__(self, image, pad_kwargs=None):
         self.image = image
         self.pad_kwargs = pad_kwargs
+        if self.pad_kwargs is None:
+            self.pad_kwargs = {}
 
         assert isinstance(self.image, np.ndarray)
 
