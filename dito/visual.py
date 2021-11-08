@@ -858,7 +858,7 @@ class MonospaceBitmapFont(Font):
         text_mask = np.maximum(foreground_mask, background_mask)
         result_image = insert(
             target_image=target_image,
-            source_image=text_image,
+            source_image=dito.core.convert(image=text_image, dtype=target_image.dtype),
             position=position,
             anchor=anchor,
             source_mask=text_mask * opacity if opacity is not None else text_mask,
