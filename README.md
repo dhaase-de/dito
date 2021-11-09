@@ -32,7 +32,7 @@ For production:
 * [download wheel from PyPI](https://pypi.org/project/dito/#files) and install it via `pip install dito-x.y.z-py3-none-any.whl`
 
 For development:
-1. clone this repository, **and**
+1. clone this repository via `git clone https://github.com/dhaase-de/dito.git`, **and**
 2. run `scripts/build_install_dev.sh` (which is equivalent to `python3 setup.py develop --user`)
 
 
