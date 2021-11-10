@@ -706,7 +706,7 @@ class MonospaceBitmapFont(Font):
         # check colors
         for (color, none_allowed) in ((foreground_color, False), (background_color, True), (border_color, False)):
             if (not none_allowed) and (not (isinstance(color, (tuple, list)) and (len(color) == 3) and all(isinstance(value, int) for value in color) and all(0 <= value <= 255 for value in color))):
-                raise ValueError("Arguments 'foreground_color', 'background_color', and 'border_color' must be 3-tuples (8 bit BGR).")
+                raise ValueError("Arguments 'color', 'background_color', and 'border_color' must be 3-tuples (8 bit BGR).")
 
         # check border
         try:
