@@ -82,6 +82,7 @@ RESOURCES_FILENAMES = {
 
     # test images
     "image:PM5544": os.path.join(RESOURCES_DIR, "images", "PM5544.png"),
+    "image:USC-SIPI-4.1.07": os.path.join(RESOURCES_DIR, "images", "USC_SIPI_4.1.07.png"),
 }
 
 
@@ -476,3 +477,7 @@ def dito_test_image_v1(size=(384, 256), dtype=np.uint8):
 
 def pm5544():
     return dito.io.load(filename=RESOURCES_FILENAMES["image:PM5544"])
+
+
+def usc_sipi_beans():
+    return dito.io.load(filename=RESOURCES_FILENAMES["image:USC-SIPI-4.1.07"])
