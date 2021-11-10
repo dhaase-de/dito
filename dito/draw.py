@@ -8,6 +8,32 @@ import dito.core
 sqrt_05 = np.sqrt(0.5)
 
 
+def draw_circle(image, center, radius, color, thickness, line_type, start_angle=None, end_angle=None):
+    """
+    TODO: fix round corners when using start_angle/end_angle and thickness != cv2.FILLED
+    """
+    if (start_angle is None) and (end_angle is None):
+        cv2.circle(img=image, center=dito.core.tir(center), radius=radius, color=color, thickness=thickness, lineType=line_type)
+    else:
+        if start_angle is None:
+            start_angle = 0.0
+        if end_angle is None:
+            end_angle = 360.0
+        cv2.ellipse(img=image, center=dito.core.tir(center), axes=(radius, radius), angle=0.0, startAngle=start_angle, endAngle=end_angle, color=color, thickness=thickness, lineType=line_type)
+
+
+def draw_ring(image, center, radius1, radius2, color, thickness, line_type, start_angle=None, end_angle=None):
+    if thickness == cv2.FILLED:
+        # draw circle outline with thickness equal to the radius difference
+        circle_radius = (radius1 + radius2) // 2
+        circle_thickness = abs(radius1 - radius2)
+        draw_circle(image=image, center=center, radius=circle_radius, color=color, thickness=circle_thickness, line_type=line_type, start_angle=start_angle, end_angle=end_angle)
+    else:
+        # draw two circles
+        draw_circle(image=image, center=center, radius=radius1, color=color, thickness=thickness, line_type=line_type, start_angle=start_angle, end_angle=end_angle)
+        draw_circle(image=image, center=center, radius=radius2, color=color, thickness=thickness, line_type=line_type, start_angle=start_angle, end_angle=end_angle)
+
+
 def draw_polygon(image, points, color, thickness, line_type):
     points_int = np.round(np.array(points)).astype(np.int32)
     if thickness == cv2.FILLED:
