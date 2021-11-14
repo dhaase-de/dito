@@ -255,9 +255,8 @@ class DitoTestImageGeneratorV1():
     def __init__(self, size, dtype):
         # settings
         self.grid_size = 16
-        self.crosshair_color = (224, 224, 224)
         self.ruler_size = 16
-        self.ruler_color = (224, 224, 224)
+        self.line_color = (240, 240, 240)
 
         # arguments
         self.size = size
@@ -353,7 +352,7 @@ class DitoTestImageGeneratorV1():
 
     def draw_center_crosshair(self):
         for radius in (0, 2, 5, 9, 14):
-            dito.draw.draw_symbol(image=self.image, symbol="square", position=self.image_center, radius=radius, color=self.adapt_color_for_dtype(self.crosshair_color), thickness=1, line_type=cv2.LINE_8)
+            dito.draw.draw_symbol(image=self.image, symbol="square", position=self.image_center, radius=radius, color=self.adapt_color_for_dtype(self.line_color), thickness=1, line_type=cv2.LINE_8)
 
     def draw_rulers(self):
         for n_dim in range(2):
@@ -365,9 +364,9 @@ class DitoTestImageGeneratorV1():
                     n_index_corrected = (n_index // 2) % self.ruler_size
                     index = 2 * min(n_index_corrected, self.ruler_size - n_index_corrected) + 1
                     indices[1 - n_dim] = slice(None, index)
-                    self.image[tuple(indices)] = self.adapt_color_for_dtype(self.ruler_color[n_channel])
+                    self.image[tuple(indices)] = self.adapt_color_for_dtype(self.line_color[n_channel])
                     indices[1 - n_dim] = slice(min(-1, -index + 1), None)
-                    self.image[tuple(indices)] = self.adapt_color_for_dtype(self.ruler_color[n_channel])
+                    self.image[tuple(indices)] = self.adapt_color_for_dtype(self.line_color[n_channel])
 
     def draw_corner_identifier_texts(self):
         text_kwargs = {"anchor": "lt", "font": "terminus-14", "style": "bold", "background_color": None, "background_as_outline": False}
@@ -402,6 +401,7 @@ class DitoTestImageGeneratorV1():
                     slope_image = dito.core.resize(dito.core.resize(slope_image, 1.0 / self.grid_size), dito.core.size(slope_image))
                 self.image[(y_from + 1):(y_to + 1), (x_from + 1):x_to, :] = dito.core.as_color(image=slope_image)
 
+
     def draw_color_areas(self):
         areas = [
             {"color": (255, 0, 0), "text_color": (0, 0, 0), "text": "B", "coord_offset": (-1, -2)},
@@ -419,17 +419,22 @@ class DitoTestImageGeneratorV1():
             self.image = dito.text(image=self.image, message=area["text"], position=(x + self.grid_size // 2 + 1, y + self.grid_size // 2 + 1), anchor="cc", font="terminus-14", style="bold", color=area["text_color"], background_color=None)
 
         # random areas
-        text_kwargs = {"anchor": "lt", "font": "terminus-14", "style": "bold", "color": (0, 0, 0), "background_color": None, "background_as_outline": False}
+        text_kwargs = {"anchor": "lt", "font": "terminus-14", "style": "bold", "background_color": None, "background_as_outline": False}
         for coord_offset_y in (-2, 1):
+            if coord_offset_y == -2:
+                color = (0, 0, 0)
+            else:
+                color = (255, 255, 255)
+
             # generated using the random module
             (x, y) = self.get_grid_coords(self.grid_inner_count[0] // 2 + coord_offset_y, self.grid_inner_count[1] // 2 - 2)
             self.image[(y + 1):(y + self.grid_size), (x + 1):(x + self.grid_size), ...] = random_image(size=(self.grid_size - 1, self.grid_size - 1), color=True, dtype=self.dtype, use_standard_library=True)
-            self.image = dito.visual.text(image=self.image, message="S", position=(x + 1 + self.grid_size // 4, y + 1), **text_kwargs)
+            self.image = dito.visual.text(image=self.image, message="S", position=(x + 1 + self.grid_size // 4, y + 1), color=color, **text_kwargs)
 
             # generated using NumPy
             (x, y) = self.get_grid_coords(self.grid_inner_count[0] // 2 + coord_offset_y,  self.grid_inner_count[1] // 2 + 1)
             self.image[(y + 1):(y + self.grid_size), (x + 1):(x + self.grid_size), ...] = random_image(size=(self.grid_size - 1, self.grid_size - 1), color=True, dtype=self.dtype, use_standard_library=False)
-            self.image = dito.visual.text(image=self.image, message="N", position=(x + 1 + self.grid_size // 4, y + 2), **text_kwargs)
+            self.image = dito.visual.text(image=self.image, message="N", position=(x + 1 + self.grid_size // 4, y + 2), color=color, **text_kwargs)
 
         # 0-127-255 color combinations
         if False:
@@ -457,7 +462,7 @@ class DitoTestImageGeneratorV1():
                 angle_rad = angle_deg * np.pi / 180.0
                 x_to = x_from + sign * radius * np.cos(angle_rad - np.pi * 0.5)
                 y_to = y_from + sign * radius * np.sin(angle_rad - np.pi * 0.5)
-                cv2.line(img=self.image, pt1=dito.core.tir(x_from, y_from), pt2=dito.core.tir(x_to, y_to), color=self.adapt_color_for_dtype([224, 224, 224]), thickness=1, lineType=cv2.LINE_8)
+                cv2.line(img=self.image, pt1=dito.core.tir(x_from, y_from), pt2=dito.core.tir(x_to, y_to), color=self.adapt_color_for_dtype(self.line_color), thickness=1, lineType=cv2.LINE_AA)
 
     def draw_checkerboard_patterns(self):
         for side in (0, 1):
