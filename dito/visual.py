@@ -33,6 +33,13 @@ def random_color(min_hue=0, max_hue=180, min_saturation=128, max_saturation=255,
     return dito.core.hsv_to_bgr(image_or_color=random_hsv)
 
 
+def max_distant_color(color):
+    """
+    Returns the maximally distant uint8 color for a given uint8 color.
+    """
+    return tuple(255 if item <= 127 else 0 for item in color)
+
+
 def get_colormap(name):
     """
     Returns the colormap specified by `name` as `uint8` NumPy array of size
