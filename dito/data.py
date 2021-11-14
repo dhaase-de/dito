@@ -243,12 +243,12 @@ class DitoTestImageGeneratorV1():
     * color areas for channel order assessment
     * random color areas for assessment of random seed values of the `random` module and for NumPy.
     * lines with different inclinations for rotation assessment
+    * letters/numbers for text appearance assessment
 
     TODO:
     * checkerboard patterns with different resolutions
     * lines with different widths/separations for resolution measurements
     * opencv checkerboard pattern for possible automated detection
-    * letters for text appearance assessment
     * color wheel for color mapping assessment
     """
 
@@ -390,15 +390,23 @@ class DitoTestImageGeneratorV1():
             (x_to, y_to) = self.get_grid_coords(*slope["coord_offset_to"])
             if slope["direction"] in ("lr", "rl"):
                 slope_image = xslope(height=self.grid_size - 1, width=abs(x_from - x_to), dtype=self.dtype)
-                if slope["direction"] == "rl":
+                slope_image = dito.core.as_color(image=slope_image)
+                if slope["direction"] == "lr":
                     slope_image = slope_image[:, ::-1, ...].copy()
                     slope_image = dito.core.resize(dito.core.resize(slope_image, 1.0 / self.grid_size), dito.core.size(slope_image))
-                self.image[(y_from + 1):y_to, (x_from + 1):(x_to + 1), :] = dito.core.as_color(image=slope_image)
+                    for n_col in range(slope_image.shape[1] // self.grid_size):
+                        (text_x, text_y) = dito.core.tir((n_col + 0.5) * self.grid_size, self.grid_size // 2)
+                        slope_image = dito.visual.text(image=slope_image, message=str(n_col % 100 + 1), position=(text_x, text_y), anchor="cc", font="terminus-12", color=dito.visual.max_distant_color(color=slope_image[text_y, text_x, :]), background_color=None)
+                self.image[(y_from + 1):y_to, (x_from + 1):(x_to + 1), :] = slope_image
             else:
                 slope_image = yslope(width=self.grid_size - 1, height=abs(y_from - y_to), dtype=self.dtype)
-                if slope["direction"] == "du":
+                slope_image = dito.core.as_color(image=slope_image)
+                if slope["direction"] == "ud":
                     slope_image = slope_image[::-1, :, ...].copy()
                     slope_image = dito.core.resize(dito.core.resize(slope_image, 1.0 / self.grid_size), dito.core.size(slope_image))
+                    for n_row in range(slope_image.shape[0] // self.grid_size):
+                        (text_x, text_y) = dito.core.tir(self.grid_size // 2, (n_row + 0.5) * self.grid_size)
+                        slope_image = dito.visual.text(image=slope_image, message=chr(ord("A") + n_row % 26), position=(text_x, text_y), anchor="cc", font="terminus-12", color=dito.visual.max_distant_color(color=slope_image[text_y, text_x, :]), background_color=None)
                 self.image[(y_from + 1):(y_to + 1), (x_from + 1):x_to, :] = dito.core.as_color(image=slope_image)
 
 
