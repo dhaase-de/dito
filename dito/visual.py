@@ -296,6 +296,31 @@ def astack(images, aspect=1.77, padding=0, **stack_kwargs):
     return stack(images=rows, padding=padding, **stack_kwargs)
 
 
+def stack_channels(image, mode="row", **kwargs):
+    """
+    Stack the channels of the image in the xy-plane.
+    """
+
+    # check the image shape
+    if len(image.shape) < 3:
+        return image
+    if len(image.shape) > 3:
+        raise ValueError("Invalid image shape: {}".format(image.shape))
+
+    channel_count = image.shape[2]
+    channel_images = [image[:, :, n_channel] for n_channel in range(channel_count)]
+    if mode == "row":
+        # row-wise stacking
+        return stack(images=[channel_images], **kwargs)
+    elif mode == "col":
+        # col-wise stacking
+        return stack(images=[[channel_image] for channel_image in channel_images], **kwargs)
+    elif mode == "auto":
+        return astack(images=channel_images)
+    else:
+        raise ValueError("Invalid mode: '{}'".format(mode))
+
+
 def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask=None):
     # check argument 'position'
     if not (isinstance(position, (tuple, list)) and (len(position) == 2) and isinstance(position[0], (int, float)) and isinstance(position[1], (int, float))):

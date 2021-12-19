@@ -990,6 +990,46 @@ class stack_Tests(TestCase):
         self.assertRaises(ValueError, lambda: dito.stack(images=rows))
 
 
+class stack_channels_Tests(TestCase):
+    def setUp(self):
+        self.image = dito.dito_test_image_v1()
+
+    def test_row_mode(self):
+        stacked_image = dito.stack_channels(image=self.image, mode="row")
+        self.assertEqual(len(stacked_image.shape), 2)
+        self.assertEqual(stacked_image.shape[0], self.image.shape[0])
+        self.assertEqual(stacked_image.shape[1], 3 * self.image.shape[1])
+        self.assertEqualImages(stacked_image[:, :self.image.shape[1]], self.image[:, :, 0])
+
+    def test_row_mode(self):
+        stacked_image = dito.stack_channels(image=self.image, mode="col")
+        self.assertEqual(len(stacked_image.shape), 2)
+        self.assertEqual(stacked_image.shape[0], 3 * self.image.shape[0])
+        self.assertEqual(stacked_image.shape[1], self.image.shape[1])
+        self.assertEqualImages(stacked_image[:self.image.shape[0], :], self.image[:, :, 0])
+
+    def test_auto_mode(self):
+        stacked_image = dito.stack_channels(image=self.image, mode="auto")
+        self.assertEqual(len(stacked_image.shape), 2)
+        self.assertTrue((stacked_image.shape[0] > self.image.shape[0]) or (stacked_image.shape[1] > self.image.shape[1]))
+        self.assertEqualImages(stacked_image[:self.image.shape[0], :self.image.shape[1]], self.image[:, :, 0])
+
+    def test_kwargs(self):
+        padding = 8
+        kwargs = {"padding": padding}
+
+        stacked_image = dito.stack_channels(image=self.image, mode="row", **kwargs)
+        self.assertEqual(len(stacked_image.shape), 2)
+        self.assertEqual(stacked_image.shape[0], self.image.shape[0] + 2 * padding)
+        self.assertEqual(stacked_image.shape[1], 3 * self.image.shape[1] + 4 * padding)
+        self.assertEqualImages(stacked_image[padding:(-padding), padding:(self.image.shape[1] + padding)], self.image[:, :, 0])
+
+    def test_gray_image(self):
+        image_gray = dito.as_gray(image=self.image)
+        stacked_image = dito.stack_channels(image=image_gray)
+        self.assertEqualImages(image_gray, stacked_image)
+
+
 class text_Tests(TestCase):
     def setUp(self):
         self.image = dito.pm5544()
