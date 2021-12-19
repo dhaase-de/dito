@@ -248,7 +248,7 @@ class DitoTestImageGeneratorV1():
     TODO:
     * checkerboard patterns with different resolutions
     * lines with different widths/separations for resolution measurements
-    * opencv checkerboard pattern for possible automated detection
+    * OpenCV checkerboard pattern for possible automated detection
     * color wheel for color mapping assessment
     """
 
@@ -409,7 +409,6 @@ class DitoTestImageGeneratorV1():
                         slope_image = dito.visual.text(image=slope_image, message=chr(ord("A") + n_row % 26), position=(text_x, text_y), anchor="cc", font="terminus-12", color=dito.visual.max_distant_color(color=slope_image[text_y, text_x, :]), background_color=None)
                 self.image[(y_from + 1):(y_to + 1), (x_from + 1):x_to, :] = dito.core.as_color(image=slope_image)
 
-
     def draw_color_areas(self):
         areas = [
             {"color": (255, 0, 0), "text_color": (0, 0, 0), "text": "B", "coord_offset": (-1, -2)},
@@ -443,19 +442,6 @@ class DitoTestImageGeneratorV1():
             (x, y) = self.get_grid_coords(self.grid_inner_count[0] // 2 + coord_offset_y,  self.grid_inner_count[1] // 2 + 1)
             self.image[(y + 1):(y + self.grid_size), (x + 1):(x + self.grid_size), ...] = random_image(size=(self.grid_size - 1, self.grid_size - 1), color=True, dtype=self.dtype, use_standard_library=False)
             self.image = dito.visual.text(image=self.image, message="N", position=(x + 1 + self.grid_size // 4, y + 2), color=color, **text_kwargs)
-
-        # 0-127-255 color combinations
-        if False:
-            (x, y) = self.get_grid_coords(self.grid_inner_count[0] // 2 + 1, self.grid_inner_count[1] // 2 - 2)
-            values = (0, 127, 255)
-            n_color = 0
-            for value_b in values:
-                for value_g in values:
-                    for value_r in values:
-                        n_row = n_color // 3
-                        n_col = n_color % 3
-                        self.image[(y + 1 + n_row * 1):(y + 1 + (n_row + 1) * 1), (x + 1 + n_col * 5):(x + 1 + (n_col + 1) * 5), ...] = constant_image(size=(5, 1), color=self.adapt_color_for_dtype([value_b, value_g, value_r]), dtype=self.dtype)
-                        n_color += 1
 
     def draw_rotation_indicators(self):
         for (n_resolution, resolution) in enumerate([5.0, 1.0]):
