@@ -46,6 +46,11 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.6.0 (2021-12-19) - Data Update ###
+* added test image generator
+* added USC-SIPI test image 4.1.07 (jelly beans)
+* minor improvements and fixes
+
 ### v2.5.0 (2021-10-21) - QoL Update ###
 * added funtion `draw_symbol` with support for various symbols
 * added ColorBrewer colormaps
