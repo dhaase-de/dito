@@ -23,6 +23,11 @@ def median_blur(image, kernel_size):
     return cv2.medianBlur(src=image, ksize=kernel_size)
 
 
+def clahe(image, clip_limit=None, tile_grid_size=None):
+    clahe_op = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
+    return clahe_op.apply(image)
+
+
 ##
 ## thresholding
 ##
