@@ -7,6 +7,11 @@ import numpy as np
 import dito
 
 
+####
+#%%% base classes
+####
+
+
 class TestCase(unittest.TestCase):
     """
     Base class for test cases.
@@ -43,6 +48,11 @@ class TempDirTestCase(TestCase):
 
     def tearDown(self):
         self.temp_dir.cleanup()
+
+
+####
+#%%% test cases
+####
 
 
 class CachedImageLoader_Test(TempDirTestCase):
@@ -1225,7 +1235,7 @@ class VideoSaver_Tests(TempDirTestCase):
 
 
 ####
-#%%% TODO: refactor
+#%%% test cases (old)
 ####
 
 
@@ -1304,8 +1314,6 @@ class data_Tests(TestCase):
     def test_data_files_exists(self):
         for filename in dito.RESOURCES_FILENAMES.values():
             self.assertTrue(os.path.exists(filename), "Data file '{}' does not exist".format(filename))
-
-
 
     def test_pm5544_load(self):
         image = dito.pm5544()
