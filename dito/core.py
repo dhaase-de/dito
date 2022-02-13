@@ -358,17 +358,22 @@ def is_color(image):
     return (len(image.shape) == 3) and (image.shape[2] == 3)
 
 
-def as_gray(image):
+def as_gray(image, keep_color_dimension=False):
     """
     Convert the given image from BGR to grayscale.
     
     If it is already a grayscale image, return the image unchanged.
     """
-    
+
     if is_gray(image=image):
-        return image
+        image_gray = image
     else:
-        return cv2.cvtColor(src=image, code=cv2.COLOR_BGR2GRAY)
+        image_gray = cv2.cvtColor(src=image, code=cv2.COLOR_BGR2GRAY)
+
+    if keep_color_dimension and (len(image_gray.shape) == 2):
+        image_gray = image_gray[:, :, np.newaxis]
+
+    return image_gray
 
 
 def as_color(image):

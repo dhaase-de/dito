@@ -174,6 +174,40 @@ class as_channel_Tests(TestCase):
         self.assertEqualImages(image, image_rgb)
 
 
+class as_gray_Tests(TestCase):
+    def test_as_gray(self):
+        image = dito.pm5544()
+        self.assertTrue(dito.is_color(image))
+        image_g = dito.as_gray(image)
+        self.assertTrue(dito.is_gray(image_g))
+        self.assertEqual(image_g.shape, image.shape[:2])
+
+    def test_as_gray_noop(self):
+        image = dito.pm5544()[:, :, 0]
+        self.assertEqualImages(image, dito.as_gray(image))
+
+    def test_as_gray_with_keep_color_dimension_of_color_input(self):
+        image = dito.pm5544()
+        image_gray = dito.as_gray(image, keep_color_dimension=True)
+        self.assertTrue(dito.is_gray(image_gray))
+        self.assertEqual(image_gray.shape, image.shape[:2] + (1,))
+
+    def test_as_gray_with_keep_color_dimension_of_gray_input(self):
+        image = dito.pm5544()[:, :, 0]
+        image_gray = dito.as_gray(image, keep_color_dimension=True)
+        self.assertTrue(dito.is_gray(image_gray))
+        self.assertEqual(image_gray.shape, image.shape + (1,))
+        self.assertEqualImages(image, image_gray[:, :, 0])
+
+    def test_as_gray_with_keep_color_dimension_noop(self):
+        image = dito.pm5544()[:, :, 0]
+        image.shape += (1,)
+        image_gray = dito.as_gray(image, keep_color_dimension=True)
+        self.assertTrue(dito.is_gray(image_gray))
+        self.assertEqual(image_gray.shape, image.shape)
+        self.assertEqualImages(image, image_gray)
+
+
 class clip_Tests(TestCase):
     def test_clip_01(self):
         image = np.array([[-2.0, -1.0, 0.0, 1.0, 2.0]], dtype=np.float32)
@@ -1232,18 +1266,6 @@ class core_Tests(TestCase):
         self.assertFalse(dito.is_color(image[:, :, 0:1]))
         self.assertFalse(dito.is_color(image[:, :, 0:2]))
     
-    def test_as_gray(self):
-        image = dito.pm5544()
-        self.assertTrue(dito.is_color(image))
-        image_g = dito.as_gray(image)
-        self.assertTrue(dito.is_gray(image_g))
-        self.assertEqual(image_g.shape, image.shape[:2])
-    
-    def test_as_gray_noop(self):
-        image = dito.pm5544()
-        image_b = image[:, :, 0]
-        self.assertEqualImages(image_b, dito.as_gray(image_b))
-        
     def test_as_color(self):
         image = dito.pm5544()
         image_b = image[:, :, 0]
