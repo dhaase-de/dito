@@ -180,6 +180,10 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
     if gray is None:
         gray = all(dito.core.is_gray(image=image) for row in rows for image in row)
 
+    # float64 causes problems in some OpenCV routines (e.g., cvtColor)
+    if dtype == np.float64:
+        dtype = np.float32
+
     # step 1/2: construct stacked image for each row
     row_images = []
     width = 0
