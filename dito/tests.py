@@ -184,6 +184,21 @@ class as_channel_Tests(TestCase):
         self.assertEqualImages(image, image_rgb)
 
 
+class as_color_Tests(TestCase):
+    def test_as_color(self):
+        image = dito.pm5544()
+        image_b = image[:, :, 0]
+        image_c = dito.as_color(image_b)
+        self.assertTrue(dito.is_color(image_c))
+        self.assertEqual(image_c.shape, image_b.shape + (3,))
+        for n_channel in range(3):
+            self.assertEqualImages(image_c[:, :, n_channel], image_b)
+
+    def test_as_color_noop(self):
+        image = dito.pm5544()
+        self.assertEqualImages(image, dito.as_color(image))
+
+
 class as_gray_Tests(TestCase):
     def test_as_gray(self):
         image = dito.pm5544()
@@ -753,6 +768,40 @@ class invert_Tests(TestCase):
         self.assertEqualImages(image_bool_inverted, np.logical_not(image_bool))
 
 
+class is_gray_Tests(TestCase):
+    def setUp(self):
+        self.image = dito.pm5544()
+
+    def test_is_gray_of_color_image(self):
+        self.assertFalse(dito.is_gray(self.image))
+
+    def test_is_gray_of_gray_image(self):
+        self.assertTrue(dito.is_gray(self.image[:, :, 0]))
+
+    def test_is_gray_of_gray_image_with_color_channel(self):
+        self.assertTrue(dito.is_gray(self.image[:, :, 0:1]))
+
+    def test_is_gray_of_image_with_two_channels(self):
+        self.assertFalse(dito.is_gray(self.image[:, :, 0:2]))
+
+
+class is_color_Tests(TestCase):
+    def setUp(self):
+        self.image = dito.pm5544()
+
+    def test_is_color_of_color_image(self):
+        self.assertTrue(dito.is_color(self.image))
+
+    def test_is_color_of_gray_image(self):
+        self.assertFalse(dito.is_color(self.image[:, :, 0]))
+
+    def test_is_color_of_gray_image_with_color_channel(self):
+        self.assertFalse(dito.is_color(self.image[:, :, 0:1]))
+
+    def test_is_color_of_image_with_two_channels(self):
+        self.assertFalse(dito.is_color(self.image[:, :, 0:2]))
+
+
 class MultiShow_Tests(TempDirTestCase):
     def get_random_image(self):
         return dito.random_image(size=(256, 128))
@@ -895,6 +944,30 @@ class now_str_Tests(TestCase):
             result_microtime = dito.now_str(**case["kwargs"])
             self.assertIsInstance(result_microtime, str)
             self.assertGreater(len(result_microtime), case["expected_length"])
+
+
+class otsu_Tests(TestCase):
+    def test_otsu_raise(self):
+        image = dito.pm5544()
+        self.assertRaises(ValueError, lambda: dito.otsu(image=image))
+
+    def test_otsu_return(self):
+        image = dito.pm5544()
+        image_gray = dito.as_gray(image)
+        result = dito.otsu(image=image_gray)
+        self.assertIsInstance(result, tuple)
+        self.assertTrue(len(result) == 2)
+        self.assertIsInstance(result[0], float)
+        self.assertIsInstance(result[1], np.ndarray)
+
+
+class otsu_theta_Tests(TestCase):
+    def test_otsu_theta(self):
+        image = dito.pm5544()
+        image_gray = dito.as_gray(image)
+        theta = dito.otsu_theta(image=image_gray)
+        self.assertIsInstance(theta, float)
+        self.assertAlmostEqual(theta, 89.0)
 
 
 class pinfo_Tests(TempDirTestCase):
@@ -1239,56 +1312,7 @@ class VideoSaver_Tests(TempDirTestCase):
 ####
 
 
-class aliases_Tests(TestCase):
-    def test_otsu_raise(self):
-        image = dito.pm5544()
-        self.assertRaises(ValueError, lambda: dito.otsu(image=image))
-        
-    def test_otsu_return(self):
-        image = dito.pm5544()
-        image_gray = dito.as_gray(image)
-        result = dito.otsu(image=image_gray)
-        self.assertIsInstance(result, tuple)
-        self.assertTrue(len(result) == 2)
-        self.assertIsInstance(result[0], float)
-        self.assertIsInstance(result[1], np.ndarray)
-    
-    def test_otsu_theta(self):
-        image = dito.pm5544()
-        image_gray = dito.as_gray(image)
-        theta = dito.otsu_theta(image=image_gray)
-        self.assertIsInstance(theta, float)
-        self.assertAlmostEqual(theta, 89.0)
-
-
 class core_Tests(TestCase):
-    def test_is_gray(self):
-        image = dito.pm5544()
-        self.assertFalse(dito.is_gray(image))
-        self.assertTrue(dito.is_gray(image[:, :, 0]))
-        self.assertTrue(dito.is_gray(image[:, :, 0:1]))
-        self.assertFalse(dito.is_gray(image[:, :, 0:2]))
-    
-    def test_is_color(self):
-        image = dito.pm5544()
-        self.assertTrue(dito.is_color(image))
-        self.assertFalse(dito.is_color(image[:, :, 0]))
-        self.assertFalse(dito.is_color(image[:, :, 0:1]))
-        self.assertFalse(dito.is_color(image[:, :, 0:2]))
-    
-    def test_as_color(self):
-        image = dito.pm5544()
-        image_b = image[:, :, 0]
-        image_c = dito.as_color(image_b)
-        self.assertTrue(dito.is_color(image_c))
-        self.assertEqual(image_c.shape, image_b.shape + (3,))
-        for n_channel in range(3):
-            self.assertEqualImages(image_c[:, :, n_channel], image_b)
-    
-    def test_as_color_noop(self):
-        image = dito.pm5544()
-        self.assertEqualImages(image, dito.as_color(image))
-    
     def test_flip_channels_values(self):
         image = dito.pm5544()
         image_flipped = dito.flip_channels(image=image)
