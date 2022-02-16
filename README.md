@@ -46,6 +46,12 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.7.0 (2022-02-16) - Misc Update ###
+* added clahe wrapper
+* added argument `keep_color_dimension` to `as_gray`
+* fixed `stack` not working for float64 images
+* started refactoring some old tests
+
 ### v2.6.0 (2021-12-19) - Data Update ###
 * added test image generator
 * added USC-SIPI test image 4.1.07 (jelly beans)
