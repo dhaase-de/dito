@@ -1070,6 +1070,26 @@ class save_tmp_Tests(TestCase):
         self.assertEqualImages(image, image_loaded)
 
 
+class split_channels_Tests(TestCase):
+    def test_split_channels_color_image(self):
+        image = dito.pm5544()
+        channel_images = dito.split_channels(image=image)
+        self.assertEqual(len(channel_images), image.shape[2])
+        for n_channel in range(3):
+            self.assertEqualImages(image[:, :, n_channel], channel_images[n_channel])
+
+    def test_split_channels_gray_image(self):
+        image = dito.as_gray(dito.pm5544())
+        channel_images = dito.split_channels(image=image)
+        self.assertEqual(len(channel_images), 1)
+        self.assertEqualImages(image, channel_images[0])
+
+    def test_split_channels_raise_on_invalid_shape(self):
+        image = dito.pm5544()
+        image.shape += (1,)
+        self.assertRaises(dito.InvalidImageShapeError, lambda: dito.split_channels(image=image))
+
+
 class stack_Tests(TestCase):
     def test_stack_mixed(self):
         # TODO: create more individual tests

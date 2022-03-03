@@ -417,6 +417,19 @@ def flip_channels(image):
     return cv2.cvtColor(src=image, code=cv2.COLOR_BGR2RGB)
 
 
+def split_channels(image):
+    """
+    Splits the image into a tuple containing its channels as individual images.
+    """
+    axis_count = len(image.shape)
+    if axis_count == 2:
+        return (image,)
+    elif axis_count == 3:
+        return tuple(image[:, :, n_channel] for n_channel in range(image.shape[2]))
+    else:
+        raise dito.exceptions.InvalidImageShapeError("Image shape must have two or three axes, but is {}".format(image.shape))
+
+
 def as_channels(b=None, g=None, r=None):
     """
     Merge up to three gray scale images into one color image.
