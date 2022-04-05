@@ -46,6 +46,11 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.8.0 (2022-04-05) - PCA Update ###
+* added PCA and NMF-based texture models
+* added load/save support for the `.npz` format
+* added `split_channels`
+
 ### v2.7.0 (2022-02-16) - Misc Update ###
 * added clahe wrapper
 * added argument `keep_color_dimension` to `as_gray`
