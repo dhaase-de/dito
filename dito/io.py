@@ -26,9 +26,17 @@ def load(filename, color=None):
     if not os.path.exists(filename):
         raise FileNotFoundError("Image file '{}' does not exist".format(filename))
 
+    # load image
     if filename.endswith(".npy"):
         # use NumPy
         image = np.load(file=filename)
+    elif filename.endswith(".npz"):
+        # use NumPy
+        with np.load(file=filename) as npz_file:
+            npz_keys = tuple(npz_file.keys())
+            if len(npz_keys) != 1:
+                raise ValueError("Expected exactly one image in '{}', but got {} (keys: {})".format(filename, len(npz_keys), npz_keys))
+            image = npz_file[npz_keys[0]]
     else:
         # use OpenCV
         if color is None:
@@ -78,6 +86,9 @@ def save(filename, image, mkdir=True):
     if filename.endswith(".npy"):
         # use NumPy
         np.save(file=filename, arr=image)
+    elif filename.endswith(".npz"):
+        # use NumPy
+        np.savez_compressed(file=filename, arr_0=image)
     else:
         # use OpenCV
         cv2.imwrite(filename=filename, img=image)

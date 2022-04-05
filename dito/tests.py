@@ -1061,6 +1061,9 @@ class save_Tests(TempDirTestCase):
     def test_save_load_npy(self):
         self._test_save_load(extension="npy")
 
+    def test_save_load_npz(self):
+        self._test_save_load(extension="npz")
+
 
 class save_tmp_Tests(TestCase):
     def test_save_tmp_reload(self):
