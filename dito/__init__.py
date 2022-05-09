@@ -2,6 +2,7 @@ __version__ = "2.8.1.dev0"
 
 
 from dito.analysis import *
+from dito.conversion import *
 from dito.core import *
 from dito.data import *
 from dito.draw import *
