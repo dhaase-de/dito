@@ -8,7 +8,7 @@ from dito.data import *
 from dito.draw import *
 from dito.exceptions import *
 from dito.highgui import *
-from dito.inspect import *
+from dito.inspection import *
 from dito.io import *
 from dito.parallel import *
 from dito.processing import *
