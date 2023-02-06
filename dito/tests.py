@@ -468,7 +468,7 @@ class dtype_range_Tests(TestCase):
         self.assertEqual(range_, (-2**31, 2**31 - 1))
     
     def test_dtype_range_float(self):
-        range_ = dito.dtype_range(dtype=np.float)
+        range_ = dito.dtype_range(dtype=float)
         self.assertEqual(range_, (0, 1.0))
     
     def test_dtype_range_float32(self):

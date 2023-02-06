@@ -230,7 +230,7 @@ class Contour():
             self.points[:, 1] += offset_y
 
     def draw(self, image, color, thickness=1, filled=True, antialias=False, offset=None):
-        cv2.drawContours(image=image, contours=[np.round(self.points).astype(np.int)], contourIdx=0, color=color, thickness=cv2.FILLED if filled else thickness, lineType=cv2.LINE_AA if antialias else cv2.LINE_8, offset=offset)
+        cv2.drawContours(image=image, contours=[np.round(self.points).astype(np.int32)], contourIdx=0, color=color, thickness=cv2.FILLED if filled else thickness, lineType=cv2.LINE_AA if antialias else cv2.LINE_8, offset=offset)
 
     def draw_standalone(self, color, thickness=1, filled=True, antialias=False, border=0):
         image = np.zeros(shape=(2 * border + self.get_height(), 2 * border + self.get_width()), dtype=np.uint8)
@@ -330,7 +330,7 @@ class ContourList():
 class ContourFinder(ContourList):
     def __init__(self, image):
         self.image = image.copy()
-        if self.image.dtype == np.bool:
+        if self.image.dtype == bool:
             self.image = dito.core.convert(image=self.image, dtype=np.uint8)
         contours = self.find_contours(image=self.image)
         super().__init__(contours=contours)
