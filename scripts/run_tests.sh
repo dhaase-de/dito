@@ -8,4 +8,4 @@ set -o nounset
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 source "$SCRIPT_DIR"/setenv.sh
 
-cd "$SOURCE_DIR" && /usr/bin/env python3 tests.py --verbose
+/usr/bin/env python3 "$SOURCE_DIR"/tests.py --verbose
