@@ -12,6 +12,9 @@ def info(image, extended=False, minimal=False):
     Returns an ordered dictionary containing info about the given image.
     """
 
+    if not isinstance(image, np.ndarray):
+        raise ValueError("Argument 'image' must be of type 'numpy.ndimage', but is '{}'".format(type(image)))
+
     if extended and minimal:
         raise ValueError("Both arguments 'extended' and 'minimal' must not be true at the same time")
 

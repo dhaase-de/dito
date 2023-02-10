@@ -603,6 +603,9 @@ class info_Tests(TestCase):
     def test_info__raise_on_extended_and_minimal(self):
         self.assertRaises(ValueError, lambda: dito.info(self.image, extended=True, minimal=True))
 
+    def test_info__raise_on_non_image(self):
+        self.assertRaises(ValueError, lambda: dito.info(image=1))
+
 
 class insert_Tests(TestCase):
     def setUp(self):
