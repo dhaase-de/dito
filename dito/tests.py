@@ -606,6 +606,18 @@ class info_Tests(TestCase):
     def test_info__raise_on_non_image(self):
         self.assertRaises(ValueError, lambda: dito.info(image=1))
 
+    def test_info__array_with_zero_axis_length(self):
+        image = np.zeros(shape=(64, 32, 0), dtype=np.uint8)
+        info = dito.info(image, extended=True)
+
+        self.assertEqual(info["size"], "0 bytes")
+        self.assertEqual(info["shape"], image.shape)
+        self.assertEqual(info["dtype"], image.dtype)
+
+        for (key, value) in info.items():
+            if key not in ("size", "shape", "dtype"):
+                self.assertTrue(np.isnan(value))
+
 
 class insert_Tests(TestCase):
     def setUp(self):

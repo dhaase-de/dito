@@ -27,15 +27,15 @@ def info(image, extended=False, minimal=False):
     result["dtype"] = image.dtype
 
     if not minimal:
-        result["mean"] = np.mean(image)
-        result["std"] = np.std(image)
-        result["min"] = np.min(image)
+        result["mean"] = np.mean(image) if image.size > 0 else np.nan
+        result["std"] = np.std(image) if image.size > 0 else np.nan
+        result["min"] = np.min(image) if image.size > 0 else np.nan
     if extended:
-        result["1st quartile"] = np.percentile(image, 25.0)
-        result["median"] = np.median(image)
-        result["3rd quartile"] = np.percentile(image, 75.0)
+        result["1st quartile"] = np.percentile(image, 25.0) if image.size > 0 else np.nan
+        result["median"] = np.median(image) if image.size > 0 else np.nan
+        result["3rd quartile"] = np.percentile(image, 75.0) if image.size > 0 else np.nan
     if not minimal:
-        result["max"] = np.max(image)
+        result["max"] = np.max(image) if image.size > 0 else np.nan
     return result
 
 
