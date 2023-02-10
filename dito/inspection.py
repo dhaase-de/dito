@@ -7,28 +7,36 @@ import dito.core
 import dito.utils
 
 
-def info(image, extended=False):
+def info(image, extended=False, minimal=False):
     """
     Returns an ordered dictionary containing info about the given image.
     """
 
+    if extended and minimal:
+        raise ValueError("Both arguments 'extended' and 'minimal' must not be true at the same time")
+
     result = collections.OrderedDict()
     if extended:
         result["size"] = dito.utils.human_bytes(byte_count=image.size * image.itemsize)
+
+    # these are the only stats shown when 'minimal' is true
     result["shape"] = image.shape
     result["dtype"] = image.dtype
-    result["mean"] = np.mean(image)
-    result["std"] = np.std(image)
-    result["min"] = np.min(image)
+
+    if not minimal:
+        result["mean"] = np.mean(image)
+        result["std"] = np.std(image)
+        result["min"] = np.min(image)
     if extended:
         result["1st quartile"] = np.percentile(image, 25.0)
         result["median"] = np.median(image)
         result["3rd quartile"] = np.percentile(image, 75.0)
-    result["max"] = np.max(image)
+    if not minimal:
+        result["max"] = np.max(image)
     return result
 
 
-def pinfo(*args, extended_=False, file_=None, **kwargs):
+def pinfo(*args, extended_=False, minimal_=False, file_=None, **kwargs):
     """
     Prints info about the given images.
     """
@@ -50,7 +58,7 @@ def pinfo(*args, extended_=False, file_=None, **kwargs):
         if isinstance(image, str):
             # `image` is a filename -> load it first
             image = dito.io.load(filename=image)
-        image_info = info(image=image, extended=extended_)
+        image_info = info(image=image, extended=extended_, minimal=minimal_)
         if header is None:
             header = ("Image",) + tuple(image_info.keys())
             rows.append(header)
