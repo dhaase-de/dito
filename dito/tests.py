@@ -1,3 +1,4 @@
+import collections
 import os.path
 import unittest
 
@@ -569,6 +570,38 @@ class human_bytes_Tests(TestCase):
         for (byte_count, expected_result) in cases:
             result = dito.human_bytes(byte_count=byte_count)
             self.assertEqual(result, expected_result)
+
+
+class info_Tests(TestCase):
+    def setUp(self):
+        self.image = dito.pm5544()
+
+    def test_info__noargs(self):
+        info = dito.info(self.image)
+        self.assertIsInstance(info, collections.OrderedDict)
+        self.assertEqual(len(info.keys()), 6)
+        self.assertEqual(info["shape"], (576, 768, 3))
+        self.assertEqual(info["dtype"], np.uint8)
+
+    def test_info__extended(self):
+        info = dito.info(self.image, extended=True)
+        self.assertEqual(len(info.keys()), 10)
+        self.assertEqual(info["shape"], (576, 768, 3))
+        self.assertEqual(info["dtype"], np.uint8)
+        self.assertAlmostEqual(info["mean"], 121.3680261682581)
+        self.assertAlmostEqual(info["std"], 91.194048489528782)
+        self.assertEqual(info["min"], 0)
+        self.assertAlmostEqual(info["3rd quartile"], 191.0)
+        self.assertEqual(info["max"], 255)
+
+    def test_info__minimal(self):
+        info = dito.info(self.image, minimal=True)
+        self.assertEqual(len(info.keys()), 2)
+        self.assertEqual(info["shape"], (576, 768, 3))
+        self.assertEqual(info["dtype"], np.uint8)
+
+    def test_info__raise_on_extended_and_minimal(self):
+        self.assertRaises(ValueError, lambda: dito.info(self.image, extended=True, minimal=True))
 
 
 class insert_Tests(TestCase):
@@ -1417,16 +1450,6 @@ class geometry_Tests(TestCase):
 
 
 class infos_Tests(TestCase):
-    def test_info(self):
-        image = dito.pm5544()
-        info = dito.info(image, extended=True)
-        self.assertEqual(info["shape"], (576, 768, 3))
-        self.assertAlmostEqual(info["mean"], 121.3680261682581)
-        self.assertAlmostEqual(info["std"], 91.194048489528782)
-        self.assertEqual(info["min"], 0)
-        self.assertAlmostEqual(info["3rd quartile"], 191.0)
-        self.assertEqual(info["max"], 255)
-        
     def test_hist_color(self):
         image = dito.pm5544()
         h = dito.hist(image, bin_count=256)
