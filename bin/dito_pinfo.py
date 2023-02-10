@@ -13,7 +13,7 @@ def get_args():
     parser.add_argument("-d", "--debug", action="store_true", help="If set, show full stack trace for errors.")
     parser.add_argument("-e", "--extended", action="store_true", help="If set, show extended information (e.g., quartiles).")
     parser.add_argument("-m", "--minimal", action="store_true", help="If set, show minimal information (shape and dtype only).")
-    parser.add_argument("-i", "--image-filenames", type=str, nargs="+", help="Input image filenames. Patterns are allowed.")
+    parser.add_argument("image_filenames", type=str, nargs="+", help="Input image filenames. Patterns are allowed.")
     args = parser.parse_args()
     return args
 
