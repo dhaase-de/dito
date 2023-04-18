@@ -1,5 +1,6 @@
 import collections
 import os.path
+import pathlib
 import unittest
 
 import cv2
@@ -855,6 +856,11 @@ class load_Tests(TestCase):
         self.assertNumpyShape(image_load, self.shape)
         self.assertNumpyShape(image_decode, self.shape)
         self.assertTrue(np.all(image_load == image_decode))
+
+    def test_load_str_and_pathlib_equal(self):
+        image_str = dito.load(filename=str(self.image_filename))
+        image_pathlib = dito.load(filename=pathlib.Path(self.image_filename))
+        self.assertEqualImages(image_str, image_pathlib)
 
 
 class is_color_Tests(TestCase):
