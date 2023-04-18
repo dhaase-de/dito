@@ -46,6 +46,14 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.9.0 (2023-04-19) - QoL Update II ###
+* added convenience image difference functions `clipped_diff`, `abs_diff`, `shifted_diff`
+* added convenience constant color overlay function `overlay_constant`
+* added support for `pathlib` filenames
+* added Qt6 image conversion
+* improved `pinfo` (minimal mode, wrapper script change, bugfix)
+* fixed NumPy-related issues
+
 ### v2.8.0 (2022-04-05) - PCA Update ###
 * added PCA and NMF-based texture models
 * added load/save support for the `.npz` format
