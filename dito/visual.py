@@ -434,6 +434,37 @@ def overlay(target_image, source_image, source_mask=None):
     return insert(target_image=target_image, source_image=source_image, source_mask=source_mask)
 
 
+def overlay_constant(target_image, source_color, source_mask):
+    """
+    Overlay a constant color image onto a target image using a source mask.
+
+    The function creates a constant image with the specified color and blends it with the target image using the
+    specified source mask. The resulting image has the same shape and dtype as the target image.
+
+    Parameters
+    ----------
+    target_image : numpy.ndarray
+        The target image with shape `(height, width)` or `(height, width, channel_count)`.
+    source_color : tuple
+        The color of the constant image as a tuple of values for each channel. For `np.uint8` images, the values range
+        between 0 and 255, while for floats the range is between 0.0 and 1.0 (for more details, see
+        `dito.dtype_range()`).
+    source_mask : numpy.ndarray or float
+        A floating-point mask image with shape `(height, width)` or `(height, width, channel_count)` or a scalar float
+        value. For more information, see the documentation for the `dito.insert()` function.
+
+    Returns
+    -------
+    numpy.ndarray
+        The blended image with the same shape and dtype as the target image.
+    """
+    return insert(
+        target_image=target_image,
+        source_image=dito.data.constant_image(size=dito.core.size(target_image), color=source_color, dtype=target_image.dtype),
+        source_mask=source_mask,
+    )
+
+
 ####
 #%%% text
 ####
