@@ -52,6 +52,24 @@ class TempDirTestCase(TestCase):
         self.temp_dir.cleanup()
 
 
+class DiffTestCase(TestCase):
+    def setUp(self):
+        self.image1_bool = np.array([[False, True]], dtype=bool)
+        self.image2_bool = np.array([[True, False]], dtype=bool)
+
+        self.image1_int8 = np.array([[-128, 127]], dtype=np.int8)
+        self.image2_int8 = np.array([[127, -128]], dtype=np.int8)
+
+        self.image1_uint8 = np.array([[0, 255]], dtype=np.uint8)
+        self.image2_uint8 = np.array([[255, 0]], dtype=np.uint8)
+
+        self.image1_float32 = np.array([[0.0, 1.0]], dtype=np.float32)
+        self.image2_float32 = np.array([[1.0, 0.0]], dtype=np.float32)
+
+        self.image1_float64 = np.array([[0.0, 1.0]], dtype=np.float64)
+        self.image2_float64 = np.array([[1.0, 0.0]], dtype=np.float64)
+
+
 ####
 #%%% test cases
 ####
@@ -104,6 +122,33 @@ class CachedImageLoader_Test(TempDirTestCase):
         loader = dito.CachedImageLoader(max_count=4)
         filename = os.path.join(self.temp_dir.name, "__nonexistent__.png")
         self.assertRaises(FileNotFoundError, lambda: loader.load(filename=filename))
+
+
+class abs_diff_Tests(DiffTestCase):
+    def test_abs_diff_bool(self):
+        result = dito.abs_diff(image1=self.image1_bool, image2=self.image2_bool)
+        expected_result = np.array([[1, 1]], dtype=bool)
+        self.assertEqualImages(result, expected_result)
+
+    def test_abs_diff_int8(self):
+        result = dito.abs_diff(image1=self.image1_int8, image2=self.image2_int8)
+        expected_result = np.array([[127, 127]], dtype=np.int8)
+        self.assertEqualImages(result, expected_result)
+
+    def test_abs_diff_uint8(self):
+        result = dito.abs_diff(image1=self.image1_uint8, image2=self.image2_uint8)
+        expected_result = np.array([[255, 255]], dtype=np.uint8)
+        self.assertEqualImages(result, expected_result)
+
+    def test_abs_diff_float32(self):
+        result = dito.abs_diff(image1=self.image1_float32, image2=self.image2_float32)
+        expected_result = np.array([[1.0, 1.0]], dtype=np.float32)
+        self.assertEqualImages(result, expected_result)
+
+    def test_abs_diff_float64(self):
+        result = dito.abs_diff(image1=self.image1_float64, image2=self.image2_float64)
+        expected_result = np.array([[1.0, 1.0]], dtype=np.float64)
+        self.assertEqualImages(result, expected_result)
 
 
 class adaptive_round_Tests(TestCase):
@@ -247,6 +292,33 @@ class clip_Tests(TestCase):
         image_copy = image.copy()
         image_clipped = dito.clip_01(image=image)
         self.assertEqualImages(image, image_copy)
+
+
+class clipped_diff_Tests(DiffTestCase):
+    def test_clipped_diff_bool(self):
+        result = dito.clipped_diff(image1=self.image1_bool, image2=self.image2_bool)
+        expected_result = np.array([[False, True]], dtype=bool)
+        self.assertEqualImages(result, expected_result)
+
+    def test_clipped_diff_int8(self):
+        result = dito.clipped_diff(image1=self.image1_int8, image2=self.image2_int8)
+        expected_result = np.array([[-128, 127]], dtype=np.int8)
+        self.assertEqualImages(result, expected_result)
+
+    def test_clipped_diff_uint8(self):
+        result = dito.clipped_diff(image1=self.image1_uint8, image2=self.image2_uint8)
+        expected_result = np.array([[0, 255]], dtype=np.uint8)
+        self.assertEqualImages(result, expected_result)
+
+    def test_clipped_diff_float32(self):
+        result = dito.clipped_diff(image1=self.image1_float32, image2=self.image2_float32)
+        expected_result = np.array([[0.0, 1.0]], dtype=np.float32)
+        self.assertEqualImages(result, expected_result)
+
+    def test_clipped_diff_float64(self):
+        result = dito.clipped_diff(image1=self.image1_float64, image2=self.image2_float64)
+        expected_result = np.array([[0.0, 1.0]], dtype=np.float64)
+        self.assertEqualImages(result, expected_result)
 
 
 class colorize_Tests(TestCase):
@@ -1157,6 +1229,33 @@ class save_tmp_Tests(TestCase):
         filename = dito.save_tmp(image=image)
         image_loaded = dito.load(filename=filename)
         self.assertEqualImages(image, image_loaded)
+
+
+class shifted_diff_Tests(DiffTestCase):
+    def test_shifted_diff_bool(self):
+        result = dito.shifted_diff(image1=self.image1_bool, image2=self.image2_bool)
+        expected_result = np.array([[False, True]], dtype=bool)
+        self.assertEqualImages(result, expected_result)
+
+    def test_shifted_diff_int8(self):
+        result = dito.shifted_diff(image1=self.image1_int8, image2=self.image2_int8)
+        expected_result = np.array([[-128, 127]], dtype=np.int8)
+        self.assertEqualImages(result, expected_result)
+
+    def test_shifted_diff_uint8(self):
+        result = dito.shifted_diff(image1=self.image1_uint8, image2=self.image2_uint8)
+        expected_result = np.array([[0, 255]], dtype=np.uint8)
+        self.assertEqualImages(result, expected_result)
+
+    def test_shifted_diff_float32(self):
+        result = dito.shifted_diff(image1=self.image1_float32, image2=self.image2_float32)
+        expected_result = np.array([[0.0, 1.0]], dtype=np.float32)
+        self.assertEqualImages(result, expected_result)
+
+    def test_shifted_diff_float64(self):
+        result = dito.shifted_diff(image1=self.image1_float64, image2=self.image2_float64)
+        expected_result = np.array([[0.0, 1.0]], dtype=np.float64)
+        self.assertEqualImages(result, expected_result)
 
 
 class split_channels_Tests(TestCase):
