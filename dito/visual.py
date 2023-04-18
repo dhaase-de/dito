@@ -1,6 +1,7 @@
 import collections
 import math
 import os.path
+import pathlib
 import warnings
 
 import cv2
@@ -506,6 +507,8 @@ class Font():
 class MonospaceBitmapFont(Font):
     def __init__(self, filename):
         self.filename = filename
+        if isinstance(self.filename, pathlib.Path):
+            self.filename = str(self.filename)
         (self.char_width, self.char_height, self.char_images) = self.load_df2(filename=self.filename)
 
     @classmethod

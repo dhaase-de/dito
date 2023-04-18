@@ -1,4 +1,5 @@
 import collections
+import pathlib
 
 import cv2
 import numpy as np
@@ -47,9 +48,9 @@ def pinfo(*args, extended_=False, minimal_=False, file_=None, **kwargs):
     # merge args and kwargs into one dictionary
     all_kwargs = collections.OrderedDict()
     for (n_image, image) in enumerate(args):
-        if isinstance(image, str):
-            # if `image` is a filename (str), use the filename as key
-            all_kwargs[image] = image
+        if isinstance(image, str) or isinstance(image, pathlib.Path):
+            # if `image` is a filename (str or pathlib.Path), use the filename as key
+            all_kwargs[str(image)] = image
         else:
             # otherwise, use the position of the image in the argument list as key
             all_kwargs["{}".format(n_image)] = image

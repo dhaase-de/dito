@@ -1,6 +1,7 @@
 import functools
 import glob
 import os.path
+import pathlib
 import tempfile
 import time
 import uuid
@@ -21,6 +22,9 @@ def load(filename, color=None):
 
     The bit-depth (8 or 16 bit) of the image file will be preserved.
     """
+
+    if isinstance(filename, pathlib.Path):
+        filename = str(filename)
 
     # check if file exists
     if not os.path.exists(filename):
@@ -75,6 +79,9 @@ def save(filename, image, mkdir=True):
     If `mkdir` is `True`, the parent dir of the given filename is created
     before saving the image.
     """
+
+    if isinstance(filename, pathlib.Path):
+        filename = str(filename)
 
     if not isinstance(image, np.ndarray):
         raise RuntimeError("Invalid image (type '{}')".format(type(image).__name__))
@@ -179,6 +186,9 @@ class VideoSaver():
         self.codec = codec
         self.fps = fps
         self.color = color
+
+        if isinstance(self.filename, pathlib.Path):
+            self.filename = str(self.filename)
 
         if (not isinstance(self.codec, str)) or (len(self.codec) != 4):
             raise ValueError("Argument 'codec' must be a string of length 4")
