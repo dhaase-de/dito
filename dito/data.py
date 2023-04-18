@@ -97,7 +97,7 @@ def constant_image(size=(512, 288), color=(0, 255, 0), dtype=np.uint8):
     values may vary).
     """
     channel_count = len(color)
-    image = np.zeros(shape=(size[1], size[0]) + (channel_count,), dtype=dtype)
+    image = np.zeros(shape=(size[1], size[0], channel_count), dtype=dtype)
     for n_channel in range(channel_count):
         image[:, :, n_channel] = color[n_channel]
     if channel_count == 1:
