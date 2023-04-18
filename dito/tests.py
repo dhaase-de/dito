@@ -833,6 +833,30 @@ class is_gray_Tests(TestCase):
         self.assertFalse(dito.is_gray(self.image[:, :, 0:2]))
 
 
+class load_Tests(TestCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.image_filename = os.path.join(dito.RESOURCES_FILENAMES["image:PM5544"])
+        self.shape = (576, 768, 3)
+
+    def test_load_default(self):
+        image = dito.load(filename=self.image_filename)
+        self.assertNumpyShape(image, self.shape)
+        self.assertAlmostEqual(np.mean(image), 121.3680261682581)
+
+    def test_load_grayscale(self):
+        image = dito.load(filename=self.image_filename, color=False)
+        self.assertNumpyShape(image, self.shape[:2])
+
+    def test_load_and_decode_equal(self):
+        image_load = dito.load(filename=self.image_filename)
+        with open(self.image_filename, "rb") as f:
+            image_decode = dito.decode(b=f.read())
+        self.assertNumpyShape(image_load, self.shape)
+        self.assertNumpyShape(image_decode, self.shape)
+        self.assertTrue(np.all(image_load == image_decode))
+
+
 class is_color_Tests(TestCase):
     def setUp(self):
         self.image = dito.pm5544()
@@ -1521,15 +1545,6 @@ class io_Tests(TestCase):
         self.image_filename = os.path.join(dito.RESOURCES_FILENAMES["image:PM5544"])
         self.shape = (576, 768, 3)
     
-    def test_load_default(self):
-        image = dito.load(filename=self.image_filename)
-        self.assertNumpyShape(image, self.shape)
-        self.assertAlmostEqual(np.mean(image), 121.3680261682581)
-        
-    def test_load_grayscale(self):
-        image = dito.load(filename=self.image_filename, color=False)
-        self.assertNumpyShape(image, self.shape[:2])
-        
     def test_decode_default(self):
         with open(self.image_filename, "rb") as f:
             image = dito.decode(b=f.read())
@@ -1541,13 +1556,7 @@ class io_Tests(TestCase):
             image = dito.decode(b=f.read(), color=False)
         self.assertNumpyShape(image, self.shape[:2])
         
-    def test_load_and_decode_equal(self):
-        image_load = dito.load(filename=self.image_filename)
-        with open(self.image_filename, "rb") as f:
-            image_decode = dito.decode(b=f.read())
-        self.assertNumpyShape(image_load, self.shape)    
-        self.assertNumpyShape(image_decode, self.shape)
-        self.assertTrue(np.all(image_load == image_decode))
+
 
 
 class transforms_Tests(TestCase):
