@@ -13,6 +13,106 @@ import dito.visual
 ##
 
 
+def clipped_diff(image1, image2, scale=None, offset=None, apply_abs=False):
+    """
+    Compute the clipped difference between two images.
+
+    The `image1` and `image2` inputs must have the same dtype. The function computes the element-wise difference
+    between `image1` and `image2`, and then applies an optional offset and scale factor to the difference values.
+    The resulting values are clipped to the original dtype range, to prevent overflow or underflow.
+
+    Parameters
+    ----------
+    image1 : numpy.ndarray
+        The first input image (minuend).
+    image2 : numpy.ndarray
+        The second input image (subtrahend).
+    scale : float, optional
+        The scale factor to apply to the difference values. If specified, the difference values are multiplied by
+        `scale` before any offset is applied. The default value is `None`, which means no scaling is applied.
+    offset : float, optional
+        The offset value to add to the difference values. If specified, the difference values are increased by
+        `offset` after any scaling is applied. The default value is `None`, which means no offset is applied.
+    apply_abs : bool, optional
+        If `True`, the absolute value of the difference image is computed before any scaling or offset is applied.
+        The default value is `False`.
+
+    Returns
+    -------
+    numpy.ndarray
+        The clipped difference image, with the same shape and dtype as the input images.
+    """
+
+    # assert equal dtypes
+    if image1.dtype != image2.dtype:
+        raise ValueError("Both images must have the same dtypes (but have '{}' and '{}')".format(image1.dtype, image2.dtype))
+    dtype = image1.dtype
+    dtype_range = dito.core.dtype_range(dtype=dtype)
+
+    # raw diff
+    diff = image1.astype(np.float32) - image2.astype(np.float32)
+
+    # apply offset, scale, and abs if specified
+    if scale is not None:
+        diff *= scale
+    if offset is not None:
+        diff += offset
+    if apply_abs:
+        diff = np.abs(diff)
+
+    # clip values outside of original range
+    diff = dito.clip(image=diff, lower=dtype_range[0], upper=dtype_range[1])
+
+    return diff.astype(dtype)
+
+
+def abs_diff(image1, image2):
+    """
+    Compute the absolute difference between two images.
+
+    The `image1` and `image2` inputs must have the same dtype. The function computes the element-wise absolute
+    difference between `image1` and `image2`, and then clips the resulting values to the original dtype range,
+    to prevent overflow or underflow (which might happen for signed integer dtypes).
+
+    Parameters
+    ----------
+    image1 : numpy.ndarray
+        The first input image (minuend).
+    image2 : numpy.ndarray
+        The second input image (subtrahend).
+
+    Returns
+    -------
+    numpy.ndarray
+        The absolute difference image, with the same shape and dtype as the input images.
+    """
+    return clipped_diff(image1=image1, image2=image2, scale=None, offset=None, apply_abs=True)
+
+
+def shifted_diff(image1, image2):
+    """
+    Compute the shifted difference between two images.
+
+    The `image1` and `image2` inputs must have the same dtype. The function computes the element-wise difference
+    between `image1` and `image2`, and then applies a scale and offset to the difference values to shift the result
+    back into the original dtype range such that there is no need for clipping
+
+    Parameters
+    ----------
+    image1 : numpy.ndarray
+        The first input image (minuend).
+    image2 : numpy.ndarray
+        The second input image (subtrahend).
+
+    Returns
+    -------
+    numpy.ndarray
+        The shifted difference image, with the same shape and dtype as the input images.
+    """
+    dtype_range = dito.core.dtype_range(dtype=image1.dtype)
+    return clipped_diff(image1=image1, image2=image2, scale=0.5, offset=0.5 * (dtype_range[0] + dtype_range[1]), apply_abs=False)
+
+
 def gaussian_blur(image, sigma):
     if sigma <= 0.0:
         return image
