@@ -1120,15 +1120,23 @@ class rotate_Tests(TestCase):
 class save_Tests(TempDirTestCase):
     def _test_save_load(self, extension):
         image = dito.pm5544()
-        filename = os.path.join(self.temp_dir.name, "image.{}".format(extension))
-        dito.save(filename=filename, image=image)
-        image_loaded = dito.load(filename=filename)
+
+        filename_str = str(os.path.join(self.temp_dir.name, "image_str.{}".format(extension)))
+        dito.save(filename=filename_str, image=image)
+        image_str_loaded = dito.load(filename=filename_str)
+
+        filename_pathlib = pathlib.Path(os.path.join(self.temp_dir.name, "image_pathlib.{}".format(extension)))
+        dito.save(filename=filename_pathlib, image=image)
+        image_pathlib_loaded = dito.load(filename=filename_pathlib)
+
         if extension == "jpg":
             # JPG compression is lossy
-            self.assertEqualImageContainers(image, image_loaded)
+            self.assertEqualImageContainers(image, image_str_loaded)
+            self.assertEqualImageContainers(image, image_pathlib_loaded)
         else:
             # all other formats should be lossless
-            self.assertEqualImages(image, image_loaded)
+            self.assertEqualImages(image, image_str_loaded)
+            self.assertEqualImages(image, image_pathlib_loaded)
 
     def test_save_load_jpg(self):
         self._test_save_load(extension="jpg")
