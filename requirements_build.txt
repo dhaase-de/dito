@@ -1,1 +1,2 @@
+docstr-coverage
 pdoc

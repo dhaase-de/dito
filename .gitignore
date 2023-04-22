@@ -11,6 +11,7 @@ dist/
 # dev files
 dev/
 venv*/
+.docstr_coverage
 
 # documentation
 docs/
