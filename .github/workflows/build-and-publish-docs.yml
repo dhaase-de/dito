@@ -5,10 +5,9 @@ name: Build and publish docs to GitHub Pages
 
 # build the documentation whenever there are new commits w/ tags on main
 on:
-  - workflow_dispatch
-  - push:
-      tags:
-       - 'v*'
+  push:
+    tags:
+      - '*'
 
 # security: restrict permissions for CI jobs.
 permissions:
