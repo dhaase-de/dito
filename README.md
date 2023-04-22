@@ -14,6 +14,17 @@ Status
 [![License](https://img.shields.io/github/license/dhaase-de/dito.svg)](LICENSE.txt)
 
 
+Documentation
+-------------
+
+API documentation is available online at [https://dhaase-de.github.io/dito/](https://dhaase-de.github.io/dito/).
+
+To build the documentation locally (into the subdir `docs/`), run
+
+    pip install -r requirements_build.txt
+    ./scripts/build_docs.sh
+
+
 Requirements
 ------------
 
