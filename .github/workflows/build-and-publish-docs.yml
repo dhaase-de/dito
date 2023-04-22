@@ -1,7 +1,7 @@
 # This workflow builds the docs using pdoc and makes it available via GitHub pages.
 # source: https://github.com/mitmproxy/pdoc/blob/main/.github/workflows/docs.yml
 
-name: build_and_publish_docs
+name: Build and publish docs to GitHub Pages
 
 # build the documentation whenever there are new commits w/ tags on main
 on:
@@ -9,8 +9,8 @@ on:
   push:
     branches:
       - main
-        tags:
-        - '*'
+          tags:
+            - '*'
 
 # security: restrict permissions for CI jobs.
 permissions:
