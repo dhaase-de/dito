@@ -1,14 +1,16 @@
-name: website
+# This workflow builds the docs using pdoc and makes it available via GitHub pages.
+# source: https://github.com/mitmproxy/pdoc/blob/main/.github/workflows/docs.yml
 
-# build the documentation whenever there are new commits on main
+name: build_and_publish_docs
+
+# build the documentation whenever there are new commits w/ tags on main
 on:
-  workflow_dispatch
-  #push:
-  #  branches:
-  #    - main
-  #  # Alternative: only build for tags.
-  #  # tags:
-  #  #   - '*'
+  #workflow_dispatch
+  push:
+    branches:
+      - main
+        tags:
+        - '*'
 
 # security: restrict permissions for CI jobs.
 permissions:
@@ -28,6 +30,7 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pip install -r requirements_build.txt
       - run: pip install -e .
+
       # build documentation into docs/.
       - run: ./scripts/build_docs.sh
 
