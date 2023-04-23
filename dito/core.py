@@ -159,6 +159,20 @@ def dtype_range(dtype):
     Notes
     -----
     The returned values are inclusive.
+
+    Examples
+    --------
+    >>> dtype_range(np.uint8)
+    (0, 255)
+
+    >>> dtype_range(np.int16)
+    (-32768, 32767)
+
+    >>> dtype_range(np.float32) == dtype_range(np.float64)
+    True
+
+    >>> dtype_range(bool)
+    (False, True)
     """
     if is_integer_dtype(dtype=dtype):
         info = np.iinfo(dtype)
