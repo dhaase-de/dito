@@ -952,6 +952,27 @@ class load_Tests(TestCase):
         self.assertEqualImages(image_str, image_pathlib)
 
 
+class mkdir_Tests(TempDirTestCase):
+    def test_mkdir_str(self):
+        dirname = os.path.join(str(self.temp_dir.name), "dir_str")
+        self.assertFalse(os.path.exists(dirname))
+        dito.mkdir(dirname=dirname)
+        self.assertTrue(os.path.exists(dirname))
+
+    def test_mkdir_pathlib(self):
+        dir_path = pathlib.Path(self.temp_dir.name).joinpath("dir_pathlib")
+        self.assertFalse(dir_path.exists())
+        dito.mkdir(dirname=dir_path)
+        self.assertTrue(dir_path.exists())
+
+    def test_mkdir_existing(self):
+        dir_path = pathlib.Path(self.temp_dir.name).joinpath("dir_pathlib")
+        self.assertFalse(dir_path.exists())
+        dito.mkdir(dirname=dir_path)
+        self.assertTrue(dir_path.exists())
+        dito.mkdir(dirname=dir_path)
+
+
 class MultiShow_Tests(TempDirTestCase):
     def get_random_image(self):
         return dito.random_image(size=(256, 128))
