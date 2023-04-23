@@ -1193,11 +1193,11 @@ class save_Tests(TempDirTestCase):
     def _test_save_load(self, extension):
         image = dito.pm5544()
 
-        filename_str = str(os.path.join(self.temp_dir.name, "image_str.{}".format(extension)))
+        filename_str = str(os.path.join(self.temp_dir.name, "dir_str", "image_str.{}".format(extension)))
         dito.save(filename=filename_str, image=image)
         image_str_loaded = dito.load(filename=filename_str)
 
-        filename_pathlib = pathlib.Path(os.path.join(self.temp_dir.name, "image_pathlib.{}".format(extension)))
+        filename_pathlib = pathlib.Path(os.path.join(self.temp_dir.name, "dir_pathlib", "image_pathlib.{}".format(extension)))
         dito.save(filename=filename_pathlib, image=image)
         image_pathlib_loaded = dito.load(filename=filename_pathlib)
 
