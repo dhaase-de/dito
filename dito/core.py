@@ -11,8 +11,17 @@ import dito.utils
 
 def is_image(image):
     """
-    Return `True` iff the given image is either a valid grayscale image or a
-    valid color image.
+    Determine if given image is a valid grayscale or color image.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        Input image.
+
+    Returns
+    -------
+    bool
+        Returns `True` if input image is valid grayscale or color image.
     """
     
     return is_gray(image=image) or is_color(image=image)
@@ -24,36 +33,132 @@ def is_image(image):
 
 
 def is_integer_dtype(dtype):
+    """
+    Check if the input data type is an integer type.
+
+    Parameters
+    ----------
+    dtype : numpy.dtype
+        Input data type.
+
+    Returns
+    -------
+    bool
+        Returns `True` if input data type is an integer type.
+    """
     return np.issubdtype(dtype, np.integer)
 
 
 def is_integer_image(image):
+    """
+    Check if the data type of the input image is an integer type.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        Input image.
+
+    Returns
+    -------
+    bool
+        Returns `True` if input image data type is an integer type.
+    """
     return is_integer_dtype(dtype=image.dtype)
 
 
 def is_float_dtype(dtype):
+    """
+    Check if the input data type is a floating-point type.
+
+    Parameters
+    ----------
+    dtype : numpy.dtype
+        Input data type.
+
+    Returns
+    -------
+    bool
+        Returns `True` if input data type is a floating-point type.
+    """
     return np.issubdtype(dtype, np.floating)
 
 
 def is_float_image(image):
+    """
+    Check if the data type of the input image is a floating-point type.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        Input image.
+
+    Returns
+    -------
+    bool
+        Returns `True` if input image data type is a floating-point type.
+    """
     return is_float_dtype(dtype=image.dtype)
 
 
 def is_bool_dtype(dtype):
+    """
+    Check if the input data type is a boolean type.
+
+    Parameters
+    ----------
+    dtype : numpy.dtype
+        Input data type.
+
+    Returns
+    -------
+    bool
+        Returns `True` if input data type is a boolean type.
+    """
     return np.issubdtype(dtype, np.bool_)
 
 
 def is_bool_image(image):
+    """
+    Check if the data type of the input image is a boolean type.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        Input image.
+
+    Returns
+    -------
+    bool
+        Returns `True` if input image data type is a boolean type.
+    """
     return is_bool_dtype(dtype=image.dtype)
 
 
 def dtype_range(dtype):
     """
-    Returns the min and max intensity value of images for a given NumPy dtype.
-    
-    For integer dtypes, this corresponds to their full range.
-    For floating dtypes, this corresponds to the range `(0.0, 1.0)`.
-    For bool dtypes, this corresponds to the range (`False`, `True`).
+    Returns the minimum and maximum intensity values of images for a given NumPy dtype.
+
+    Parameters
+    ----------
+    dtype : numpy.dtype
+        NumPy data type of input image.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the minimum and maximum intensity values of the input dtype.
+        For integer dtypes, this corresponds to their full range (`(0, 255)` for `numpy.uint8` or `(-128, 127)` for `numpy.int8`, etc.).
+        For floating dtypes, this corresponds to the range `(0.0, 1.0)`.
+        For boolean dtypes, this corresponds to the range `(False, True)`.
+
+    Raises
+    ------
+    TypeError
+        If the input dtype is not supported.
+
+    Notes
+    -----
+    The returned values are inclusive.
     """
     if is_integer_dtype(dtype=dtype):
         info = np.iinfo(dtype)
@@ -68,8 +173,28 @@ def dtype_range(dtype):
 
 def dtype_common(dtypes):
     """
-    For a given vector `dtypes` of types, returns the type which supports
-    all ranges.
+    Find the common data type that can represent all the given NumPy dtypes.
+
+    Parameters
+    ----------
+    dtypes : list or tuple
+        List of NumPy data types to be considered.
+
+    Returns
+    -------
+    numpy.dtype
+        The highest data type in the NumPy hierarchy that supports all the ranges
+        of the input dtypes.
+
+    Raises
+    ------
+    ValueError
+        If an invalid dtype is encountered.
+
+    Notes
+    -----
+    The hierarchy of supported NumPy data types, from lowest to highest, is:
+    bool, uint8, uint16, float32, float64.
     """
 
     hierarchy = (np.bool_, np.uint8, np.uint16, np.float32, np.float64)
@@ -93,12 +218,24 @@ def dtype_common(dtypes):
 
 def convert(image, dtype):
     """
-    Converts `image` to the NumPy `dtype` and scales the intensity values
-    accordingly.
+    Convert input `image` to the NumPy `dtype` and scale the intensity values accordingly.
 
-    Intensity values are always clipped to the allowed range (even for
-    identical source and target types). Returns always a copy of the data,
-    even for equal source and target types.
+    Parameters
+    ----------
+    image : numpy.ndarray
+        Input image to be converted.
+    dtype : numpy.dtype
+        Desired output data type of the image.
+
+    Returns
+    -------
+    numpy.ndarray
+        A copy of the input image with converted data type and scaled intensity values.
+
+    Notes
+    -----
+    Intensity values are always clipped to the allowed range (even for identical source and target types).
+    The returned image is always a copy of the data, even for equal source and target types.
     """
 
     # clip image against its source dtype (important for floats)
@@ -125,14 +262,34 @@ def convert(image, dtype):
 
 def tir(*args):
     """
-    The items of `*args` are rounded, converted to `int` and combined into a
-    tuple.
+    Round the input arguments to the nearest integer, and combine them into a tuple.
 
-    The primary use-case of this function is to pass point coordinates to
-    certain OpenCV functions.
+    This function is primarily used to pass point coordinates to certain OpenCV functions.
 
+    Parameters
+    ----------
+    *args : float or tuple
+        Input arguments that will be rounded and combined into a tuple.
+        If a single tuple of length 2 is provided, its elements will be used.
+        If two separate arguments are provided, they will be used.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the rounded integers of the input arguments.
+
+    Raises
+    ------
+    ValueError
+        If the input arguments are not valid.
+
+    Examples
+    --------
     >>> tir(1.24, -1.87)
     (1, -2)
+
+    >>> tir((5.3, -9.9))
+    (5, -10)
     """
 
     if (len(args) == 1) and (len(args[0]) == 2):
@@ -151,12 +308,70 @@ def tir(*args):
 
 def size(image):
     """
-    Return the size `(X, Y)` of the given image.
+    Return the size (width x height) of the input image as a tuple.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        The input image.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the size `(width, height)` of the input image.
+
+    Examples
+    --------
+    >>> my_image = np.zeros((480, 640), dtype=np.uint8)
+    >>> size(my_image)
+    (640, 480)
+
+    >>> my_image = np.zeros((720, 1280, 3), dtype=np.float32)
+    >>> size(my_image)
+    (1280, 720)
     """
     return (image.shape[1], image.shape[0])
 
 
 def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolation_up=cv2.INTER_NEAREST):
+    """
+    Resize the input image to a new size or by a scaling factor.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        Input image to be resized.
+    scale_or_size : float or tuple
+        If `scale_or_size` is a float, it represents the scaling factor by which to resize the image.
+        If `scale_or_size` is a tuple, it represents the target size `(width, height)` of the output image.
+    interpolation_down : int, optional
+        Interpolation method used when scaling the image down. Default is `cv2.INTER_CUBIC`.
+    interpolation_up : int, optional
+        Interpolation method used when scaling the image up. Default is `cv2.INTER_NEAREST`.
+
+    Returns
+    -------
+    numpy.ndarray
+        The resized image.
+
+    Raises
+    ------
+    ValueError
+        If the input arguments are not valid.
+
+    Examples
+    --------
+    >>> my_image = np.zeros((480, 640), dtype=np.uint8)
+    >>> resized_image = resize(my_image, 0.5)
+    >>> size(resized_image)
+    (320, 240)
+
+    >>> my_image = np.zeros((480, 640), dtype=np.float32)
+    >>> resized_image = resize(my_image, (800, 600))
+    >>> size(resized_image)
+    (800, 600)
+    """
+
     if isinstance(scale_or_size, float):
         scale = scale_or_size
         return cv2.resize(src=image, dsize=None, dst=None, fx=scale, fy=scale, interpolation=interpolation_up if scale > 1.0 else interpolation_down)
@@ -174,6 +389,18 @@ class PaddedImageIndexer():
     """
     Wrapper for an `np.ndarray` which allows indexing out-of-bounds and returns
     a padded image.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        Input image to be indexed and padded.
+    pad_kwargs : dict, optional
+        Additional keyword arguments to pass to `np.pad()` function. Default is `None`.
+
+    Raises
+    ------
+    AssertionError
+        If the input `image` is not a valid NumPy array.
     """
 
     def __init__(self, image, pad_kwargs=None):
@@ -185,6 +412,26 @@ class PaddedImageIndexer():
         assert isinstance(self.image, np.ndarray)
 
     def __getitem__(self, item):
+        """
+        Return a cropped and padded version of the input image according to the given indices.
+
+        Parameters
+        ----------
+        item : tuple of slices
+            Index tuple to extract the subregion from the image.
+
+        Returns
+        -------
+        numpy.ndarray
+            A cropped and padded version of the image.
+
+        Raises
+        ------
+        ValueError
+            If the indices are invalid.
+        TypeError
+            If any of the indices are not slices.
+        """
         indices = item
         axis_count = len(self.image.shape)
 
@@ -198,7 +445,7 @@ class PaddedImageIndexer():
             if not isinstance(index, slice):
                 raise TypeError("All indices must be slices, but index #{} is of type '{}'".format(n_axis, type(index).__name__))
             if (index.step is not None) and (index.step != 1):
-                raise ValueError("Step sized != 1 are currently not supported, but index #{} has step size {}".format(n_axis, index.step))
+                raise ValueError("Step sizes != 1 are currently not supported, but index #{} has step size {}".format(n_axis, index.step))
 
             axis_size = self.image.shape[n_axis]
 
@@ -237,6 +484,61 @@ class PaddedImageIndexer():
 
 
 def pad(image, count=None, count_top=None, count_right=None, count_bottom=None, count_left=None, mode=cv2.BORDER_CONSTANT, constant_value=0):
+    """
+    Pads an image with a border.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        Input image to be padded.
+    count : int, optional
+        Number of pixels to add to all sides of the image. Cannot be set at the same time as `count_top`, `count_right`, `count_bottom` or `count_left`.
+    count_top : int, optional
+        Number of pixels to add to the top of the image.
+    count_right : int, optional
+        Number of pixels to add to the right of the image.
+    count_bottom : int, optional
+        Number of pixels to add to the bottom of the image.
+    count_left : int, optional
+        Number of pixels to add to the left of the image.
+    mode : str or int, optional
+        Border mode to use for padding. Can be either a string containing the mode name, or one of the constants defined in `cv2.BORDER_*`. Default is `cv2.BORDER_CONSTANT`.
+        Example border modes:
+            - 'constant': Pad with a constant value (specified by the `constant_value` argument).
+            - 'replicate': Replicate the edge pixels.
+            - 'reflect': Reflect the image, so that the border pixels are the mirror images of the interior pixels.
+            - 'reflect_101': Same as 'reflect', but with the edge pixels not being replicated.
+            - 'wrap': Wrap the image around itself.
+    constant_value : scalar or sequence, optional
+        Border color for the border mode `cv2.BORDER_CONSTANT`. Default is 0.
+
+    Returns
+    -------
+    numpy.ndarray
+        The padded image.
+
+    Raises
+    ------
+    ValueError
+        If the `count` argument is set along with `count_top`, `count_right`, `count_bottom` or `count_left`.
+        If the `mode` argument is invalid.
+
+    Examples
+    --------
+    >>> my_image = np.zeros((10, 10, 3), dtype=np.uint8)
+    >>> padded_image = pad(image=my_image, count=1)
+    >>> size(padded_image)
+    (12, 12)
+
+    >>> padded_image = pad(image=my_image, count_top=1, count_right=2, count_bottom=3, count_left=4, mode='reflect101')
+    >>> size(padded_image)
+    (16, 14)
+
+    >>> padded_image = pad(image=my_image, count=2, constant_value=(255, 0, 0))
+    >>> padded_image[0, 0, :]
+    array([255,   0,   0], dtype=uint8)
+    """
+
     if isinstance(mode, int):
         # assume mode to be one of cv2.BORDER_*
         pass
