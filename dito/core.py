@@ -4,9 +4,9 @@ import numpy as np
 import dito.utils
 
 
-####
-#%%% general
-####
+#
+# general
+#
 
 
 def is_image(image):
@@ -18,9 +18,9 @@ def is_image(image):
     return is_gray(image=image) or is_color(image=image)
 
 
-####
-#%%% type-related
-####
+#
+# type-related
+#
 
 
 def is_integer_dtype(dtype):
@@ -118,9 +118,9 @@ def convert(image, dtype):
         return (image_clipped.astype(dtype=intermediate_dtype) * scale).astype(dtype)
 
 
-####
-#%%% array access
-####
+#
+# array access
+#
 
 
 def tir(*args):
@@ -144,9 +144,9 @@ def tir(*args):
     return tuple(int(round(item)) for item in items)
 
 
-####
-#%%% geometry related
-####
+#
+# geometry related
+#
 
 
 def size(image):
@@ -337,9 +337,9 @@ def rotate_270(image):
     return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_CLOCKWISE)
 
 
-####
-#%%% channel-related
-####
+#
+# channel-related
+#
     
 
 def is_gray(image):
@@ -456,10 +456,9 @@ def as_channels(b=None, g=None, r=None):
     return cv2.merge(mv=channel_images)
 
 
-
-####
-#%%% value-related
-####
+#
+# value-related
+#
 
 
 def clip(image, lower=None, upper=None):
@@ -508,8 +507,7 @@ def normalize(image, mode="minmax", **kwargs):
         # the target interval range depends on the image's data type
         (lower_target, upper_target) = dtype_range(image.dtype)
 
-        # we temporarily work with a float image (because values outside of
-        # the target interval can occur)
+        # we temporarily work with a float image (because values outside the target interval can occur)
         image_work = image.astype("float").copy()
         
         # spread the given interval to the full range, clip outlier values
