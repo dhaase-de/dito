@@ -889,6 +889,23 @@ class invert_Tests(TestCase):
         self.assertEqualImages(image_bool_inverted, np.logical_not(image_bool))
 
 
+class is_color_Tests(TestCase):
+    def setUp(self):
+        self.image = dito.pm5544()
+
+    def test_is_color_of_color_image(self):
+        self.assertTrue(dito.is_color(self.image))
+
+    def test_is_color_of_gray_image(self):
+        self.assertFalse(dito.is_color(self.image[:, :, 0]))
+
+    def test_is_color_of_gray_image_with_color_channel(self):
+        self.assertFalse(dito.is_color(self.image[:, :, 0:1]))
+
+    def test_is_color_of_image_with_two_channels(self):
+        self.assertFalse(dito.is_color(self.image[:, :, 0:2]))
+
+
 class is_gray_Tests(TestCase):
     def setUp(self):
         self.image = dito.pm5544()
@@ -933,23 +950,6 @@ class load_Tests(TestCase):
         image_str = dito.load(filename=str(self.image_filename))
         image_pathlib = dito.load(filename=pathlib.Path(self.image_filename))
         self.assertEqualImages(image_str, image_pathlib)
-
-
-class is_color_Tests(TestCase):
-    def setUp(self):
-        self.image = dito.pm5544()
-
-    def test_is_color_of_color_image(self):
-        self.assertTrue(dito.is_color(self.image))
-
-    def test_is_color_of_gray_image(self):
-        self.assertFalse(dito.is_color(self.image[:, :, 0]))
-
-    def test_is_color_of_gray_image_with_color_channel(self):
-        self.assertFalse(dito.is_color(self.image[:, :, 0:1]))
-
-    def test_is_color_of_image_with_two_channels(self):
-        self.assertFalse(dito.is_color(self.image[:, :, 0:2]))
 
 
 class MultiShow_Tests(TempDirTestCase):
