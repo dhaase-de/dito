@@ -581,8 +581,30 @@ def pad(image, count=None, count_top=None, count_right=None, count_bottom=None, 
 
 def center_pad_to(image, target_size, **kwargs):
     """
-    Center pad `image` to the given `target_size` if it is smaller than this target size.
+    Pad `image` to the `target_size` by adding borders on all sides such that the image is centered.
+
+    If the `image` is larger than the `target_size` in any dimension, it will remain unmodified in that dimension.
+    The padding parameters which are passed to `pad` can be given via `**kwargs`.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Input image to be padded.
+    target_size : tuple of int
+        The size that the output image should have.
+    **kwargs
+        Additional keyword arguments to be passed to the `pad` function.
+
+    Returns
+    -------
+    np.ndarray
+        Padded image with the specified size.
+
+    See Also
+    --------
+    pad : Function that performs the padding operation.
     """
+
     missing_width = max(0, target_size[0] - image.shape[1])
     missing_height = max(0, target_size[1] - image.shape[0])
 
@@ -595,6 +617,26 @@ def center_pad_to(image, target_size, **kwargs):
 
 
 def center_crop_to(image, target_size):
+    """
+    Extract a center crop from the input `image`.
+
+    If the `image` is smaller than the `target_size` in any dimension, the returned
+    image will be cropped to the size of the `image` in that dimension.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Input image to be cropped.
+    target_size : tuple of int
+        The size of the output crop.
+
+    Returns
+    -------
+    np.ndarray
+        Center crop of the specified size.
+
+    """
+
     image_size = size(image=image)
     indices = [None, None, Ellipsis]
     for n_dim in range(2):
@@ -604,6 +646,29 @@ def center_crop_to(image, target_size):
 
 
 def center_pad_crop_to(image, target_size, **kwargs):
+    """
+    Center pad and crop the `image` so that the result is exactly of size `target_size`.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Input image to be padded and cropped.
+    target_size : tuple of int
+        The size of the output image.
+    **kwargs
+        Additional keyword arguments to be passed to the `center_pad_to` function.
+
+    Returns
+    -------
+    np.ndarray
+        Center crop of the specified size from the padded image.
+
+    See Also
+    --------
+    center_pad_to : Function that performs the padding operation.
+    center_crop_to : Function that performs the cropping operation.
+    """
+
     image_padded = center_pad_to(image=image, target_size=target_size, **kwargs)
     image_cropped = center_crop_to(image=image_padded, target_size=target_size)
     return image_cropped
@@ -612,7 +677,36 @@ def center_pad_crop_to(image, target_size, **kwargs):
 def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
     """
     Rotate the given `image` by an arbitrary angle given in degrees.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Input image to be rotated.
+    angle_deg : float
+        Rotation angle in degrees.
+    padding_mode : {'tight', 'full', None}, optional
+        The padding mode to use when rotating the image. If 'tight', the image is padded to exactly fit the rotated image.
+        If 'full', the image is padded such that any rotation would fit. If None, no padding is performed. Default is None.
+    interpolation : int, optional
+        Interpolation method to use. See `cv2.warpAffine()` for valid options.
+        Defaults to `cv2.INTER_CUBIC`.
+
+    Returns
+    -------
+    np.ndarray
+        Rotated image.
+
+    Raises
+    ------
+    ValueError
+        If `padding_mode` is not one of None, 'tight', or 'full'.
+
+    See Also
+    --------
+    cv2.getRotationMatrix2D : Function to get the 2D rotation matrix.
+    cv2.warpAffine : Function that performs the image rotation.
     """
+
     image_size = size(image=image)
 
     # determine target image size based on padding mode
@@ -620,6 +714,7 @@ def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
         # no padding
         target_size = image_size
     elif padding_mode == "tight":
+        # tight padding: pad the image such that the given rotation exactly fits in
         angle_rad = angle_deg * np.pi / 180.0
         sin_angle = np.abs(np.sin(angle_rad))
         cos_angle = np.abs(np.cos(angle_rad))
@@ -628,6 +723,7 @@ def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
             int(np.ceil(cos_angle * image_size[1] + sin_angle * image_size[0])),
         )
     elif padding_mode == "full":
+        # full padding: pad the image such that any rotation would fit in
         diag = int(np.ceil(np.sqrt(image_size[0]**2 + image_size[1]**2)))
         target_size = (diag, diag)
     else:
@@ -642,14 +738,65 @@ def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
 
 
 def rotate_90(image):
+    """
+    Rotate the given `image` by 90 degrees counterclockwise.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Input image to be rotated.
+
+    Returns
+    -------
+    np.ndarray
+        Rotated image.
+
+    See Also
+    --------
+    cv2.rotate : Function that performs the image rotation.
+    """
     return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_COUNTERCLOCKWISE)
 
 
 def rotate_180(image):
+    """
+    Rotate the given `image` by 180 degrees.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Input image to be rotated.
+
+    Returns
+    -------
+    np.ndarray
+        Rotated image.
+
+    See Also
+    --------
+    cv2.rotate : Function that performs the image rotation.
+    """
     return cv2.rotate(src=image, rotateCode=cv2.ROTATE_180)
 
 
 def rotate_270(image):
+    """
+    Rotate the given `image` by 270 degrees counterclockwise (= 90 degrees clockwise).
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Input image to be rotated.
+
+    Returns
+    -------
+    np.ndarray
+        Rotated image.
+
+    See Also
+    --------
+    cv2.rotate : Function that performs the image rotation.
+    """
     return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_CLOCKWISE)
 
 
@@ -660,7 +807,20 @@ def rotate_270(image):
 
 def is_gray(image):
     """
-    Return `True` iff the given image is a grayscale image.
+    Check if the given `image` is a valid grayscale image.
+
+    Here, 'valid grayscale image' means that it has either two dimensions, or three dimensions with the last one being
+    singleton.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The image to check.
+
+    Returns
+    -------
+    bool
+        True if the image is grayscale, False otherwise.
     """
     
     return (len(image.shape) == 2) or ((len(image.shape) == 3) and (image.shape[2] == 1))
@@ -668,7 +828,20 @@ def is_gray(image):
 
 def is_color(image):
     """
-    Return `True` iff the given image is a color image.
+    Check if the given `image` is a valid color image.
+
+    Here, 'valid color image' means that it has three dimensions, with the last dimension having a length of three (the
+    color channels).
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The image to check.
+
+    Returns
+    -------
+    bool
+        True if the image is color, False otherwise.
     """
     
     return (len(image.shape) == 3) and (image.shape[2] == 3)
@@ -676,9 +849,27 @@ def is_color(image):
 
 def as_gray(image, keep_color_dimension=False):
     """
-    Convert the given image from BGR to grayscale.
-    
-    If it is already a grayscale image, return the image unchanged.
+    Convert the given `image` from BGR to grayscale.
+
+    If `image` is already a grayscale image, return it unchanged.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The input image to be converted to grayscale.
+    keep_color_dimension : bool, optional
+        If True, the output grayscale image will have a shape of `(height, width, 1)`. If False (default), the output
+        image will have a shape of `(height, width)`.
+
+    Returns
+    -------
+    np.ndarray
+        Grayscale image.
+
+    See Also
+    --------
+    is_gray : Check if an image is grayscale.
+    cv2.cvtColor : OpenCV function that performs the color conversion.
     """
 
     if is_gray(image=image):
@@ -694,9 +885,24 @@ def as_gray(image, keep_color_dimension=False):
 
 def as_color(image):
     """
-    Convert the given image from grayscale to BGR.
-    
-    If it is already a color image, return the image unchanged.
+    Convert the given `image` from grayscale to BGR.
+
+    If `image` is already a color image, return it unchanged.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The input image to be converted to BGR.
+
+    Returns
+    -------
+    np.ndarray
+        BGR color image.
+
+    See Also
+    --------
+    is_color : Check if an image is color.
+    cv2.cvtColor : OpenCV function that performs the color conversion.
     """
     
     if is_color(image=image):
@@ -706,6 +912,33 @@ def as_color(image):
 
 
 def convert_color(image_or_color, code):
+    """
+    Convert the given `image_or_color` from one color space to another.
+
+    This function supports both images and color tuples and returns an image or a color tuple depending on the input.
+
+    Parameters
+    ----------
+    image_or_color : np.ndarray or tuple
+        The image or color to be converted.
+    code : int
+        The conversion code that specifies the target color space as required by `cv2.cvtColor`.
+
+    Returns
+    -------
+    np.ndarray or tuple
+        The converted image or color.
+
+    Raises
+    ------
+    ValueError
+        If `image_or_color` is neither an image nor a color tuple.
+
+    See Also
+    --------
+    cv2.cvtColor : OpenCV function that performs the color conversion.
+    """
+
     if isinstance(image_or_color, tuple) and (1 <= len(image_or_color) <= 3):
         # color mode
         color_array = np.array(image_or_color, dtype=np.uint8)
@@ -719,23 +952,91 @@ def convert_color(image_or_color, code):
 
 
 def bgr_to_hsv(image_or_color):
+    """
+    Convert the given `image_or_color` from BGR to HSV color space.
+
+    Parameters
+    ----------
+    image_or_color : np.ndarray or tuple
+        The image or color to be converted.
+
+    Returns
+    -------
+    np.ndarray or tuple
+        The converted image or color in HSV color space.
+
+    See Also
+    --------
+    cv2.cvtColor : OpenCV function that performs the color conversion.
+    """
     return convert_color(image_or_color=image_or_color, code=cv2.COLOR_BGR2HSV)
 
 
 def hsv_to_bgr(image_or_color):
+    """
+    Convert the given `image_or_color` from HSV to BGR color space.
+
+    Parameters
+    ----------
+    image_or_color : np.ndarray or tuple
+        The image or color to be converted.
+
+    Returns
+    -------
+    np.ndarray or tuple
+        The converted image or color in BGR color space.
+
+    See Also
+    --------
+    cv2.cvtColor : OpenCV function that performs the color conversion.
+    """
     return convert_color(image_or_color=image_or_color, code=cv2.COLOR_HSV2BGR)
 
 
 def flip_channels(image):
     """
-    Changes BGR channels to RGB channels and vice versa.
+    Flip the color channels of the given `image` from BGR to RGB and vice versa.
+
+    If the input image is in BGR format (the default when using OpenCV), it is converted to RGB format.
+    If it is in RGB format, it is converted to BGR.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Input image in either BGR or RGB format.
+
+    Returns
+    -------
+    np.ndarray
+        Output image in the flipped color format.
+
+    See Also
+    --------
+    cv2.cvtColor : OpenCV function that performs the color conversion.
     """
     return cv2.cvtColor(src=image, code=cv2.COLOR_BGR2RGB)
 
 
 def split_channels(image):
     """
-    Splits the image into a tuple containing its channels as individual images.
+    Split the given image into a tuple containing its channels as individual images.
+
+    If the `image` has no color dimension, return a singleton tuple.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The image to split.
+
+    Returns
+    -------
+    tuple of np.ndarray
+        A tuple containing the individual channels of the input image.
+
+    Raises
+    ------
+    dito.exceptions.InvalidImageShapeError
+        If the input image shape does not have two or three axes.
     """
     axis_count = len(image.shape)
     if axis_count == 2:
@@ -748,7 +1049,37 @@ def split_channels(image):
 
 def as_channels(b=None, g=None, r=None):
     """
-    Merge up to three gray scale images into one color image.
+    Merge up to three grayscale images into one color image.
+
+    Each of the input images will be assigned to a specific (BGR) color channel in the output image.
+    If an input image is not provided for a color channel, that channel will be filled with zeros.
+
+    Parameters
+    ----------
+    b : np.ndarray or None, optional
+        The image to use for the blue color channel.
+    g : np.ndarray or None, optional
+        The image to use for the green color channel.
+    r : np.ndarray or None, optional
+        The image to use for the red color channel.
+
+    Returns
+    -------
+    np.ndarray
+        The BGR color image created by merging the input images.
+
+    Raises
+    ------
+    ValueError
+        If none of the input arguments is provided.
+
+        If an input image is not grayscale.
+
+        If the input images have different shapes.
+
+    See Also
+    --------
+    cv2.merge : OpenCV function that performs the merging.
     """
     # check arguments
     if (b is None) and (g is None) and (r is None):
@@ -779,7 +1110,30 @@ def as_channels(b=None, g=None, r=None):
 
 def clip(image, lower=None, upper=None):
     """
-    Clip values to the range specified by `lower` and `upper`.
+    Clip values of the given `image` to the range specified by `lower` and `upper`.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The input image.
+    lower : float or int or None
+        Lower bound of the clipping range (inclusive). If `None`, no lower bound is applied.
+    upper : float or int or None
+        Upper bound of the clipping range (inclusive). If `None`, no upper bound is applied.
+
+    Returns
+    -------
+    np.ndarray
+        Clipped image.
+
+    Notes
+    -----
+    This function makes a copy of the input array to avoid modifying it in place.
+
+    Examples
+    --------
+    >>> clip(image=np.arange(10, dtype=np.uint8)[np.newaxis, :], lower=2, upper=6)
+    array([[2, 2, 2, 3, 4, 5, 6, 6, 6, 6]], dtype=uint8)
     """
 
     # assert that the input array remains unchanged
@@ -796,21 +1150,112 @@ def clip(image, lower=None, upper=None):
 
 def clip_01(image):
     """
-    Clip values to the range `(0.0, 1.0)`.
+    Clip values of the given `image` to the range `(0.0, 1.0)`.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The input image.
+
+    Returns
+    -------
+    np.ndarray
+        Clipped image with values in the range `(0.0, 1.0)`.
+
+    Examples
+    --------
+    >>> clip_01(image=np.array([[-2.0, -1.0, 0.0, 1.0, 2.0]], dtype=np.float32))
+    array([[0., 0., 0., 1., 1.]], dtype=float32)
     """
     return clip(image=image, lower=0.0, upper=1.0)
 
 
 def clip_11(image):
     """
-    Clip values to the range `(-1.0, 1.0)`.
+    Clip values of the given `image` to the range `(-1.0, 1.0)`.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The input image.
+
+    Returns
+    -------
+    np.ndarray
+        Clipped image with values in the range `(-1.0, 1.0)`.
+
+    Examples
+    --------
+    >>> clip_11(image=np.array([[-2.0, -1.0, 0.0, 1.0, 2.0]], dtype=np.float32))
+    array([[-1., -1.,  0.,  1.,  1.]], dtype=float32)
     """
     return clip(image=image, lower=-1.0, upper=1.0)
 
 
+def clip_0255(image):
+    """
+    Clip values of the given `image` to the range `(0.0, 255.0)`.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The input image.
+
+    Returns
+    -------
+    np.ndarray
+        Clipped image with values in the range `(0.0, 255.0)`.
+
+    Examples
+    --------
+    >>> clip_0255(image=np.array([[-1.0, 0.0, 1.0, 255.0, 300.0]], dtype=np.float32))
+    array([[  0.,   0.,   1., 255., 255.]], dtype=float32)
+    """
+    return clip(image=image, lower=0.0, upper=255.0)
+
+
 def normalize(image, mode="minmax", **kwargs):
     """
-    Normalizes the intensity values of the given image.
+    Normalize the intensity values of the given `image` to a certain range.
+
+    The supported normalization modes are:
+      - 'none': do not normalize the image
+      - 'interval': rescale the image intensity values from a specified interval (kwargs `lower` and `upper`) to the full data type range of the image
+      - 'minmax': rescale the image intensity values to the full data type range of the image, using the minimum and maximum values
+      - 'zminmax': means 'zero-symmetric minmax', i.e., rescale the image intensity values to (-`extreme_value`, `extreme_value`), where `extreme_value` is the largest absolute value of the image
+      - 'percentile': rescale the image intensity values to the full data type range of the image, using the given percentiles
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Input image to be normalized.
+    mode : str, optional
+        Normalization mode. Valid modes are {'none', 'interval', 'minmax', 'zminmax', 'percentile'}.
+    **kwargs
+        Additional keyword arguments specific to each mode. See Notes section for more details.
+
+    Returns
+    -------
+    np.ndarray
+        The normalized image.
+
+    Raises
+    ------
+    ValueError
+        If an invalid normalization mode is given.
+
+    Notes
+    -----
+    The additional keyword arguments (`**kwargs`) that are specific to each normalization mode are:
+
+      - 'none': no additional keyword arguments are used
+      - 'interval': the following arguments are required:
+        - 'lower' (float or int): lower bound of the source interval
+        - 'upper' (float or int): upper bound of the source interval
+      - 'minmax': no additional keyword arguments are used
+      - 'zminmax': no additional keyword arguments are used
+      - 'percentile': the following arguments are optional:
+        - 'q' or 'p' (float): percentile to be used for lower and upper bounds (default: 2.0)
     """
 
     if mode == "none":
@@ -856,6 +1301,36 @@ def normalize(image, mode="minmax", **kwargs):
 
 
 def invert(image):
+    """
+    Invert the intensity values of the given image.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The image to invert.
+
+    Returns
+    -------
+    np.ndarray
+        The inverted image.
+
+    Raises
+    ------
+    ValueError
+        If the image has an unsupported data type or a minimum value other than 0.0.
+
+    Examples
+    --------
+    >>> invert(image=np.array([[0, 100, 200, 255]], dtype=np.uint8))
+    array([[255, 155,  55,   0]], dtype=uint8)
+
+    >>> invert(image=np.array([[0.0, 0.25, 0.5, 1.0]], dtype=np.float32))
+    array([[1.  , 0.75, 0.5 , 0.  ]], dtype=float32)
+
+    >>> invert(image=np.array([[False, True]], dtype=bool))
+    array([[ True, False]])
+    """
+
     if is_integer_image(image=image) or is_float_image(image=image):
         image_dtype_range = dtype_range(dtype=image.dtype)
         if float(image_dtype_range[0]) != 0.0:
