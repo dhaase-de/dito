@@ -1,6 +1,5 @@
 import collections
 import datetime
-import errno
 import os
 import tempfile
 
@@ -83,13 +82,9 @@ def mkdir(dirname):
     Create the given directory if it does not already exist.
     """
     
-    if dirname == "":
+    if str(dirname) == "":
         return
-    try:
-        os.makedirs(dirname)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
+    os.makedirs(dirname, exist_ok=True)
 
 
 def get_temp_dir(prefix):
