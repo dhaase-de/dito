@@ -11,7 +11,24 @@ import dito.exceptions
 
 def to_PySide6_QPixmap_format(image):
     """
-    Determine the `QImage.Format` which is compatible with the given `image`.
+    Determine the QImage.Format which is compatible with the given image.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The input image.
+
+    Returns
+    -------
+    PySide6.QtGui.QImage.Format
+        The QImage.Format which is compatible with the given image.
+
+    Raises
+    ------
+    ImportError
+        If PySide6 is not installed.
+    dito.exceptions.ConversionError
+        If the given image cannot be converted to a compatible QImage.Format.
     """
     import PySide6.QtGui
 
@@ -36,7 +53,22 @@ def to_PySide6_QPixmap_format(image):
 
 def to_PySide6_QImage(image):
     """
-    Convert a `numpy.ndimage` to `PySide6.QtGui.QImage.QImage`.
+    Convert a numpy.ndimage to PySide6.QtGui.QImage.QImage.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The input image.
+
+    Returns
+    -------
+    PySide6.QtGui.QImage
+        The QImage representation of the input image.
+
+    Raises
+    ------
+    ImportError
+        If PySide6 is not installed.
     """
     import PySide6.QtGui
     return PySide6.QtGui.QImage(
@@ -49,7 +81,22 @@ def to_PySide6_QImage(image):
 
 def to_PySide6_QPixmap(image):
     """
-    Convert a `numpy.ndimage` to `PySide6.QtGui.QImage.QPixmap`.
+    Convert a numpy.ndimage to PySide6.QtGui.QImage.QPixmap.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The input image.
+
+    Returns
+    -------
+    PySide6.QtGui.QPixmap
+        The QPixmap representation of the input image.
+
+    Raises
+    ------
+    ImportError
+        If PySide6 is not installed.
     """
     import PySide6.QtGui
     q_image = to_PySide6_QImage(image)
