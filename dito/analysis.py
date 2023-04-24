@@ -1,3 +1,7 @@
+"""
+This submodule provides functionality for higher-level image analysis tasks.
+"""
+
 import abc
 import collections
 

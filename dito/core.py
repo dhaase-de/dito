@@ -1,3 +1,7 @@
+"""
+This submodule provides essential tools and helpers for OpenCV images represented as NumPy arrays.
+"""
+
 import cv2
 import numpy as np
 

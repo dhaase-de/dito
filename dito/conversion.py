@@ -1,12 +1,16 @@
+"""
+This submodule provides functionality for the conversion of NumPy arrays to other formats.
+"""
+
 import numpy as np
 
 import dito.core
 import dito.exceptions
 
 
-##
-## PySide6
-##
+#
+# PySide6
+#
 
 
 def to_PySide6_QPixmap_format(image):
