@@ -5,6 +5,15 @@ It provides convenience wrappers for frequently used image-related
 functionalities in OpenCV and NumPy, as well as additional functionality built
 on top of them.
 
+The module follows the data conventions of OpenCV under Python, namely:
+* images are represented as `numpy.ndarray`s with shape `(?, ?)` or `(?, ?, 1)`
+  (grayscale) or `(?, ?, 3)` (color)
+* the color channel order is BGR
+* the value range for float images is `(0.0, 1.0)`
+* point coordinates are given in (x, y[, z]) order
+* images sizes (not shapes--these have the same meaning as in NumPy) are given
+  in (width, height) order
+
 All submodules are imported and can be accessed directly through the `dito`
 namespace. For example, `dito.io.load` can be accessed as `dito.load`.
 """
