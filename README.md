@@ -3,6 +3,8 @@ Python Package `dito`
 
 `dito` is yet another toolbox for the daily work with [OpenCV](https://opencv.org/) under Python.
 
+It provides convenience wrappers for frequently used image-related functionalities in OpenCV and NumPy, as well as additional functionality built on top of them.
+
 
 Status
 ------
