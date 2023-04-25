@@ -1,3 +1,7 @@
+"""
+This submodule provides functionality to generate and load images with specific properties.
+"""
+
 import os.path
 import random
 
@@ -7,9 +11,9 @@ import numpy as np
 import dito.io
 
 
-####
-#%%% resource filenames
-####
+#
+# resource filenames
+#
 
 
 RESOURCES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources")
@@ -86,15 +90,28 @@ RESOURCES_FILENAMES = {
 }
 
 
-####
-#%%% synthetic images
-####
+#
+# synthetic images
+#
 
 
 def constant_image(size=(512, 288), color=(0, 255, 0), dtype=np.uint8):
     """
-    Returns an image where each color channel is constant (but the channel
-    values may vary).
+    Return an image where all pixels have the same color.
+
+    Parameters
+    ----------
+    size : tuple of int, optional
+        The size (width, height) of the output image. Default is (512, 288).
+    color : tuple of int, optional
+        The color of the image as a tuple of values for each color channel. Default is (0, 255, 0).
+    dtype : data-type, optional
+        The desired data type of the output image. Default is np.uint8.
+
+    Returns
+    -------
+    numpy.ndarray
+        The output image.
     """
     channel_count = len(color)
     image = np.zeros(shape=(size[1], size[0], channel_count), dtype=dtype)
@@ -107,8 +124,27 @@ def constant_image(size=(512, 288), color=(0, 255, 0), dtype=np.uint8):
 
 def grid(size=(512, 288), grid_size=16, background_color=(0,), grid_color=(255,), offset=None, dtype=np.uint8):
     """
-    Returns a gray-scale image of the given `size` containing a grid with a
-    pitch of size `block_size`.
+    Return an image of the given `size` containing regular grid lines.
+
+    Parameters
+    ----------
+    size : tuple of int, optional
+        The size (width, height) of the output image. Default is (512, 288).
+    grid_size : int, optional
+        The size of the grid blocks. Default is 16.
+    background_color : tuple of int, optional
+        The background color of the image. Default is (0,).
+    grid_color : tuple of int, optional
+        The color of the grid lines. Default is (255,).
+    offset : tuple of int, optional
+        The offset of the grid lines from the top-left corner of the image. Default is None.
+    dtype : data-type, optional
+        The desired data type of the output image. Default is np.uint8.
+
+    Returns
+    -------
+    numpy.ndarray
+        The output image.
     """
     image = constant_image(size=size, color=background_color, dtype=dtype)
 
@@ -128,11 +164,26 @@ def grid(size=(512, 288), grid_size=16, background_color=(0,), grid_color=(255,)
 
 def checkerboard(size=(512, 288), block_size=16, low=0, high=255):
     """
-    Returns a gray-scale image of the given `size` containing a checkerboard
-    grid with squares of size `block_size`. The arguments `low` and `high`
-    specify the gray scale values to be used for the squares.
-    """
+    Return a grayscale image of the given `size` containing a checkerboard grid.
 
+    The arguments `low` and `high` specify the gray scale values to be used for the squares.
+
+    Parameters
+    ----------
+    size : tuple of int, optional
+        The size (width, height) of the output image. Default is (512, 288).
+    block_size : int, optional
+        The size of the checkerboard squares. Default is 16.
+    low : int, optional
+        The grayscale value of the low intensity squares. Default is 0.
+    high : int, optional
+        The grayscale value of the high intensity squares. Default is 255.
+
+    Returns
+    -------
+    numpy.ndarray
+        The output image.
+    """
     image = np.zeros(shape=(size[1], size[0]), dtype=np.uint8) + low
     for (n_row, y) in enumerate(range(0, size[1], block_size)):
         offset = block_size if ((n_row % 2) == 0) else 0
@@ -144,17 +195,43 @@ def checkerboard(size=(512, 288), block_size=16, low=0, high=255):
 
 def background_checkerboard(size=(512, 288), block_size=16):
     """
-    Returns a gray-scale image of the given `shape` containing a checkerboard
-    grid of light and dark gray squares of size `block_size`.
+    Return a grayscale image of the given `size` containing a checkerboard grid of light and dark gray squares.
+
+    Parameters
+    ----------
+    size : tuple of int, optional
+        The size (width, height) of the output image. Default is (512, 288).
+    block_size : int, optional
+        The size of the checkerboard squares. Default is 16.
+
+    Returns
+    -------
+    numpy.ndarray
+        The output image.
     """
     return checkerboard(size=size, block_size=block_size, low=80, high=120)
 
 
 def xslope(height=32, width=256, dtype=np.uint8):
     """
-    Return image containing values increasing from 0 to 255 along the x axis.
-    """
+    Return a grayscale image containing values increasing from 0 to 255 along the x axis.
 
+    For dtypes other than uint8, the values range from
+
+    Parameters
+    ----------
+    height : int, optional
+        The height of the output image. Default is 32.
+    width : int, optional
+        The width of the output image. Default is 256.
+    dtype : data-type, optional
+        The desired data type of the output image. Default is np.uint8.
+
+    Returns
+    -------
+    numpy.ndarray
+        The output image.
+    """
     dtype_range = dito.core.dtype_range(dtype=dtype)
     slope = np.linspace(start=dtype_range[0], stop=dtype_range[1], num=width, endpoint=True, dtype=dtype)
     slope.shape = (1,) + slope.shape
@@ -164,15 +241,47 @@ def xslope(height=32, width=256, dtype=np.uint8):
 
 def yslope(width=32, height=256, dtype=np.uint8):
     """
-    Return image containing values increasing from 0 to 255 along the y axis.
-    """
+    Return a grayscale image containing values increasing from 0 to 255 along the y axis.
 
+    Parameters
+    ----------
+    width : int, optional
+        The width of the output image. Default is 32.
+    height : int, optional
+        The height of the output image. Default is 256.
+    dtype : data-type, optional
+        The desired data type of the output image. Default is np.uint8.
+
+    Returns
+    -------
+    numpy.ndarray
+        The output image.
+    """
     return xslope(height=width, width=height, dtype=dtype).T
 
 
 def random_image(size=(512, 288), color=True, dtype=np.uint8, use_standard_library=False):
     """
-    Returns a random image of the given `size` and `dtype`.
+    Return a random image of the given `size` and `dtype`.
+
+    The values will span the full range of the specified dtype.
+
+    Parameters
+    ----------
+    size : tuple of int, optional
+        The size (width, height) of the output image. Default is (512, 288).
+    color : bool, optional
+        If True, the image will have 3 channels representing BGR. Otherwise, it will be grayscale. Default is True.
+    dtype : data-type, optional
+        The desired data type of the output image. Default is np.uint8.
+    use_standard_library : bool, optional
+        If True, the random values will be generated using the Python standard library's `random` module. Otherwise,
+        NumPy's `np.random.rand()` function will be used. Default is False.
+
+    Returns
+    -------
+    numpy.ndarray
+        The output image.
     """
     shape = tuple(size[::-1])
     if color:
@@ -187,6 +296,16 @@ def random_image(size=(512, 288), color=True, dtype=np.uint8, use_standard_libra
 
 
 def test_image_segments():
+    """
+    Create a test image with segments of circles, squares, ellipses and rectangles.
+
+    The image has a size of (512, 288) and is of data type uint8.
+
+    Returns
+    -------
+    numpy.ndarray
+        A 2D NumPy array representing the image.
+    """
     image = np.zeros(shape=(288, 512), dtype=np.uint8)
 
     sep = 8
@@ -231,9 +350,11 @@ def test_image_segments():
 
 class DitoTestImageGeneratorV1():
     """
-    Generates an image which is useful as a test input for processing functions.
+    Class which is used to generate test input images for processing functions.
 
-    It features:
+    Depending on the specified image size, the selection and count of the elements may change.
+
+    The generated images feature the following elements:
     * background color slope for absolute image position/crop assessment
     * grid for assessment of deformations
     * corner indicators for image flip/reflection assessment
@@ -250,6 +371,18 @@ class DitoTestImageGeneratorV1():
     * lines with different widths/separations for resolution measurements
     * OpenCV checkerboard pattern for possible automated detection
     * color wheel for color mapping assessment
+
+    Parameters
+    ----------
+    size : tuple
+        The size (width, height) of the image to be generated.
+    dtype : dtype
+        The data type of the image to be generated.
+
+    Attributes
+    ----------
+    image : numpy.ndarray
+        The generated image.
     """
 
     def __init__(self, size, dtype):
@@ -466,17 +599,67 @@ class DitoTestImageGeneratorV1():
 
 
 def dito_test_image_v1(size=(384, 256), dtype=np.uint8):
+    """
+    Wrapper function that returns a test image generated by the `DitoTestImageGeneratorV1` class.
+
+    Parameters
+    ----------
+    size : tuple of int, optional
+        The size (width, height) of the image to generate. Default is (384, 256).
+    dtype : data type, optional
+        The data type of the image. Default is np.uint8.
+
+    Returns
+    -------
+    numpy.ndarray
+        The generated test image.
+
+    See Also
+    --------
+    DitoTestImageGeneratorV1 : class used to generate the test image.
+    """
     return DitoTestImageGeneratorV1(size=size, dtype=dtype).image
 
 
-####
-#%%% real images
-####
+#
+# real images
+#
 
 
 def pm5544():
+    """
+    Return image of the PM5544 test pattern.
+
+    The image source (Wikipedia, see below) states that this image is Public Domain.
+
+    Returns
+    -------
+    numpy.ndarray, shape (576, 720, 3), dtype uint8
+        The PM5544 test pattern image.
+
+    See Also
+    --------
+    https://en.wikipedia.org/wiki/Philips_circle_pattern : Image source.
+        Also contains further description of the PM5544 test pattern.
+    """
     return dito.io.load(filename=RESOURCES_FILENAMES["image:PM5544"])
 
 
 def usc_sipi_beans():
+    """
+    Returns the USC-SIPI database's image 4.1.07 ("Jelly beans").
+
+    According to the copyright information under https://sipi.usc.edu/database/copyright.php,
+    the image is free to use.
+
+    Returns
+    -------
+    numpy.ndarray, shape (256, 256, 3), dtype uint8
+        The jelly beans image.
+
+    See Also
+    --------
+    https://sipi.usc.edu/database/database.php?volume=misc : Image source.
+        Also contains further description of the USC-SIPI database.
+    """
     return dito.io.load(filename=RESOURCES_FILENAMES["image:USC-SIPI-4.1.07"])
