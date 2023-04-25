@@ -1,3 +1,14 @@
+"""
+`dito` is yet another toolbox for the daily work with OpenCV under Python.
+
+It provides convenience wrappers for frequently used image-related
+functionalities in OpenCV and NumPy, as well as additional functionality built
+on top of them.
+
+All submodules are imported and can be accessed directly through the `dito`
+namespace. For example, `dito.io.load` can be accessed as `dito.load`.
+"""
+
 __version__ = "2.9.1.dev0"
 
 
