@@ -630,17 +630,13 @@ def pm5544():
     """
     Return image of the PM5544 test pattern.
 
-    The image source (Wikipedia, see below) states that this image is Public Domain.
+    The image source (https://en.wikipedia.org/wiki/Philips_circle_pattern)
+    states that this image is Public Domain.
 
     Returns
     -------
     numpy.ndarray, shape (576, 720, 3), dtype uint8
         The PM5544 test pattern image.
-
-    See Also
-    --------
-    https://en.wikipedia.org/wiki/Philips_circle_pattern : Image source.
-        Also contains further description of the PM5544 test pattern.
     """
     return dito.io.load(filename=RESOURCES_FILENAMES["image:PM5544"])
 
@@ -650,16 +646,11 @@ def usc_sipi_beans():
     Returns the USC-SIPI database's image 4.1.07 ("Jelly beans").
 
     According to the copyright information under https://sipi.usc.edu/database/copyright.php,
-    the image is free to use.
+    the image is free to use. Actual image source: http://sipi.usc.edu/database/database.php?volume=misc.
 
     Returns
     -------
     numpy.ndarray, shape (256, 256, 3), dtype uint8
         The jelly beans image.
-
-    See Also
-    --------
-    https://sipi.usc.edu/database/database.php?volume=misc : Image source.
-        Also contains further description of the USC-SIPI database.
     """
     return dito.io.load(filename=RESOURCES_FILENAMES["image:USC-SIPI-4.1.07"])
