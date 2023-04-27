@@ -431,6 +431,9 @@ class PcaTextureModel(DecompositionTextureModel):
     """
 
     def fit_decomposition(self):
+        """
+        Perform the PCA-based decomposition.
+        """
         self.decomposition = sklearn.decomposition.PCA(
             n_components=self.component_count,
             whiten=True,
@@ -447,6 +450,9 @@ class NmfTextureModel(DecompositionTextureModel):
     """
 
     def fit_decomposition(self):
+        """
+        Perform the NMF-based decomposition.
+        """
         self.decomposition = sklearn.decomposition.NMF(
             n_components=self.component_count,
         )
