@@ -438,21 +438,22 @@ class PaddedImageIndexer():
     """
     Wrapper for an `np.ndarray` which allows indexing out-of-bounds and returns
     a padded image.
-
-    Parameters
-    ----------
-    image : numpy.ndarray
-        Input image to be indexed and padded.
-    pad_kwargs : dict, optional
-        Additional keyword arguments to pass to `np.pad()` function. Default is `None`.
-
-    Raises
-    ------
-    AssertionError
-        If the input `image` is not a valid NumPy array.
     """
 
     def __init__(self, image, pad_kwargs=None):
+        """
+        Parameters
+        ----------
+        image : numpy.ndarray
+            Input image to be indexed and padded.
+        pad_kwargs : dict, optional
+            Additional keyword arguments to pass to `np.pad()` function. Default is `None`.
+
+        Raises
+        ------
+        AssertionError
+            If the input `image` is not a valid NumPy array.
+        """
         self.image = image
         self.pad_kwargs = pad_kwargs
         if self.pad_kwargs is None:
