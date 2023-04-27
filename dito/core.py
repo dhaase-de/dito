@@ -49,6 +49,20 @@ def is_integer_dtype(dtype):
     -------
     bool
         Returns `True` if input data type is an integer type.
+
+    Examples
+    --------
+    >>> is_integer_dtype(np.uint8)
+    True
+
+    >>> is_integer_dtype(np.int16)
+    True
+
+    >>> is_integer_dtype(np.float32)
+    False
+
+    >>> is_integer_dtype(bool)
+    False
     """
     return np.issubdtype(dtype, np.integer)
 
@@ -213,6 +227,17 @@ def dtype_common(dtypes):
     -----
     The hierarchy of supported NumPy data types, from lowest to highest, is:
     bool, uint8, uint16, float32, float64.
+
+    Examples
+    --------
+    >>> dtype_common([np.uint8, np.uint8])
+    <class 'numpy.uint8'>
+
+    >>> dtype_common([np.uint8, np.uint16])
+    <class 'numpy.uint16'>
+
+    >>> dtype_common([np.uint8, np.float32])
+    <class 'numpy.float32'>
     """
 
     hierarchy = (np.bool_, np.uint8, np.uint16, np.float32, np.float64)
@@ -254,6 +279,12 @@ def convert(image, dtype):
     -----
     Intensity values are always clipped to the allowed range (even for identical source and target types).
     The returned image is always a copy of the data, even for equal source and target types.
+
+    Example
+    -------
+    >>> image = np.array([[0.0, 1.0]], dtype=np.float32)
+    >>> convert(image, np.uint8)
+    array([[  0, 255]], dtype=uint8)
     """
 
     # clip image against its source dtype (important for floats)
@@ -306,7 +337,7 @@ def tir(*args):
     >>> tir(1.24, -1.87)
     (1, -2)
 
-    >>> tir((5.3, -9.9))
+    >>> tir([5.3, -9.9])
     (5, -10)
     """
 
@@ -340,12 +371,12 @@ def size(image):
 
     Examples
     --------
-    >>> my_image = np.zeros((480, 640), dtype=np.uint8)
-    >>> size(my_image)
+    >>> image = np.zeros((480, 640), dtype=np.uint8)
+    >>> size(image)
     (640, 480)
 
-    >>> my_image = np.zeros((720, 1280, 3), dtype=np.float32)
-    >>> size(my_image)
+    >>> image = np.zeros((720, 1280, 3), dtype=np.float32)
+    >>> size(image)
     (1280, 720)
     """
     return (image.shape[1], image.shape[0])
@@ -379,13 +410,13 @@ def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolati
 
     Examples
     --------
-    >>> my_image = np.zeros((480, 640), dtype=np.uint8)
-    >>> resized_image = resize(my_image, 0.5)
+    >>> image = np.zeros((480, 640), dtype=np.uint8)
+    >>> resized_image = resize(image, 0.5)
     >>> size(resized_image)
     (320, 240)
 
-    >>> my_image = np.zeros((480, 640), dtype=np.float32)
-    >>> resized_image = resize(my_image, (800, 600))
+    >>> image = np.zeros((480, 640), dtype=np.float32)
+    >>> resized_image = resize(image, (800, 600))
     >>> size(resized_image)
     (800, 600)
     """
