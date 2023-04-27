@@ -1,3 +1,7 @@
+"""
+This submodule provides functionality for drawing geometric shapes into images.
+"""
+
 import cv2
 import numpy as np
 

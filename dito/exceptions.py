@@ -1,3 +1,8 @@
+"""
+This submodule defines exception classes used within dito.
+"""
+
+
 class DitoException(Exception):
     """Base exception class for Dito."""
 
