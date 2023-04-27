@@ -1,3 +1,7 @@
+"""
+This submodule provides functionality for inspecting images and their properties.
+"""
+
 import collections
 import pathlib
 
@@ -11,6 +15,28 @@ import dito.utils
 def info(image, extended=False, minimal=False):
     """
     Returns an ordered dictionary containing info about the given image.
+
+    For default parameters, the following statistics are returned:
+    - array shape
+    - array dtype
+    - mean value
+    - standard deviation of all values
+    - minimum value
+    - maximum value
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        The image to extract info from.
+    extended : bool, optional
+        If True, additional statistics are computed (size, 1st quartile, median, 3rd quartile).
+    minimal : bool, optional
+        If True, only shape and dtype are computed.
+
+    Returns
+    -------
+    collections.OrderedDict
+        An ordered dictionary containing the computed image statistics.
     """
 
     if not isinstance(image, np.ndarray):
@@ -43,6 +69,24 @@ def info(image, extended=False, minimal=False):
 def pinfo(*args, extended_=False, minimal_=False, file_=None, **kwargs):
     """
     Prints info about the given images.
+
+    Parameters
+    ----------
+    *args : tuple of numpy.ndarray or str or pathlib.Path
+        The images to extract info from. Can be either loaded images or filenames (as strings or pathlib.Path objects).
+    extended_ : bool, optional
+        If True, additional statistics are computed. See `info`.
+    minimal_ : bool, optional
+        If True, only shape and dtype are computed. See `info`.
+    file_ : str or file-like object, optional
+        If given, the output is written to this file instead of stdout.
+    **kwargs : dict
+        Additional images to extract info from. The keys are used as names for the images in the output.
+
+    Returns
+    -------
+    None
+        This function only writes output to stdout (or the given file).
     """
 
     # merge args and kwargs into one dictionary
@@ -81,6 +125,31 @@ def pinfo(*args, extended_=False, minimal_=False, file_=None, **kwargs):
 def hist(image, bin_count=256):
     """
     Return the histogram of the specified image.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        The image for which the histogram should be computed. Only numpy.uint8 type is supported.
+    bin_count : int, optional
+        The number of bins to use for the histogram. Default is 256.
+
+    Returns
+    -------
+    numpy.ndarray
+        The computed histogram. The output has the shape (`bin_count`,) and is of type numpy.float32.
+
+    Raises
+    ------
+    ValueError
+        If the given image is not a valid grayscale or color image.
+
+    Example
+    -------
+    >>> hist(np.array([[0]], dtype=np.uint8), bin_count=16).shape
+    (16,)
+
+    >>> hist(np.array([[0, 0, 0, 1, 1, 2, 3, 4, 5]], dtype=np.uint8))[:8]
+    array([3., 2., 1., 1., 1., 1., 0., 0.], dtype=float32)
     """
     
     # determine which channels to use
@@ -92,15 +161,30 @@ def hist(image, bin_count=256):
         raise ValueError("The given image must be a valid gray scale or color image")
     
     # accumulate histogram over all channels
-    hist = sum(cv2.calcHist([image], [channel], mask=None, histSize=[bin_count], ranges=(0, 256)) for channel in channels)
-    hist = np.squeeze(hist)
+    hist_ = sum(cv2.calcHist([image], [channel], mask=None, histSize=[bin_count], ranges=(0, 256)) for channel in channels)
+    hist_ = np.squeeze(hist_)
     
-    return hist
+    return hist_
     
 
 def phist(image, bin_count=25, height=8, bar_symbol="#", background_symbol=" ", col_sep="."):
     """
     Print the histogram of the given image.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        The image for which the histogram should be computed and printed.
+    bin_count : int, optional
+        The number of bins to use for the histogram. Default is 25. See `hist`.
+    height : int, optional
+        The height of the printed histogram in number of rows. Default is 8.
+    bar_symbol : str, optional
+        The symbol to use for filled histogram bars. Default is "#".
+    background_symbol : str, optional
+        The symbol to use for empty histogram bars. Default is " ".
+    col_sep : str, optional
+        The separator to use between columns of the histogram. Default is ".".
     """
     
     h = hist(image=image, bin_count=bin_count)
