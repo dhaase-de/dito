@@ -430,6 +430,19 @@ class IntegerSlider(Slider):
 
 
 class FloatSlider(Slider):
+    """
+    A subclass of `Slider` that allows selecting a float value within a range.
+
+    This slider provides a float range that can be selected by the user. The selected value is returned as the high-level value of the slider.
+
+    Attributes
+    ----------
+    min_value : float
+        The minimum value of the slider.
+    max_value : float
+        The maximum value of the slider.
+    """
+
     def __init__(self, window_name, name, min_value, max_value, value_count=101, initial_value=None):
         """
         Set up and create the float slider.
