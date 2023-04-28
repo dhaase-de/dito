@@ -1,3 +1,7 @@
+"""
+This submodule provides utility functions.
+"""
+
 import collections
 import datetime
 import os
@@ -7,21 +11,76 @@ import cv2
 import numpy as np
 
 
-####
-#%%% OpenCV-related
-####
+#
+# OpenCV-related
+#
 
 
 def cv2_version():
+    """
+    Return the version number of OpenCV as a tuple of integers.
+
+    Returns
+    -------
+    tuple of int
+        The version number of OpenCV, as a tuple of three integers in the format
+        (major, minor, patch).
+    """
     return tuple(int(value) for value in cv2.__version__.split("."))
 
 
-####
-#%%% checks
-####
+#
+# checks
+#
 
 
 def get_validated_tuple(x, type_, count, min_value=None, max_value=None):
+    """
+    Validates and returns a tuple of scalars regarding type, element count and
+    min/max values.
+
+    The argument `x` can be either a scalar or a tuple/list of type `type_`. If
+    `x` is a scalar, it is replicated `count` times. If `x` is a tuple/list, it
+    must have exactly `count` elements. Additionally, each element of the
+    resulting tuple is validated against the optional `min_value` and `max_value`
+    constraints.
+
+    Raises a `ValueError` if the validation fails.
+
+    Parameters
+    ----------
+    x : any
+        The input scalar or tuple/list to be validated.
+    type_ : type
+        The expected data type of the input.
+    count : int
+        The expected length of the resulting tuple.
+    min_value : any, optional
+        The minimum value for each element of the resulting tuple. Default is
+        None.
+    max_value : any, optional
+        The maximum value for each element of the resulting tuple. Default is
+        None.
+
+    Returns
+    -------
+    tuple
+        A tuple of `count` validated elements.
+
+    Raises
+    ------
+    ValueError
+        If the input does not meet the validation requirements.
+
+    Examples
+    --------
+    >>> get_validated_tuple(x=2, type_=int, count=2)
+    (2, 2)
+
+    >>> get_validated_tuple(x=[0.0, 0.5, 1.0], type_=float, count=3)
+    (0.0, 0.5, 1.0)
+    """
+
     error_text = "Argument must be a scalar or a {}-tuple/list of type '{}' (min_value={}, max_value={})".format(count, type_, min_value, max_value)
 
     # check tuple/list
@@ -46,9 +105,9 @@ def get_validated_tuple(x, type_, count, min_value=None, max_value=None):
     return x
 
 
-####
-#%%% number-related
-####
+#
+# number-related
+#
 
 
 def adaptive_round(number, digit_count=4):
@@ -58,6 +117,24 @@ def adaptive_round(number, digit_count=4):
 
     This function supports Python `float`s and `int`s as well as NumPy scalars
     of any type (e.g., `np.float32`, `np.uint8`, etc.).
+
+    Parameters
+    ----------
+    number : int or float or numpy scalar
+        The number to be rounded.
+    digit_count : int, optional
+        The number of digits to preserve after the first non-zero digit.
+        Default is 4.
+
+    Returns
+    -------
+    float or int or numpy scalar
+        The rounded number.
+
+    Examples
+    --------
+    >>> adaptive_round(123.456789, 4)
+    123.5
     """
 
     with np.errstate(divide="ignore"):
@@ -72,16 +149,24 @@ def adaptive_round(number, digit_count=4):
     return round(number, round_digit_count)
 
 
-####
-#%%% file-related
-####
+#
+# file-related
+#
 
 
 def mkdir(dirname):
     """
     Create the given directory if it does not already exist.
+
+    Parameters
+    ----------
+    dirname : str or pathlib.Path
+        The path to the directory to be created.
+
+    Returns
+    -------
+    None
     """
-    
     if str(dirname) == "":
         return
     os.makedirs(dirname, exist_ok=True)
@@ -92,6 +177,16 @@ def get_temp_dir(prefix):
     Creates and returns temporary directory.
 
     The property `.name` holds the path. It can be deleted using the `.cleanup()` method.
+
+    Parameters
+    ----------
+    prefix : str
+        The prefix for the name of the temporary directory.
+
+    Returns
+    -------
+    tempfile.TemporaryDirectory
+        A temporary directory object that can be used to access and manipulate the created directory.
     """
     return tempfile.TemporaryDirectory(prefix=prefix)
 
@@ -99,6 +194,28 @@ def get_temp_dir(prefix):
 def human_bytes(byte_count):
     """
     Formats a given `byte_count` into a human-readable string.
+
+    Parameters
+    ----------
+    byte_count : int
+        The number of bytes to be formatted.
+
+    Returns
+    -------
+    str
+        A string representing the `byte_count` in human-readable format.
+        For example, "10.20 MiB".
+
+    Example
+    -------
+    >>> human_bytes(128)
+    '128 bytes'
+
+    >>> human_bytes(1024)
+    '1.00 KiB'
+
+    >>> human_bytes(int(1e9))
+    '953.67 MiB'
     """
 
     prefixes = collections.OrderedDict()
@@ -124,14 +241,38 @@ def human_bytes(byte_count):
         return "{:.2f} {}".format(count, unit)
 
 
-####
-#%%% output-related
-####
+#
+# output-related
+#
 
 
 def now_str(mode="compact", date=True, time=True, microtime=True):
     """
-    Return the current date and/or time as string.
+    Return the current date and/or time as string in the specified format.
+
+    Parameters
+    ----------
+    mode : str, optional
+        Specifies the format of the date and time string to return.
+        "compact": yyyymmdd_HHMMSS_ffffff
+        "readable": yyyy-mm-dd__HH-MM-SS__ffffff
+        "print": yyyy-mm-dd HH:MM:SS.ffffff
+    date : bool, optional
+        Whether to include the date in the returned string.
+    time : bool, optional
+        Whether to include the time in the returned string.
+    microtime : bool, optional
+        Whether to include microseconds in the returned string.
+
+    Returns
+    -------
+    str
+        A string representing the current date and/or time in the specified format.
+
+    Raises
+    ------
+    ValueError
+        If none of `date`, `time`, `microtime` are `True`.
     """
 
     # check arguments
@@ -179,7 +320,30 @@ def now_str(mode="compact", date=True, time=True, microtime=True):
 
 def ftable(rows, first_row_is_header=False):
     """
-    Format the data specified in `rows` as table string.
+    Format the data specified in `rows` as a table string.
+
+    Parameters
+    ----------
+    rows : list of tuples
+        The data rows to be formatted.
+    first_row_is_header : bool, optional
+        If `True`, the first row of `rows` is treated as header and is printed separately.
+
+    Returns
+    -------
+    str
+        A formatted table as a single string.
+
+    Examples
+    --------
+    >>> print(ftable([["#", "Value"], [1, "abcde"], [2, "fghij"], [3, "klmno"]], first_row_is_header=True))
+    -  -----
+    #  Value
+    -  -----
+    1  abcde
+    2  fghij
+    3  klmno
+    -  -----
     """
     
     col_sep = "  "
@@ -215,8 +379,20 @@ def ftable(rows, first_row_is_header=False):
 def ptable(rows, ftable_kwargs=None, print_kwargs=None):
     """
     Print the data specified in `rows` as table.
-    """
 
+    Parameters
+    ----------
+    rows : list of tuples
+        The data rows to be printed.
+    ftable_kwargs : dict, optional
+        Additional keyword arguments to be passed to `ftable`.
+    print_kwargs : dict, optional
+        Additional keyword arguments to be passed to the `print` function.
+
+    Returns
+    -------
+    None
+    """
     if ftable_kwargs is None:
         ftable_kwargs = {}
     if print_kwargs is None:
