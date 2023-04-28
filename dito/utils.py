@@ -253,10 +253,10 @@ def now_str(mode="compact", date=True, time=True, microtime=True):
     Parameters
     ----------
     mode : str, optional
-        Specifies the format of the date and time string to return.
-        "compact": yyyymmdd_HHMMSS_ffffff
-        "readable": yyyy-mm-dd__HH-MM-SS__ffffff
-        "print": yyyy-mm-dd HH:MM:SS.ffffff
+        Specifies the format of the date and time string to return. Possible values:
+        - "compact": `yyyymmdd_HHMMSS_ffffff`
+        - "readable": `yyyy-mm-dd__HH-MM-SS__ffffff`
+        - "print": `yyyy-mm-dd HH:MM:SS.ffffff`
     date : bool, optional
         Whether to include the date in the returned string.
     time : bool, optional
@@ -333,17 +333,6 @@ def ftable(rows, first_row_is_header=False):
     -------
     str
         A formatted table as a single string.
-
-    Examples
-    --------
-    >>> print(ftable([["#", "Value"], [1, "abcde"], [2, "fghij"], [3, "klmno"]], first_row_is_header=True))
-    -  -----
-    #  Value
-    -  -----
-    1  abcde
-    2  fghij
-    3  klmno
-    -  -----
     """
     
     col_sep = "  "
