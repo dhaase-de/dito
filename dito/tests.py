@@ -345,6 +345,11 @@ class colorize_Tests(TestCase):
             image_colorized_applyColormap = cv2.applyColorMap(src=image, colormap=cv2.COLORMAP_JET)
             self.assertEqualImages(image_colorized_dito, image_colorized_applyColormap)
 
+    def test_colorize_float_image_raises_error(self):
+        image = dito.xslope(height=32, width=256)
+        image = dito.convert(image=image, dtype=np.float32)
+        self.assertRaises(cv2.error, lambda: dito.colorize(image=image, colormap="jet"))
+
 
 class constant_image_Tests(TestCase):
     def setUp(self):
