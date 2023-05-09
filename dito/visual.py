@@ -17,7 +17,40 @@ import dito.utils
 DEFAULT_WINDOW_NAME = "dito.show"
 
 
+#
+# color-related
+#
+
+
 def random_color(min_hue=0, max_hue=180, min_saturation=128, max_saturation=255, min_value=128, max_value=255):
+    """
+    Generate a random BGR color with HSV values within given ranges.
+
+    Parameters
+    ----------
+    min_hue : int, optional
+        The minimum hue value. Must be between 0 and 180 (inclusive). Default is 0.
+    max_hue : int, optional
+        The maximum hue value. Must be between 0 and 180 (inclusive). Default is 180.
+    min_saturation : int, optional
+        The minimum saturation value. Must be between 0 and 255 (inclusive). Default is 128.
+    max_saturation : int, optional
+        The maximum saturation value. Must be between 0 and 255 (inclusive). Default is 255.
+    min_value : int, optional
+        The minimum value. Must be between 0 and 255 (inclusive). Default is 128.
+    max_value : int, optional
+        The maximum value. Must be between 0 and 255 (inclusive). Default is 255.
+
+    Returns
+    -------
+    tuple of int
+        A tuple of 3 integers, containing the BGR values of the generated color.
+
+    Raises
+    ------
+    ValueError
+        If `min_hue` is less than 0 or greater than 180.
+    """
     # check arguments
     if not (0 <= min_hue <= 180):
         raise ValueError("Argument 'min_hue' must be a value between 0 and 180 (inclusive), but is '{}'".format(min_hue))
@@ -36,15 +69,58 @@ def random_color(min_hue=0, max_hue=180, min_saturation=128, max_saturation=255,
 
 def max_distant_color(color):
     """
-    Returns the maximally distant uint8 color for a given uint8 color.
+    Return the maximally distant uint8 color for a given uint8 color.
+
+    The maximally distant color is obtained by setting each channel value that
+    is less or equal to 127 in the input `color` to 255, and by setting each channel
+    value that is greater than 127 to 0.
+
+    Parameters
+    ----------
+    color : tuple of int
+        The uint8 color for which to find the maximally distant color. It must
+        be a tuple of integers, each in the range [0, 255].
+
+    Returns
+    -------
+    tuple of int
+        The maximally distant uint8 color.
+
+    Examples
+    --------
+    >>> max_distant_color((100, 200, 50))
+    (255, 0, 255)
+    >>> max_distant_color((128, 127, 255))
+    (0, 255, 0)
+    >>> max_distant_color((10,))
+    (255,)
     """
     return tuple(255 if item <= 127 else 0 for item in color)
 
 
 def get_colormap(name):
     """
-    Returns the colormap specified by `name` as `uint8` NumPy array of size
-    `(256, 1, 3)`.
+    Return the colormap of the specified name.
+
+    The colormap is a `uint8` NumPy array of size `(256, 1, 3)`. This is the
+    OpenCV format for colormaps.
+
+    Parameters
+    ----------
+    name : str
+        The case-insensitive name of the colormap to retrieve. This can be either
+        the name of a builtin OpenCV colormap (e.g., "jet" for `cv2.COLORMAP_JET`)
+        or a non-OpenCV colormap present in dito's resources folder.
+
+    Returns
+    -------
+    numpy.ndarray
+        A `uint8` NumPy array of size `(256, 1, 3)` representing the colormap.
+
+    Raises
+    ------
+    ValueError
+        If `name` is not a recognized colormap name.
     """
     
     # source 1: non-OpenCV colormaps
@@ -63,10 +139,18 @@ def get_colormap(name):
 
 def is_colormap(colormap):
     """
-    Returns `True` iff `colormap` is a OpenCV-compatible colormap.
-    
-    For this, `colormap` must be a `uint8` array of shape `(256, 1, 3)`, i.e.
-    a color image of size `1x256`.
+    Return `True` if `colormap` is an OpenCV-compatible colormap.
+
+    Parameters
+    ----------
+    colormap : numpy.ndarray
+        The colormap to be checked. Must be a `uint8` array of shape `(256, 1, 3)`, i.e.
+        a color image of size `1x256`.
+
+    Returns
+    -------
+    bool
+        `True` if `colormap` is an OpenCV-compatible colormap, `False` otherwise.
     """
     if not dito.core.is_image(image=colormap):
         return False
@@ -81,13 +165,26 @@ def create_colormap(colors):
     """
     Create a colormap by interpolating between a given set of anchor colors.
 
-    The argument `colors` must be either (i) a dictionary, with integer keys
-    between `0` and `255` specifying the source intensity and 3-tuples as
-    corresponding values, specifying the BGR colors or (ii) a tuple of 3-tuples
-    (the BGR colors) which are spread evenly over the whole source intensity
-    range.
+    Parameters
+    ----------
+    colors : dict or tuple
+        The anchor colors used for the colormap. If a dictionary, it should have
+        integer keys between 0 and 255, specifying the source intensity, and
+        3-tuples as corresponding values, specifying the BGR colors. If a tuple
+        of 3-tuples, they are spread evenly over the whole source intensity range.
 
-    The given colors are the interpolated linearly in BGR color space.
+    Returns
+    -------
+    colormap : ndarray
+        The generated colormap as a `uint8` NumPy array of size `(256, 1, 3)`.
+
+    Raises
+    ------
+    TypeError
+        If `colors` is not a dictionary or can not be transformed into one.
+    ValueError
+        If `colors` is empty or does not satisfy the requirements specified
+        above.
     """
 
     # transform color list into color dict
@@ -119,7 +216,33 @@ def create_colormap(colors):
 
 def colorize(image, colormap):
     """
-    Colorize the `image` using the specified `colormap`.
+    Colorize the input `image` using the specified `colormap`.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        The input grayscale image to be colorized. Must have dtype `numpy.uint8`.
+    colormap : str or numpy.ndarray
+        The colormap to use for colorizing the image. If `colormap` is a string,
+        it is interpreted as the name of a colormap and a colormap is loaded with
+        the specified name (see `get_colormap`). If `colormap` is a NumPy array,
+        it is assumed to be a colormap as a uint8 NumPy array of shape `(256, 1, 3)`.
+
+    Returns
+    -------
+    numpy.ndarray
+        The colorized image, as a NumPy array of the same shape as the input
+        `image` and of dtype `numpy.uint8`.
+
+    Raises
+    ------
+    TypeError
+        If the `colormap` argument is not a valid colormap or colormap name.
+
+    Notes
+    -----
+    The `cv2.applyColorMap` function only works for OpenCV versions >= 3.3.0.
+    Therefore, this function uses `cv2.LUT` to apply the colormap to the image.
     """
     if isinstance(colormap, str):
         # get colormap by name
@@ -139,7 +262,19 @@ def colorize(image, colormap):
 
 def gamma(image, exponent):
     """
-    Apply gamma transform with exponent `value` on the given `image`.
+    Apply the gamma transform with the given `exponent` on the given `image`.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        The input image.
+    exponent : float
+        The exponent to use for the gamma transformation.
+
+    Returns
+    -------
+    numpy.ndarray
+        The transformed image. Has the same shape and dtype as the input `image`.
     """
     if image.dtype == np.uint8:
         lut = np.round(255.0 * np.linspace(start=0.0, stop=1.0, num=256)**exponent).astype(np.uint8)
@@ -152,17 +287,40 @@ def gamma(image, exponent):
         return dito.convert(image=image_float, dtype=dtype)
 
 
-####
-#%%% image combination
-####
+#
+# image combination
+#
 
 
 def stack(images, padding=0, background_color=0, dtype=None, gray=None):
     """
-    Stack given images into one image.
+    Arrange multiple images side-by-side into one image.
 
-    `images` must be a vector of images (in which case the images are stacked
-    horizontally) or a vector of vectors of images, defining rows and columns.
+    Parameters
+    ----------
+    images : tuple of ndarrays or tuple of tuples of ndarrays
+        Vector of images (in which case the images are stacked horizontally) or a
+        vector of vectors of images, defining rows and columns.
+
+    padding : int, optional (default=0)
+        Amount of padding to add between the images in pixels.
+
+    background_color : int, optional (default=0)
+        Background color of the output image. Currently, only single integers
+        are supported. This will be fixed in a later release.
+
+    dtype : data-type, optional (default=None)
+        Data type of the resulting image. If None, the data type is chosen to
+        be the common data type of the input images.
+
+    gray : bool, optional (default=None)
+        If `True`/`False`, output is converted to grayscale/color. If `None`,
+        the output color mode is chosen based on the input images.
+
+    Returns
+    -------
+    numpy.ndarray
+        The stacked image.
     """
 
     # check argument `images`
@@ -256,8 +414,23 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
 
 def astack(images, aspect=1.77, padding=0, **stack_kwargs):
     """
-    Given a 1d image list `images`, returns a 2d-stacked image with an aspect
-    ratio as close as possible to the desired aspect ratio `aspect`.
+    Arranges the given images side-by-side into an image with an aspect ratio as close as possible to `aspect`.
+
+    Parameters
+    ----------
+    images : tuple of ndarray
+        A list of images to stack.
+    aspect : float, optional
+        The desired aspect ratio. Default is 1.77 (= 16:9).
+    padding : int, optional
+        The amount of padding to add between images. Default is 0.
+    **stack_kwargs :
+        Additional keyword arguments passed to `stack`.
+
+    Returns
+    -------
+    numpy.ndarray
+        The stacked image.
     """
 
     # find the optimal image count per row
@@ -303,7 +476,29 @@ def astack(images, aspect=1.77, padding=0, **stack_kwargs):
 
 def stack_channels(image, mode="row", **kwargs):
     """
-    Stack the channels of the image in the xy-plane.
+    Arrange the channels of the given image side-by-side into one image.
+
+    Parameters
+    ----------
+    image : ndarray
+        The input image to stack the channels of.
+    mode : str, optional
+        The mode of stacking to use. Possible values are "row", "col", and "auto".
+        If `"row"`, stack the channels horizontally. If `"col"`, stack the channels vertically.
+        If `"auto"`, stack the channels in the mode with the aspect ratio closest to 16:9.
+        Defaults to `"row"`.
+    **kwargs : dict, optional
+        Additional keyword arguments to pass to the `stack` or `astack` function.
+
+    Returns
+    -------
+    ndarray
+        The stacked image with the channels of the input image.
+
+    Raises
+    ------
+    ValueError
+        If the input image has invalid shape or the mode is not valid.
     """
 
     # check the image shape
@@ -327,6 +522,57 @@ def stack_channels(image, mode="row", **kwargs):
 
 
 def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask=None):
+    """
+    Insert `source_image` into `target_image` at the specified `position`.
+
+    Parameters
+    ----------
+    target_image : ndarray
+        The target image into which `source_image` will be inserted. Will be
+        copied. Therefore, the original `target_image` will remain unchanged.
+    source_image : ndarray
+        The source image that will be inserted into `target_image`.
+    position : tuple of float or int, optional
+        The position where `source_image` will be inserted, specified as a 2-tuple
+        `(x, y)`. If the position is specified as integers, it is interpreted as
+        an absolute position in pixels. If the position is specified as floats,
+        it is interpreted as a relative position as a fraction of the width and
+        height of `target_image`. Default is `(0, 0)`.
+    anchor : str, optional
+        The anchor point used to align `source_image` with the `position`. The
+        anchor is a 2-character string of the form `[lcr][tcb]`. The first character
+        defines the horizontal anchor (*l*eft, *c*enter, or *r*ight), and the second
+        character defines the vertical anchor (*t*op, *c*enter, or *b*ottom).
+        Default is `"lt"`, i.e., align `source_image` with its top-left corner at
+        the `position`.
+    source_mask : ndarray or float, optional
+        Determines the opacity of `source_image`. If a float is provided, it is
+        interpreted as the opacity of the source image. If it is a mask, it must
+        have the same shape as `source_image` and its values must be in the range
+        [0, 1]. If `source_mask` is `None` (default), `source_image` is fully opaque.
+
+    Returns
+    -------
+    ndarray
+        A copy of `target_image` with `source_image` inserted.
+
+    Raises
+    ------
+    ValueError
+        If `target_image` or `source_image` are not valid images or have different
+        data types.
+        If `source_mask` is not None and has invalid values or an invalid data type.
+        If `position` or `anchor` are not valid.
+
+    Notes
+    -----
+    If `source_image` is a grayscale image and `target_image` is a color image, the
+    former is converted to color before insertion.
+
+    If the region where `source_image` is inserted extends beyond the bounds of
+    `target_image`, the overflowing part is truncated.
+    """
+
     # check argument 'position'
     if not (isinstance(position, (tuple, list)) and (len(position) == 2) and isinstance(position[0], (int, float)) and isinstance(position[1], (int, float))):
         raise ValueError("Argument 'position' must be a 2-tuple (or list) of int (absolute) or float (relative) values")
@@ -431,6 +677,29 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
 
 
 def overlay(target_image, source_image, source_mask=None):
+    """
+    Overlay the source image onto the target image using the specified mask.
+
+    This function is equivalent to using `insert` with arguments `position=(0, 0)`
+    and `anchor="lt"`. Thus, it is best suited for equally-sized source and target images.
+
+    Parameters
+    ----------
+    target_image : numpy.ndarray
+        The target image
+    source_image : numpy.ndarray
+        The source image
+    source_mask : numpy.ndarray or float, optional
+        Determines the opacity of `source_image`. If a float is provided, it is
+        interpreted as the opacity of the source image. If it is a mask, it must
+        have the same shape as `source_image` and its values must be in the range
+        [0, 1]. If `source_mask` is `None` (default), `source_image` is fully opaque.
+
+    Returns
+    -------
+    numpy.ndarray
+        A copy of `target_image` with `source_image` inserted.
+    """
     return insert(target_image=target_image, source_image=source_image, source_mask=source_mask)
 
 
@@ -444,14 +713,16 @@ def overlay_constant(target_image, source_color, source_mask):
     Parameters
     ----------
     target_image : numpy.ndarray
-        The target image with shape `(height, width)` or `(height, width, channel_count)`.
+        The target image
     source_color : tuple
         The color of the constant image as a tuple of values for each channel. For `np.uint8` images, the values range
         between 0 and 255, while for floats the range is between 0.0 and 1.0 (for more details, see
-        `dito.dtype_range()`).
+        `dito.core.dtype_range`).
     source_mask : numpy.ndarray or float
-        A floating-point mask image with shape `(height, width)` or `(height, width, channel_count)` or a scalar float
-        value. For more information, see the documentation for the `dito.insert()` function.
+        Determines the opacity of `source_color`. If a float is provided, it is
+        interpreted as the opacity of the source color. If it is a mask, it must
+        have the same shape as `target_image` and its values must be in the range
+        [0, 1].
 
     Returns
     -------
@@ -465,9 +736,9 @@ def overlay_constant(target_image, source_color, source_mask):
     )
 
 
-####
-#%%% text
-####
+#
+# text
+#
 
 
 class Font():
