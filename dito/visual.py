@@ -742,7 +742,104 @@ def overlay_constant(target_image, source_color, source_mask):
 
 
 class Font():
-    # ANSI escape codes - see https://en.wikipedia.org/wiki/ANSI_escape_code
+    """
+    Base class for font handling.
+
+    It provides ANSI escape codes (special strings that can be inserted into the
+    text) to format text style and color. See https://en.wikipedia.org/wiki/ANSI_escape_code.
+
+    These escape codes work on supported terminals as well as when rendering the
+    text into an image using the functionality within this library.
+
+    Attributes
+    ----------
+    RESET : str
+        ANSI escape code that resets all styles and colors.
+    
+    STYLE_REGULAR : str
+        ANSI escape code that sets the text style to regular (non-bold).
+    STYLE_BOLD : str
+        ANSI escape code that sets the text style to bold.
+    
+    REVERSE_ON : str
+        ANSI escape code that turns on reverse mode (switching foreground and background colors).
+    REVERSE_OFF : str
+        ANSI escape code that turns off reverse mode (switching foreground and background colors).
+    
+    FOREGROUND_DEFAULT : str
+        ANSI escape code that sets the foreground color to the default color.
+    BACKGROUND_DEFAULT : str
+        ANSI escape code that sets the background color to the default color.
+    
+    FOREGROUND_BLACK : str
+        ANSI escape code that sets the foreground color to black.
+    FOREGROUND_RED : str
+        ANSI escape code that sets the foreground color to red.
+    FOREGROUND_GREEN : str
+        ANSI escape code that sets the foreground color to green.
+    FOREGROUND_YELLOW : str
+        ANSI escape code that sets the foreground color to yellow.
+    FOREGROUND_BLUE : str
+        ANSI escape code that sets the foreground color to blue.
+    FOREGROUND_MAGENTA : str
+        ANSI escape code that sets the foreground color to magenta.
+    FOREGROUND_CYAN : str
+        ANSI escape code that sets the foreground color to cyan.
+    FOREGROUND_WHITE : str
+        ANSI escape code that sets the foreground color to white.
+    
+    BACKGROUND_BLACK : str
+        ANSI escape code that sets the background color to black.
+    BACKGROUND_RED : str
+        ANSI escape code that sets the background color to red.
+    BACKGROUND_GREEN : str
+        ANSI escape code that sets the background color to green.
+    BACKGROUND_YELLOW : str
+        ANSI escape code that sets the background color to yellow.
+    BACKGROUND_BLUE : str
+        ANSI escape code that sets the background color to blue.
+    BACKGROUND_MAGENTA : str
+        ANSI escape code that sets the background color to magenta.
+    BACKGROUND_CYAN : str
+        ANSI escape code that sets the background color to cyan.
+    BACKGROUND_WHITE : str
+        ANSI escape code that sets the background color to white.
+    
+    FOREGROUND_BRIGHT_BLACK : str
+        ANSI escape code that sets the foreground color to bright black.
+    FOREGROUND_BRIGHT_RED : str
+        ANSI escape code that sets the foreground color to bright red.
+    FOREGROUND_BRIGHT_GREEN : str
+        ANSI escape code that sets the foreground color to bright green.
+    FOREGROUND_BRIGHT_YELLOW : str
+        ANSI escape code that sets the foreground color to bright yellow.
+    FOREGROUND_BRIGHT_BLUE : str
+        ANSI escape code that sets the foreground color to bright blue.
+    FOREGROUND_BRIGHT_MAGENTA : str
+        ANSI escape code that sets the foreground color to bright magenta.
+    FOREGROUND_BRIGHT_CYAN : str
+        ANSI escape code that sets the foreground color to bright cyan.
+    FOREGROUND_BRIGHT_WHITE : str
+        ANSI escape code that sets the foreground color to bright white.
+    
+    BACKGROUND_BRIGHT_BLACK : str
+        ANSI escape code that sets the background color to bright black.
+    BACKGROUND_BRIGHT_RED : str
+        ANSI escape code that sets the background color to bright red.
+    BACKGROUND_BRIGHT_GREEN : str
+        ANSI escape code that sets the background color to bright green.
+    BACKGROUND_BRIGHT_YELLOW : str
+        ANSI escape code that sets the background color to bright yellow.
+    BACKGROUND_BRIGHT_BLUE : str
+        ANSI escape code that sets the background color to bright blue.
+    BACKGROUND_BRIGHT_MAGENTA : str
+        ANSI escape code that sets the background color to bright magenta.
+    BACKGROUND_BRIGHT_CYAN : str
+        ANSI escape code that sets the background color to bright cyan.
+    BACKGROUND_BRIGHT_WHITE : str
+        ANSI escape code that sets the background color to bright white.
+    """
+
     RESET = "\033[0m"
 
     STYLE_REGULAR = "\033[22m"
@@ -791,7 +888,26 @@ class Font():
     BACKGROUND_BRIGHT_WHITE   = "\033[107m"
 
     @staticmethod
-    def COLOR_BGR(b, g, r, foreground=True):
+    def _COLOR_BGR(b, g, r, foreground=True):
+        """
+        Generate an ANSI escape code for the specified BGR text color.
+
+        Parameters
+        ----------
+        b : int
+            The blue channel of the color. Must be an integer between 0 and 255.
+        g : int
+            The green channel of the color. Must be an integer between 0 and 255.
+        r : int
+            The red channel of the color. Must be an integer between 0 and 255.
+        foreground : bool, optional
+            If `True` (the default), the code is for a foreground color, otherwise it is for a background color.
+
+        Returns
+        -------
+        str
+            The generated ANSI escape code.
+        """
         for value in (b, g, r):
             if not (isinstance(value, int) and (0 <= value <= 255)):
                 raise ValueError("BGR values must be integers in the range [0, 255]")
@@ -799,15 +915,76 @@ class Font():
 
     @classmethod
     def FOREGROUND_BGR(cls, b, g, r):
-        return cls.COLOR_BGR(b=b, g=g, r=r, foreground=True)
+        """
+        Generate an ANSI escape code for the specified BGR text foreground color.
+
+        Parameters
+        ----------
+        b : int
+            The blue channel of the color. Must be an integer between 0 and 255.
+        g : int
+            The green channel of the color. Must be an integer between 0 and 255.
+        r : int
+            The red channel of the color. Must be an integer between 0 and 255.
+
+        Returns
+        -------
+        str
+            The generated ANSI escape code.
+        """
+        return cls._COLOR_BGR(b=b, g=g, r=r, foreground=True)
 
     @classmethod
     def BACKGROUND_BGR(cls, b, g, r):
-        return cls.COLOR_BGR(b=b, g=g, r=r, foreground=False)
+        """
+        Generate an ANSI escape code for the specified BGR text background color.
+
+        Parameters
+        ----------
+        b : int
+            The blue channel of the color. Must be an integer between 0 and 255.
+        g : int
+            The green channel of the color. Must be an integer between 0 and 255.
+        r : int
+            The red channel of the color. Must be an integer between 0 and 255.
+
+        Returns
+        -------
+        str
+            The generated ANSI escape code.
+        """
+        return cls._COLOR_BGR(b=b, g=g, r=r, foreground=False)
 
 
 class MonospaceBitmapFont(Font):
+    """
+    Class for monospace bitmap font handling.
+
+    This class derives from the `Font` class and implements a monospace bitmap font with a fixed character width and
+    height. The font is loaded from a file in dito's own monospace bitmap font format ("df2").
+
+    Attributes
+    ----------
+    filename : str
+        Path to the font file in dito's own monospace bitmap font format ("df2").
+    char_width : int
+        Width of each character in the font.
+    char_height : int
+        Height of each character in the font.
+    char_images : OrderedDict
+        Dictionary containing the character images for the font. The keys are the characters themselves and the values
+        are sub-dictionaries with keys 'regular' and 'bold', each containing the corresponding image as a NumPy array.
+    """
+
     def __init__(self, filename):
+        """
+        Initialize a new `MonospaceBitmapFont` object.
+
+        Parameters
+        ----------
+        filename : str or pathlib.Path
+            Path to the font file in dito's own monospace bitmap font format ('df2').
+        """
         self.filename = filename
         if isinstance(self.filename, pathlib.Path):
             self.filename = str(self.filename)
@@ -815,6 +992,27 @@ class MonospaceBitmapFont(Font):
 
     @classmethod
     def init_from_name(cls, name):
+        """
+        Instantiate a `MonospaceBitmapFont` object from a given font name.
+
+        This method looks up the filename for the given font name in the `dito.data.RESOURCES_FILENAMES` dictionary and
+        returns a new `MonospaceBitmapFont` object initialized with the corresponding filename.
+
+        Parameters
+        ----------
+        name : str
+            Name of the font to be loaded.
+
+        Returns
+        -------
+        MonospaceBitmapFont
+            A new `MonospaceBitmapFont` object initialized with the font file for the given font name.
+
+        Raises
+        ------
+        KeyError
+            If the given font name is unknown.
+        """
         key = "font:{}".format(name)
         try:
             filename = dito.data.RESOURCES_FILENAMES[key]
@@ -829,6 +1027,21 @@ class MonospaceBitmapFont(Font):
 
         For a description of the format, see `load_df2`.
         This method is usually only called when adding new fonts to dito.
+
+        Parameters
+        ----------
+        filename : str or pathlib.Path
+            Path to the file in which to save the font data.
+        char_images_regular : dict
+            Dictionary containing the regular character images. The keys are the characters themselves and the values
+            are numpy arrays of shape `(char_height, char_width)`.
+        char_images_bold : dict
+            Dictionary containing the bold character images. The keys are the characters themselves and the values are
+            numpy arrays of shape `(char_height, char_width)`.
+
+        Returns
+        -------
+        None
         """
         chars = cls.get_supported_chars()
         position_images = []
@@ -841,11 +1054,23 @@ class MonospaceBitmapFont(Font):
     @classmethod
     def load_df2(cls, filename):
         """
-        Load the font from dito's own monospace bitmap font format ('df2').
+        Load the font from dito's own monospace bitmap font format ("df2").
 
-        In principle, it is just a PNG image which contains all ISO-8859-1 (= Latin-1) and some other characters in
-        regular and bold style, stacked horizontally. The regular and bold variants of each character are stacked on top
-        of another, each using a depth of four bit. This saves quite some space (especially when using a PNG optimizer).
+        In principle, it is just a PNG image which contains all ISO-8859-1 (= Latin-1) and some other characters
+        (see `MonospaceBitmapFont.get_supported_char_codes`) in regular and bold style, stacked horizontally.
+        The regular and bold variants of each character are stacked on top of another, each using a depth of four bit.
+        This saves quite some space (especially when using a PNG optimizer).
+
+        Parameters
+        ----------
+        filename : str or pathlib.Path
+            The filename of the DF2 file to load.
+
+        Returns
+        -------
+        Tuple[int, int, Dict[str, Dict[str, numpy.ndarray]]]
+            The font's character width and height and a dictionary of numpy arrays, containing the regular and bold
+            images of each character.
         """
         chars = cls.get_supported_chars()
         char_count = len(chars)
@@ -867,6 +1092,15 @@ class MonospaceBitmapFont(Font):
 
     @staticmethod
     def get_supported_char_codes():
+        """
+        Get the character codes of all characters that are supported by the font.
+
+        Returns
+        -------
+        tuple of int
+            A tuple containing the supported character codes as integers.
+        """
+
         codes = tuple()
 
         # ISO-8859-1 (= Latin-1)
@@ -882,14 +1116,66 @@ class MonospaceBitmapFont(Font):
 
     @classmethod
     def get_supported_chars(cls):
+        """
+        Get all characters that are supported by the font.
+
+        Returns
+        -------
+        tuple of str
+            A tuple of strings representing all supported Unicode characters.
+        """
         codes = cls.get_supported_char_codes()
         return tuple(chr(code) for code in codes)
 
     def get_char_image(self, char, style="regular"):
+        """
+        Get the image of a specific character.
+
+        Parameters
+        ----------
+        char : str
+            The character to retrieve the image for.
+        style : {"regular", "bold"}, optional
+            The font style. If `"regular"`, the normal font style is used. If `"bold"`, the bold font style is used.
+            Defaults to `"regular"`.
+
+        Returns
+        -------
+        numpy.ndarray
+            The image of the specified character, as a grayscale image with shape `(self.char_height, self.char_width)`.
+            The image data is a 2D array of `numpy.uint8` dtype and values in the range [0, 255].
+
+        Notes
+        -----
+        If the character is not supported by the font, it will return the image for the character `"?"`.
+        """
         return self.char_images.get(char, self.char_images["?"]).get(style, "regular")
 
     @staticmethod
     def parse_message(raw_message, initial_style, initial_foreground_color, initial_background_color):
+        """
+        Parses a raw message with escape sequences and returns a dictionary containing the message contents.
+
+        Parameters
+        ----------
+        raw_message : str
+            The raw message with escape sequences to parse.
+        initial_style : str
+            The initial style of the message.
+        initial_foreground_color : tuple of int
+            The initial foreground color of the message, as an BGR tuple of integer values in the range [0, 255].
+        initial_background_color : tuple of int
+            The initial background color of the message, as an BGR tuple of integer values in the range [0, 255].
+
+        Returns
+        -------
+        dict of str to list of any
+            A dictionary containing the parsed message contents, with the following keys:
+            - "lines": A list (rows) of lists (columns) of the individual characters.
+            - "styles": A list (rows) of lists (columns) of the individual character styles.
+            - "foreground_colors": A list (rows) of lists (columns) of the individual character foreground colors as tuples of int.
+            - "background_colors": A list (rows) of lists (columns) of the individual character background colors as tuples of int.
+        """
         raw_lines = raw_message.split("\n")
 
         charss = []
@@ -1032,6 +1318,52 @@ class MonospaceBitmapFont(Font):
         return {"lines": charss, "styles": styless, "foreground_colors": foreground_colorss, "background_colors": background_colorss}
 
     def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, background_as_outline, border_color, border, margin, padding, opacity, alignment, scale, rotation, shrink_to_width):
+        """
+        Render a text message with a specific style and color into an image.
+
+        Parameters:
+        -----------
+        target_image : ndarray
+            The image into which the text message is to be rendered. The original `target_image` is not altered.
+        message : str
+            The text message to be rendered. Can contain ANSI escape codes to set text style and color.
+        position : tuple of int
+            The position at which the text message is to be placed in the target image. See `insert`.
+        anchor : str
+            The anchor position of the text message within the target image. See `insert`.
+        style : dict
+            The initial style of the text message.
+        foreground_color : tuple of int
+            The initial foreground of the text message.
+        background_color : tuple of int or None
+            The initial background color of the text message. If `None`, the background is transparent.
+        background_as_outline : bool
+            If True, the background color will be used as an outline around the text message.
+        border_color : tuple of int
+            The color of the border around the text message.
+        border : int or 4-tuple of int
+            The width of the border (top, right, bottom, left) around the text message.
+        margin : int or 4-tuple of int
+            The margin (top, right, bottom, left) around the text message.
+        padding : int or 2-tuple of int
+            The padding (vertical, horizontal) for the text message.
+        opacity : float or None
+            The opacity in the range [0.0, 1.0] of the text message. A value of `None` means full opacity (i.e., no transparency).
+        alignment : {"left", "center", "right"}
+            The text alignment of each line.
+        scale : float or tuple of int or None
+            The scaling factor or target size of the text. If `None`, apply no scaling.
+        rotation : int or float or None
+            The rotation angle (in degrees, counter-clockwise) of the text message. A value of `None` means no rotation.
+        shrink_to_width : int or None
+            If not `None`, the width of the text will be shrunk to fit the specified width.
+
+        Returns:
+        --------
+        numpy.ndarray
+            The resulting image with the rendered text message.
+        """
+
         # parse message (to get the raw text plus style and color information)
         parse_result = self.parse_message(raw_message=message, initial_style=style, initial_foreground_color=foreground_color, initial_background_color=background_color)
         lines = parse_result["lines"]
@@ -1210,14 +1542,56 @@ class MonospaceBitmapFont(Font):
 
 def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(235, 235, 235), background_color=(45, 45, 45), background_as_outline=False, border_color=(255, 255, 255), border=(0, 0, 0, 0), margin=(0, 0, 0, 0), padding=(0, 0), opacity=1.0, alignment="left", scale=None, rotation=None, shrink_to_width=None):
     """
-    Draws the text `message` into the given `image`.
+    Render a text `message` into `image`.
 
-    The `position` is given as 2D point in relative coordinates (i.e., with
-    coordinate ranges of [0.0, 1.0]). The `anchor` must be given as two letter
-    string, following the pattern `[lcr][tcb]`. It specifies the horizontal
-    and vertical alignment of the text with respect to the given position. The
-    `padding_rel` is given in (possibly non-integer) multiples of the font's
-    baseline height.
+    This function is a wrapper for `MonospaceBitmapFont.render_into_image`.
+
+    Parameters:
+    -----------
+    image : numpy.ndarray
+        The image into which the text message is to be rendered. The original `image` is not altered.
+    message : str
+        The text message to be rendered. Can contain ANSI escape codes to set text style and color.
+    position : tuple of float or tuple of int, optional
+        The position at which the text message is to be placed in the image, given as a 2D point coordinates (x, y).
+        If the coordinates are floats, they are interpreted as fractions of the image size. The default is `(0.0, 0.0)`.
+        See `insert` for more details.
+    anchor : str, optional
+        The anchor position of the text message within the image, given as a two-letter string following the pattern `[lcr][tcb]`.
+        The default is `"lt"`. See `insert` for more details.
+    font : MonospaceBitmapFont or str, optional
+        The font to use for rendering the text message. This can be an instance of `MonospaceBitmapFont` or a string indicating the name of the font. The default is `"source-25"`.
+    style : str, optional
+        The style of the text message. The default is `"regular"`.
+    color : tuple of int, optional
+        The color of the text message in BGR format. The default is `(235, 235, 235)`.
+    background_color : tuple of int or None, optional
+        The background color of the text message in BGR format. If `None`, the background is transparent. The default is `(45, 45, 45)`.
+    background_as_outline : bool, optional
+        If `True`, the `background_color` will be used as an outline around the text message. The default is `False`.
+    border_color : tuple of int, optional
+        The color of the border around the text message in BGR format. The default is `(255, 255, 255)`.
+    border : tuple of int, optional
+        The width of the border (top, right, bottom, left) around the text message. The default is `(0, 0, 0, 0)`.
+    margin : tuple of int, optional
+        The margin (top, right, bottom, left) around the text message. The default is `(0, 0, 0, 0)`.
+    padding : tuple of int, optional
+        The padding (vertical, horizontal) for the text message. The default is `(0, 0)`.
+    opacity : float or None, optional
+        The opacity in the range [0.0, 1.0] of the text message. A value of `None` means full opacity (i.e., no transparency). The default is `1.0`.
+    alignment : {"left", "center", "right"}, optional
+        The text alignment of each line. The default is `"left"`.
+    scale : float or tuple of int or None, optional
+        The scaling factor or target size of the text. If `None`, apply no scaling. The default is `None`.
+    rotation : int or float or None, optional
+        The rotation angle (in degrees, counter-clockwise) of the text message. Default is `None`, meaning no rotation.
+    shrink_to_width : int or None, optional
+        If not `None`, the width of the text will be shrunk to fit the specified width. The default is `None`.
+
+    Returns
+    -------
+    numpy.ndarray
+        The resulting image with the rendered text message.
     """
 
     # get font
@@ -1249,17 +1623,28 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", sty
     )
 
 
-####
-#%%% image display
-####
+#
+# image display
+#
 
 
 def get_screenres(fallback=(1920, 1080)):
     """
     Return the resolution (width, height) of the screen in pixels.
 
+    See http://stackoverflow.com/a/3949983 for more info.
     If it can not be determined, assume 1920x1080.
-    See http://stackoverflow.com/a/3949983 for info.
+
+    Parameters
+    ----------
+    fallback : tuple of int, optional
+        A 2-tuple of integers representing the fallback resolution to use if the actual screen resolution cannot be
+        determined. Default is `(1920, 1080)`.
+
+    Returns
+    -------
+    tuple of int
+        A 2-tuple of integers representing the width and height of the screen resolution in pixels.
     """
 
     try:
@@ -1278,14 +1663,23 @@ def get_screenres(fallback=(1920, 1080)):
 
 def qkeys():
     """
-    Returns a tuple of key codes ('unicode code points', as returned by
-    `ord()` which correspond to key presses indicating the desire to
-    quit (`<ESC>`, `q`).
+    Return a tuple of key codes corresponding to key presses indicating the desire to quit (`<ESC>`, `q`).
 
+    The key codes are "unicode code points", as returned by the Python builtin `ord`.
+
+    Returns
+    -------
+    tuple of int
+        A tuple of two integers corresponding to the key codes of the
+        keys that can be pressed to quit. The first integer corresponds
+        to the ASCII code of the `<ESC>` key, and the second integer
+        corresponds to the ASCII code of the `q` key.
+
+    Examples
+    --------
     >>> qkeys()
     (27, 113)
     """
-
     return (27, ord("q"))
 
 
