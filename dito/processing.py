@@ -1,3 +1,7 @@
+"""
+This submodule provides functionality for basic image processing.
+"""
+
 import math
 import operator
 
