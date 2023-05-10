@@ -1,3 +1,7 @@
+"""
+This submodule provides functionality related to visualizing images.
+"""
+
 import collections
 import math
 import os.path
@@ -1688,7 +1692,25 @@ def prepare_for_display(image, scale=None, normalize_mode=None, normalize_kwargs
     Prepare `image` (or a list or a list of lists of images) for being
     displayed on the screen (or similar purposes).
 
-    Internal function used by `show` and `MultiShow`.
+    This is an internal function used by `show` and `MultiShow`.
+
+    Parameters
+    ----------
+    image : ndarray or tuple of ndarrays or tuple of tuples of ndarrays
+        The image (or list of images or a list of lists of images) to be prepared. If multiple images are given, they are arranged into one image via `stack`.
+    scale : float or tuple of int, optional
+        The scaling factor or target size of the image, see `dito.core.resize`. If `None`, a scale factor is determined automatically.
+    normalize_mode : str or None, optional
+        The normalization mode to be used, see `dito.core.normalize`. If `None`, the image will not be normalized.
+    normalize_kwargs : dict, optional
+        Keyword arguments for the normalization function `dito.core.normalize`.
+    colormap : str or None, optional
+        The colormap to be applied to the image, see `colorize`. If `None`, no colormap will be applied.
+
+    Returns
+    -------
+    ndarray
+        The prepared image, ready to be displayed.
     """
     if isinstance(image, np.ndarray):
         # use image as is
@@ -1722,10 +1744,48 @@ def prepare_for_display(image, scale=None, normalize_mode=None, normalize_kwargs
 
 def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name=DEFAULT_WINDOW_NAME, close_window=False, engine=None, raise_on_qkey=False):
     """
-    Show `image` on the screen.
+    Display the image on the screen.
 
-    If `image` is a list of images or a list of lists of images, they are
-    stacked into one image.
+    Parameters
+    ----------
+    image : ndarray or tuple of ndarrays or tuple of tuples of ndarrays
+        The image (or list of images or a list of lists of images) to be prepared. If multiple images are given, they are arranged into one image via `stack`.
+    wait : int, optional
+        The time in milliseconds to wait after showing the image. If `0`, wait indefinitely (until user key press). Default is `0`.
+    scale : float or tuple of int, optional
+        The scaling factor or target size of the image, see `dito.core.resize`. If `None`, a scale factor is determined automatically.
+    normalize_mode : str or None, optional
+        The normalization mode to be used, see `dito.core.normalize`. If `None`, the image will not be normalized.
+    normalize_kwargs : dict, optional
+        Keyword arguments for the normalization function `dito.core.normalize`.
+    colormap : str or None, optional
+        The colormap to be applied to the image, see `colorize`. If `None`, no colormap will be applied.
+    window_name : str, optional
+        The name of the window in which the image will be displayed. Default is `DEFAULT_WINDOW_NAME`.
+    close_window : bool, optional
+        If `True`, close the window after the image is displayed. Default is `False`.
+    engine : str, optional
+        The backend to use for displaying the image. Possible backends are
+        - OpenCV (None, `"cv2"`),
+        - Matplotlib (`"matplotlib"`, `"plt"`),
+        - Jupyter (`"ipython"`, `"jupyter"`), and
+        - PyGame (`"pygame"`).
+        Default is `None`, which means OpenCV.
+    raise_on_qkey : bool, optional
+        If `True`, raise a `dito.exceptions.QkeyInterrupt` exception if the user presses a "quit" key (see `qkeys`)
+        during the display. Default is `False`.
+
+    Returns
+    -------
+    int
+        The key code of the last key pressed during the display, or `-1` if no key was pressed.
+
+    Raises
+    ------
+    RuntimeError
+        If an unsupported `engine` is selected.
+    dito.exceptions.QkeyInterrupt
+        If `raise_on_qkey` is `True` and the user presses a "quit" key during the display.
     """
 
     image_show = prepare_for_display(image=image, scale=scale, normalize_mode=normalize_mode, normalize_kwargs=normalize_kwargs, colormap=colormap)
@@ -1816,7 +1876,27 @@ class MultiShow():
 
     It keeps all images that have been shown and can re-show them interactively.
     """
+
     def __init__(self, window_name="dito.MultiShow", close_window=False, engine="cv2", save_dir=None):
+        """
+        Initializes a new MultiShow object.
+
+        Parameters
+        ----------
+        window_name : str, optional
+            Name of the window used to display the images. The default value is `"dito.MultiShow"`.
+        close_window : bool, optional
+            Whether the window should be closed after the last image has been displayed. The default value is `False`.
+        engine : str, optional
+            Name of the image display engine to use, see `show`. The default value is `"cv2"`.
+        save_dir : str or None, optional
+            Directory where images should be saved. If `None` (default), a temporary directory will be created when the user requests to save the images.
+
+        Returns
+        -------
+        MultiShow
+            A new MultiShow object.
+        """
         self.window_name = window_name
         self.close_window = close_window
         self.engine = engine
@@ -1824,6 +1904,20 @@ class MultiShow():
         self.images = []
 
     def save(self, n_image, verbose=True):
+        """
+        Save the `n_image`-th image to a file.
+
+        Parameters
+        ----------
+        n_image : int
+            Index of the image to save.
+        verbose : bool, optional
+            Whether to print information about the saved file. The default value is `True`.
+
+        Returns
+        -------
+        None
+        """
         if self.save_dir is None:
             self.save_dir = dito.utils.get_temp_dir(prefix="dito.MultiShow.{}.".format(dito.utils.now_str())).name
         filename = os.path.join(self.save_dir, "{:>08d}.png".format(n_image + 1))
@@ -1832,19 +1926,66 @@ class MultiShow():
             print("Saved image {}/{} to file '{}'".format(n_image + 1, len(self.images), filename))
 
     def save_all(self, **kwargs):
+        """
+        Save all images to files.
+
+        Parameters
+        ----------
+        **kwargs : dict, optional
+            Additional keyword arguments to pass to the `MultiShow.save` method.
+
+        Returns
+        -------
+        None
+        """
         for n_image in range(len(self.images)):
             self.save(n_image=n_image, **kwargs)
 
     def _show(self, image, wait, engine):
         """
         Internal method used to actually show an image on the screen.
+
+        Parameters
+        ----------
+        image : numpy.ndarray
+            Image to show.
+        wait : int
+            Time to wait after showing the image (in milliseconds), see `show`.
+        engine : str
+            Name of the image display engine to use, see `show`.
+
+        Returns
+        -------
+        int
+            Key code of the last key pressed, or -1 if no key was pressed.
+
+        See Also
+        --------
+        `show` : Function used to display the image.
         """
         return show(image=image, wait=wait, scale=1.0, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name=self.window_name, close_window=self.close_window, engine=engine)
 
     def show(self, image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, keep=True, hide=False):
         """
-        Shows image on the screen, just as `dito.show` would. However, the
-        image is also stored internally, and can be re-shown anytime.
+        Show `image` on the screen, just as `dito.visual.show` would.
+
+        In addition, the image is also stored internally, and can be re-shown anytime.
+
+        Parameters
+        ----------
+        keep : bool, optional
+            If `True` (the default), store the image internally so that it can be re-shown later.
+        hide : bool, optional
+            If `True`, do not show the image, but store it anyway (if `keep=True`). Defaults to `False`.
+
+        Returns
+        -------
+        int
+            Key code of the last key pressed, or -1 if no key was pressed. See `MultiShow._show`.
+
+        See Also
+        --------
+        `dito.visual.show` : For a description of all other parameters.
         """
         image_show = prepare_for_display(image=image, scale=scale, normalize_mode=normalize_mode, normalize_kwargs=normalize_kwargs, colormap=colormap)
         if keep:
@@ -1856,13 +1997,34 @@ class MultiShow():
 
     def reshow(self, n_image, wait=0):
         """
-        Re-show specific image.
+        Re-show a specific image from the stored images.
+
+        Parameters
+        ----------
+        n_image : int
+            Index of the image to be re-shown.
+        wait : int, optional
+            Delay in milliseconds after showing the image (default is `0`, meaning to wait until keypress, see `dito.visual.show`).
+
+        Returns
+        -------
+        int
+            Key code of the last key pressed, or -1 if no key was pressed. See `MultiShow._show`.
         """
         return self._show(image=self.images[n_image], wait=wait, engine=self.engine)
 
     def reshow_interactive(self):
         """
-        Re-show all images interactively.
+        Re-show all stored images of this `MultiShow` instance interactively.
+
+        Displays all images one by one, allowing the user to interactively
+        navigate between the images using the following keys:
+        - `+`: show the next image
+        - `-`: show the previous image
+        - ` ` (space): toggle overlay displaying the image index
+        - `s`: save the current image to a file
+        - `a`: save all images to files
+        - `q` or `ESC`: quit the interactive mode
         """
         image_count = len(self.images)
         if image_count == 0:
