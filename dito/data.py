@@ -372,13 +372,6 @@ class DitoTestImageGeneratorV1():
     * OpenCV checkerboard pattern for possible automated detection
     * color wheel for color mapping assessment
 
-    Parameters
-    ----------
-    size : tuple
-        The size (width, height) of the image to be generated.
-    dtype : dtype
-        The data type of the image to be generated.
-
     Attributes
     ----------
     image : numpy.ndarray
@@ -386,6 +379,17 @@ class DitoTestImageGeneratorV1():
     """
 
     def __init__(self, size, dtype):
+        """
+        Create an instance of the class `DitoTestImageGeneratorV1`.
+
+        Parameters
+        ----------
+        size : tuple
+            The size (width, height) of the image to be generated.
+        dtype : dtype
+            The data type of the image to be generated.
+        """
+
         # settings
         self.grid_size = 16
         self.ruler_size = 16
@@ -426,8 +430,18 @@ class DitoTestImageGeneratorV1():
 
     def adapt_color_for_dtype(self, color):
         """
-        Map a uint8 color (range [0, 255]) to the correct range of the dtype of
-        this image.
+        Internal helper function.
+
+        Map an `numpy.uint8` color (range `[0, 255]`) to the correct range of
+        the dtype of this image.
+
+        Parameters
+        ----------
+        color : int or tuple of ints
+
+        Returns
+        -------
+        int or tuple of
         """
         try:
             len(color)
@@ -455,13 +469,43 @@ class DitoTestImageGeneratorV1():
             return color
 
     def calculate_grid_parameters(self):
+        """
+        Internal helper function.
+
+        Calculate offsets and other related properties of the grid to be drawn into the image.
+
+        Returns
+        -------
+        tuple of tuples of ints
+            Grid properties (grid offset, inner grid offset, inner grid count).
+        """
         grid_offset = [(self.size[n_dim] % (2 * self.grid_size)) // 2 for n_dim in range(2)]
         grid_inner_offset = [grid_offset[n_dim] + self.grid_size if self.ruler_size > grid_offset[n_dim] else grid_offset[n_dim] for n_dim in range(2)]
         grid_inner_count = [(self.size[n_dim] - 2 * grid_offset[n_dim]) // self.grid_size - 2 if self.ruler_size > grid_offset[n_dim] else (self.size[n_dim] - 2 * grid_offset[n_dim]) // self.grid_size for n_dim in range(2)]
         return (grid_offset, grid_inner_offset, grid_inner_count)
 
     def get_grid_coords(self, index_x, index_y):
-        # negative values wrap around from the end, just like normal indexing
+        """
+        Internal helper function.
+
+        Map grid coordinates `(index_x, index_y)` to image pixel coordinates `(x, y)`.
+
+        Parameters
+        ----------
+        index_x : int
+            Grid x coordinate.
+        index_y : int
+            Grid y coordinate.
+
+        Returns
+        -------
+        tuple of int
+            Point `(x, y)` in image coordinates.
+
+        Note
+        ----
+        Negative values wrap around from the end, just like for normal indexing.
+        """
         if index_x < 0:
             index_x = index_x % self.grid_inner_count[0]
         if index_y < 0:
@@ -469,6 +513,18 @@ class DitoTestImageGeneratorV1():
         return [self.grid_inner_offset[n_dim] + [index_x, index_y][n_dim] * self.grid_size for n_dim in range(2)]
 
     def generate_base_image(self):
+        """
+        Internal helper function.
+
+        Generate the base of the test image to be created. It contains slopes
+        in the blue (along the y axis) and green (along the x axis) channels,
+        and a regular grid in the red channel.
+
+        Returns
+        -------
+        numpy.ndimage
+            The base image.
+        """
         image_x = xslope(height=self.size[1], width=self.size[0], dtype=self.dtype)
         image_y = yslope(height=self.size[1], width=self.size[0], dtype=self.dtype)
 
@@ -484,10 +540,28 @@ class DitoTestImageGeneratorV1():
         return image
 
     def draw_center_crosshair(self):
+        """
+        Internal helper function.
+
+        Draw a crosshair at the center of the test image `self.image`.
+
+        Returns
+        -------
+        None
+        """
         for radius in (0, 2, 5, 9, 14):
             dito.draw.draw_symbol(image=self.image, symbol="square", position=self.image_center, radius=radius, color=self.adapt_color_for_dtype(self.line_color), thickness=1, line_type=cv2.LINE_8)
 
     def draw_rulers(self):
+        """
+        Internal helper function.
+
+        Draw rulers into the test image `self.image`.
+
+        Returns
+        -------
+        None
+        """
         for n_dim in range(2):
             for n_index in range(0, self.image.shape[n_dim], 2):
                 for n_channel in range(3):
@@ -502,6 +576,15 @@ class DitoTestImageGeneratorV1():
                     self.image[tuple(indices)] = self.adapt_color_for_dtype(self.line_color[n_channel])
 
     def draw_corner_identifier_texts(self):
+        """
+        Internal helper function.
+
+        Draw corner identifiers into the test image `self.image`.
+
+        Returns
+        -------
+        None
+        """
         text_kwargs = {"anchor": "lt", "font": "terminus-14", "style": "bold", "background_color": None, "background_as_outline": False}
         (text_x_left, text_y_top) = [int(coord + 1) for coord in self.get_grid_coords(0, 0)]
         (text_x_right, text_y_bottom) = [int(coord + 1) for coord in self.get_grid_coords(-1, -1)]
@@ -511,6 +594,16 @@ class DitoTestImageGeneratorV1():
         self.image = dito.visual.text(image=self.image, message="BR", position=(text_x_right, text_y_bottom), **text_kwargs)
 
     def draw_gray_slopes(self):
+        """
+        Internal helper function.
+
+        Draw gray scale slopes into the test image `self.image`.
+
+        Returns
+        -------
+        None
+        """
+
         slopes = [
             {"coord_offset_from": (1, 0), "coord_offset_to": (-1, 1), "direction": "lr"},
             {"coord_offset_from": (1, -1), "coord_offset_to": (-1, self.grid_inner_count[1]), "direction": "rl"},
@@ -543,6 +636,16 @@ class DitoTestImageGeneratorV1():
                 self.image[(y_from + 1):(y_to + 1), (x_from + 1):x_to, :] = dito.core.as_color(image=slope_image)
 
     def draw_color_areas(self):
+        """
+        Internal helper function.
+
+        Draw areas of fixed color into the test image `self.image`.
+
+        Returns
+        -------
+        None
+        """
+
         areas = [
             {"color": (255, 0, 0), "text_color": (0, 0, 0), "text": "B", "coord_offset": (-1, -2)},
             {"color": (255, 255, 0), "text_color": (0, 0, 0), "text": "C", "coord_offset": (0, -2)},
@@ -577,6 +680,15 @@ class DitoTestImageGeneratorV1():
             self.image = dito.visual.text(image=self.image, message="N", position=(x + 1 + self.grid_size // 4, y + 2), color=color, **text_kwargs)
 
     def draw_rotation_indicators(self):
+        """
+        Internal helper function.
+
+        Draw rotation indicators into the test image `self.image`.
+
+        Returns
+        -------
+        None
+        """
         for (n_resolution, resolution) in enumerate([5.0, 1.0]):
             sign = (-1)**n_resolution
             (x0, y0) = self.get_grid_coords(self.grid_inner_count[0] // 2, self.grid_inner_count[1] // 2 - 2 + 4 * n_resolution)
@@ -592,6 +704,15 @@ class DitoTestImageGeneratorV1():
                 cv2.line(img=self.image, pt1=dito.core.tir(x_from, y_from), pt2=dito.core.tir(x_to, y_to), color=self.adapt_color_for_dtype(self.line_color), thickness=1, lineType=cv2.LINE_AA)
 
     def draw_checkerboard_patterns(self):
+        """
+        Internal helper function.
+
+        Draw checkerboard patterns into the test image `self.image`.
+
+        Returns
+        -------
+        None
+        """
         for side in (0, 1):
             for (n_resolution, resolution) in enumerate([1, 3, 5, 7]):
                 (x, y) = self.get_grid_coords(self.grid_inner_count[0] // 2 - 3 + 5 * side, self.grid_inner_count[1] // 2 - 2 + n_resolution)
@@ -605,9 +726,9 @@ def dito_test_image_v1(size=(384, 256), dtype=np.uint8):
     Parameters
     ----------
     size : tuple of int, optional
-        The size (width, height) of the image to generate. Default is (384, 256).
+        The size (width, height) of the image to generate. Default is `(384, 256)`.
     dtype : data type, optional
-        The data type of the image. Default is np.uint8.
+        The data type of the image. Default is `numpy.uint8`.
 
     Returns
     -------
