@@ -1,6 +1,10 @@
 """
 `dito` is yet another toolbox for the daily work with OpenCV under Python.
 
+Code: https://github.com/dhaase-de/dito
+PyPI: https://pypi.org/project/dito/
+Documentation: https://dhaase-de.github.io/dito/dito.html
+
 It provides convenience wrappers for frequently used image-related
 functionalities in OpenCV and NumPy, as well as additional functionality built
 on top of them.
@@ -10,9 +14,9 @@ The module follows the data conventions of OpenCV under Python, namely:
   (grayscale) or `(?, ?, 3)` (color)
 * the color channel order is BGR
 * the value range for float images is `(0.0, 1.0)`
-* point coordinates are given in (x, y[, z]) order
+* point coordinates are given in `(x, y[, z])` order
 * images sizes (not shapes--these have the same meaning as in NumPy) are given
-  in (width, height) order
+  in `(width, height)` order
 * arguments such as `line_type`, `interpolation`, etc. expect values defined by
   OpenCV (e.g., `cv2.LINE_AA`, `cv2.INTER_LINEAR`, etc.)
 
