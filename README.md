@@ -61,6 +61,11 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.10.0 (2023-05-12) - Documentation Update ###
+* added documentation framework based on [pdoc](https://pdoc.dev/)
+* added/revised docstrings for all objects
+* minor improvements and fixes
+
 ### v2.9.0 (2023-04-19) - QoL Update II ###
 * added convenience image difference functions `clipped_diff`, `abs_diff`, `shifted_diff`
 * added convenience constant color overlay function `overlay_constant`
