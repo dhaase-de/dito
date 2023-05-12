@@ -11,7 +11,6 @@ Status
 
 [![PyPI Version](https://img.shields.io/pypi/v/dito.svg)](https://pypi.python.org/pypi/dito/#files)
 [![GitHub last commit](https://img.shields.io/github/last-commit/dhaase-de/dito)](https://github.com/dhaase-de/dito/commits/main)
-[![GitHub commits since tagged version](https://img.shields.io/github/commits-since/dhaase-de/dito/latest/main)](https://github.com/dhaase-de/dito/commits/main)
 [![Tests (subset)](https://github.com/dhaase-de/dito/actions/workflows/tests-subset.yml/badge.svg)](https://github.com/dhaase-de/dito/actions/workflows/tests-subset.yml)
 [![Tests (full)](https://github.com/dhaase-de/dito/actions/workflows/tests-full.yml/badge.svg)](https://github.com/dhaase-de/dito/actions/workflows/tests-full.yml)
 [![PyPI Python Versions](https://img.shields.io/pypi/pyversions/dito.svg)](https://pypi.python.org/pypi/dito/)
