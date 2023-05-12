@@ -1,9 +1,9 @@
 """
 `dito` is yet another toolbox for the daily work with OpenCV under Python.
 
-Code: https://github.com/dhaase-de/dito
-PyPI: https://pypi.org/project/dito/
-Documentation: https://dhaase-de.github.io/dito/dito.html
+* Code: https://github.com/dhaase-de/dito
+* PyPI: https://pypi.org/project/dito/
+* Documentation: https://dhaase-de.github.io/dito/dito.html
 
 It provides convenience wrappers for frequently used image-related
 functionalities in OpenCV and NumPy, as well as additional functionality built
