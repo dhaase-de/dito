@@ -40,6 +40,7 @@ def info(image, extended=False, minimal=False):
     - standard deviation of all values
     - minimum value
     - maximum value
+    - SHA-512 hash value (first eight hex digits)
 
     Parameters
     ----------
@@ -80,6 +81,7 @@ def info(image, extended=False, minimal=False):
         result["3rd quartile"] = np.percentile(image, 75.0) if image.size > 0 else np.nan
     if not minimal:
         result["max"] = np.max(image) if image.size > 0 else np.nan
+        result["hash"] = hash_image(image=image, cutoff_position=8, return_hex=True)
     return result
 
 

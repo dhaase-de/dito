@@ -775,13 +775,14 @@ class info_Tests(TestCase):
     def test_info__noargs(self):
         info = dito.info(self.image)
         self.assertIsInstance(info, collections.OrderedDict)
-        self.assertEqual(len(info.keys()), 6)
+        self.assertEqual(len(info.keys()), 7)
         self.assertEqual(info["shape"], (576, 768, 3))
         self.assertEqual(info["dtype"], np.uint8)
+        self.assertEqual(info["hash"], "265ea068")
 
     def test_info__extended(self):
         info = dito.info(self.image, extended=True)
-        self.assertEqual(len(info.keys()), 10)
+        self.assertEqual(len(info.keys()), 11)
         self.assertEqual(info["shape"], (576, 768, 3))
         self.assertEqual(info["dtype"], np.uint8)
         self.assertAlmostEqual(info["mean"], 121.3680261682581)
@@ -789,6 +790,7 @@ class info_Tests(TestCase):
         self.assertEqual(info["min"], 0)
         self.assertAlmostEqual(info["3rd quartile"], 191.0)
         self.assertEqual(info["max"], 255)
+        self.assertEqual(info["hash"], "265ea068")
 
     def test_info__minimal(self):
         info = dito.info(self.image, minimal=True)
@@ -811,7 +813,7 @@ class info_Tests(TestCase):
         self.assertEqual(info["dtype"], image.dtype)
 
         for (key, value) in info.items():
-            if key not in ("size", "shape", "dtype"):
+            if key not in ("size", "shape", "dtype", "hash"):
                 self.assertTrue(np.isnan(value))
 
 
