@@ -3,6 +3,8 @@ This submodule provides functionality for inspecting images and their properties
 """
 
 import collections
+import hashlib
+import io
 import pathlib
 
 import cv2
@@ -10,6 +12,21 @@ import numpy as np
 
 import dito.core
 import dito.utils
+
+
+__all__ = [
+    "info",
+    "pinfo",
+    "hist",
+    "phist",
+    "hash_readable",
+    "hash_bytes",
+    "hash_file",
+    "hash_image",
+    "hash_image_any_row_order",
+    "hash_image_any_col_order",
+    "hash_image_any_pixel_order",
+]
 
 
 def info(image, extended=False, minimal=False):
@@ -201,3 +218,204 @@ def phist(image, bin_count=25, height=8, bar_symbol="#", background_symbol=" ", 
             col_strs.append(col_str)
         print("|" + col_sep.join(col_strs))
     print("+" + "-" * ((bin_count - 1) * (1 + len(col_sep)) + 1) + ">")
+
+
+#
+# hashing
+#
+
+
+def hash_readable(readable, cutoff_position=None, return_hex=True):
+    """
+    Calculate the SHA-512 hash value of a readable object.
+
+    Parameters:
+    -----------
+    readable : file-like object
+        The readable object for which to calculate the hash value. It must implement the `read` method which returns a
+        `bytes` object.
+    cutoff_position : int or None, optional
+        The position at which to cut off the hash value. If `None`, the full hash value is returned. Default is `None`.
+    return_hex : bool, optional
+        If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
+        `True`.
+
+    Returns:
+    --------
+    str or bytes
+        The hash value of the readable object.
+    """
+
+    hash_ = hashlib.sha512()
+
+    while True:
+        chunk = readable.read(hash_.block_size)
+        if len(chunk) > 0:
+            hash_.update(chunk)
+        else:
+            break
+
+    # get hash value
+    if return_hex:
+        digest = hash_.hexdigest()
+    else:
+        digest = hash_.digest()
+
+    # apply cutoff (if it is None, this returns the full string)
+    return digest[:cutoff_position]
+
+
+def hash_bytes(bytes_, cutoff_position=None, return_hex=True):
+    """
+    Calculate the SHA-512 hash value of a `bytes` object.
+
+    Parameters:
+    -----------
+    bytes_ : bytes
+        The bytes object for which to calculate the hash value.
+    cutoff_position : int or None, optional
+        The position at which to cut off the hash value. If `None`, the full hash value is returned. Default is `None`.
+    return_hex : bool, optional
+        If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
+        `True`.
+
+    Returns:
+    --------
+    str or bytes
+        The hash value of the `bytes` object.
+    """
+    return hash_readable(readable=io.BytesIO(initial_bytes=bytes_), cutoff_position=cutoff_position, return_hex=return_hex)
+
+
+def hash_file(path, cutoff_position=None, return_hex=True):
+    """
+    Calculate the SHA-512 hash value of a file.
+
+    Parameters:
+    -----------
+    path : str
+        The path to the file for which to calculate the hash value.
+    cutoff_position : int or None, optional
+        The position at which to cut off the hash value. If `None`, the full hash value is returned. Default is `None`.
+    return_hex : bool, optional
+        If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
+        `True`.
+
+    Returns:
+    --------
+    str or bytes
+        The hash value of the file.
+    """
+    with open(path, "rb") as file:
+        return hash_readable(readable=file, cutoff_position=cutoff_position, return_hex=return_hex)
+
+
+def hash_image(image, cutoff_position=None, return_hex=True):
+    """
+    Calculate the SHA-512 hash value of an image.
+
+    In addition to the image's raw byte data, the image shape and dtype also influence the hash value.
+
+    Parameters:
+    -----------
+    image : numpy.ndarray
+        The image for which to calculate the hash value.
+    cutoff_position : int or None, optional
+        The position at which to cut off the hash value. If `None`, the full hash value is returned. Default is `None`.
+    return_hex : bool, optional
+        If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
+        `True`.
+
+    Returns:
+    --------
+    str or bytes
+        The hash value of the image.
+    """
+    bytes_ = io.BytesIO(initial_bytes=image.tobytes())
+    bytes_.write(str(image.shape).encode("utf-8"))
+    bytes_.write(str(image.dtype).encode("utf-8"))
+    bytes_.seek(0)
+    return hash_readable(bytes_, cutoff_position=cutoff_position, return_hex=return_hex)
+
+
+def hash_image_any_row_order(image, cutoff_position=None, return_hex=True):
+    """
+    Calculate the SHA-512 hash value of an image which is invariant regarding the order of the rows.
+
+    Even if the hash value is invariant to the order of the rows: the column order, image shape, and image dtype do
+    influence the hash value.
+
+    Parameters:
+    -----------
+    image : numpy.ndarray
+        The image for which to calculate the hash value.
+    cutoff_position : int or None, optional
+        The position at which to cut off the hash value. If `None`, the full hash value is returned. Default is `None`.
+    return_hex : bool, optional
+        If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
+        `True`.
+
+    Returns:
+    --------
+    str or bytes
+        The row-order-invariant hash value of the image.
+    """
+    row_hashes = [hash_image(image=image[n_row, ...], cutoff_position=None, return_hex=False) for n_row in range(image.shape[0])]
+    row_hashes = sorted(row_hashes)
+    return hash_bytes(bytes_=b"".join(row_hashes), cutoff_position=cutoff_position, return_hex=return_hex)
+
+
+def hash_image_any_col_order(image, cutoff_position=None, return_hex=True):
+    """
+    Calculate the SHA-512 hash value of an image which is invariant regarding the order of the columns.
+
+    Even if the hash value is invariant to the order of the columns: the row order, image shape, and image dtype do
+    influence the hash value.
+
+    Parameters:
+    -----------
+    image : numpy.ndarray
+        The image for which to calculate the hash value.
+    cutoff_position : int or None, optional
+        The position at which to cut off the hash value. If `None`, the full hash value is returned. Default is `None`.
+    return_hex : bool, optional
+        If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
+        `True`.
+
+    Returns:
+    --------
+    str or bytes
+        The column-order-invariant hash value of the image.
+    """
+    col_hashes = [hash_image(image=image[:, n_col, ...], cutoff_position=None, return_hex=False) for n_col in range(image.shape[1])]
+    col_hashes = sorted(col_hashes)
+    return hash_bytes(bytes_=b"".join(col_hashes), cutoff_position=cutoff_position, return_hex=return_hex)
+
+
+def hash_image_any_pixel_order(image, cutoff_position=None, return_hex=True):
+    """
+    Calculate the SHA-512 hash value of an image which is invariant regarding the order of the pixels.
+
+    Even if the hash value is invariant to the order of the pixels: the image shape and dtype do influence the hash
+    value.
+
+    Parameters:
+    -----------
+    image : numpy.ndarray
+        The image for which to calculate the hash value.
+    cutoff_position : int or None, optional
+        The position at which to cut off the hash value. If `None`, the full hash value is returned. Default is `None`.
+    return_hex : bool, optional
+        If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
+        `True`.
+
+    Returns:
+    --------
+    str or bytes
+        The row-order-invariant hash value of the image.
+    """
+    image_sorted = image.copy()
+    image_sorted.shape = (-1,)
+    image_sorted = np.sort(image_sorted)
+    image_sorted.shape = image.shape
+    return hash_image(image=image_sorted, cutoff_position=cutoff_position, return_hex=return_hex)

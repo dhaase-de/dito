@@ -629,6 +629,124 @@ class get_colormap_Tests(TestCase):
         self.assertRaises(ValueError, lambda: dito.get_colormap("__!?-non-existing_colormap-name-!?__"))
 
 
+class hash_bytes_Tests(TestCase):
+    def test_hash_bytes_sha512_test_vectors(self):
+        digest = dito.hash_bytes(bytes_=b"", cutoff_position=None, return_hex=True)
+        self.assertEqual(digest, "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e")
+
+        digest = dito.hash_bytes(bytes_=b"abc", cutoff_position=None, return_hex=True)
+        self.assertEqual(digest, "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f")
+
+    def test_hash_bytes_cutoff_positions(self):
+        expected_digest = "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f"
+
+        digest = dito.hash_bytes(bytes_=b"abc", cutoff_position=None, return_hex=True)
+        self.assertEqual(digest, expected_digest)
+
+        digest = dito.hash_bytes(bytes_=b"abc", cutoff_position=0, return_hex=True)
+        self.assertEqual(digest, "")
+
+        digest = dito.hash_bytes(bytes_=b"abc", cutoff_position=1, return_hex=True)
+        self.assertEqual(digest, "d")
+
+        digest = dito.hash_bytes(bytes_=b"abc", cutoff_position=8, return_hex=True)
+        self.assertEqual(digest, expected_digest[:8])
+
+        digest = dito.hash_bytes(bytes_=b"abc", cutoff_position=-126, return_hex=True)
+        self.assertEqual(digest, expected_digest[:2])
+
+    def test_hash_bytes_no_hex(self):
+        expected_digest = "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f"
+
+        digest = dito.hash_bytes(bytes_=b"abc", cutoff_position=None, return_hex=False)
+        self.assertEqual(digest, bytes.fromhex(expected_digest))
+
+        digest = dito.hash_bytes(bytes_=b"abc", cutoff_position=8, return_hex=False)
+        self.assertEqual(digest, bytes.fromhex(expected_digest)[:8])
+
+
+class hash_file_Tests(TestCase):
+    def test_hash_file_pm5544(self):
+        path = dito.RESOURCES_FILENAMES["image:PM5544"]
+        digest = dito.hash_file(path=path, cutoff_position=None, return_hex=True)
+        expected_digest = "293947fa7b569f8bb91caab5e24aacda5f6378215af07c3c7031418b30a6a5180680141706887042c57b281335ebbd038bdd95f81417bff4920a7247979b1f52"
+        self.assertEqual(digest, expected_digest)
+
+
+class hash_image_Tests(TestCase):
+    def setUp(self):
+        self.image = dito.pm5544()
+
+    def test_hash_image_reference(self):
+        hash_ = dito.hash_image(image=self.image, cutoff_position=None, return_hex=True)
+        self.assertEqual(hash_, "265ea0683876d4b042854f1c129a12b1601aab1376ba8c55b97dd20020d1ee54e2da55a3bd78a53a838b4eadfe6898d069c9862a4185a135923c855ba0944aed")
+
+    def test_hash_image_shape_dependence(self):
+        image = self.image.copy()
+        hash_original = dito.hash_image(image=image)
+
+        image.shape = (1, -1)
+        hash_flat = dito.hash_image(image=image)
+
+        self.assertNotEqual(hash_original, hash_flat)
+
+    def test_hash_image_dtype_dependence(self):
+        image_empty_uint8 = np.zeros(shape=(0,), dtype=np.uint8)
+        hash_empty_uint8 = dito.hash_image(image=image_empty_uint8)
+
+        image_empty_float32 = image_empty_uint8.astype(np.float32)
+        hash_empty_float32 = dito.hash_image(image=image_empty_float32)
+
+        self.assertNotEqual(hash_empty_uint8, hash_empty_float32)
+
+
+class hash_image_any_row_order_Tests(TestCase):
+    def test_hash_image_any_row_order_reference(self):
+        image = dito.pm5544()
+        image_flip_ud = image[::-1, ...].copy()
+
+        digest = dito.hash_image(image=image, cutoff_position=None, return_hex=True)
+        digest_flip_ud = dito.hash_image(image=image_flip_ud, cutoff_position=None, return_hex=True)
+
+        digest_any_row_order = dito.hash_image_any_row_order(image=image, cutoff_position=None, return_hex=True)
+        digest_any_row_order_flip_ud = dito.hash_image_any_row_order(image=image_flip_ud, cutoff_position=None, return_hex=True)
+
+        self.assertNotEqual(digest, digest_flip_ud)
+        self.assertEqual(digest_any_row_order, digest_any_row_order_flip_ud)
+
+
+class hash_image_any_col_order_Tests(TestCase):
+    def test_hash_image_any_col_order_reference(self):
+        image = dito.pm5544()
+        image_flip_lr = image[:, ::-1, ...].copy()
+
+        digest = dito.hash_image(image=image, cutoff_position=None, return_hex=True)
+        digest_flip_lr = dito.hash_image(image=image_flip_lr, cutoff_position=None, return_hex=True)
+
+        digest_any_col_order = dito.hash_image_any_col_order(image=image, cutoff_position=None, return_hex=True)
+        digest_any_col_order_flip_lr = dito.hash_image_any_col_order(image=image_flip_lr, cutoff_position=None, return_hex=True)
+
+        self.assertNotEqual(digest, digest_flip_lr)
+        self.assertEqual(digest_any_col_order, digest_any_col_order_flip_lr)
+
+
+class hash_image_any_pixel_order_Tests(TestCase):
+    def test_hash_image_any_pixel_order_reference(self):
+        image = dito.pm5544()
+        image_shuffled = image.copy()
+        np.random.default_rng(seed=123).shuffle(x=image_shuffled, axis=0)
+        np.random.default_rng(seed=456).shuffle(x=image_shuffled, axis=1)
+
+        digest = dito.hash_image(image=image, cutoff_position=None, return_hex=True)
+        digest_shuffled = dito.hash_image(image=image_shuffled, cutoff_position=None, return_hex=True)
+
+        digest_any_pixel_order = dito.hash_image_any_pixel_order(image=image, cutoff_position=None, return_hex=True)
+        digest_any_pixel_order_shuffled = dito.hash_image_any_pixel_order(image=image_shuffled, cutoff_position=None, return_hex=True)
+
+        self.assertNotEqual(digest, digest_shuffled)
+        self.assertEqual(digest_any_pixel_order, digest_any_pixel_order_shuffled)
+
+
 class human_bytes_Tests(TestCase):
     def test_human_bytes_exact(self):
         cases = [
