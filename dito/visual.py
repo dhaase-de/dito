@@ -1325,8 +1325,8 @@ class MonospaceBitmapFont(Font):
         """
         Render a text message with a specific style and color into an image.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         target_image : ndarray
             The image into which the text message is to be rendered. The original `target_image` is not altered.
         message : str
@@ -1362,8 +1362,8 @@ class MonospaceBitmapFont(Font):
         shrink_to_width : int or None
             If not `None`, the width of the text will be shrunk to fit the specified width.
 
-        Returns:
-        --------
+        Returns
+        -------
         numpy.ndarray
             The resulting image with the rendered text message.
         """

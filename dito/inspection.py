@@ -231,8 +231,8 @@ def hash_readable(readable, cutoff_position=None, return_hex=True):
     """
     Calculate the SHA-512 hash value of a readable object.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     readable : file-like object
         The readable object for which to calculate the hash value. It must implement the `read` method which returns a
         `bytes` object.
@@ -242,8 +242,8 @@ def hash_readable(readable, cutoff_position=None, return_hex=True):
         If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
         `True`.
 
-    Returns:
-    --------
+    Returns
+    -------
     str or bytes
         The hash value of the readable object.
     """
@@ -271,8 +271,8 @@ def hash_bytes(bytes_, cutoff_position=None, return_hex=True):
     """
     Calculate the SHA-512 hash value of a `bytes` object.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     bytes_ : bytes
         The bytes object for which to calculate the hash value.
     cutoff_position : int or None, optional
@@ -281,8 +281,8 @@ def hash_bytes(bytes_, cutoff_position=None, return_hex=True):
         If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
         `True`.
 
-    Returns:
-    --------
+    Returns
+    -------
     str or bytes
         The hash value of the `bytes` object.
     """
@@ -293,8 +293,8 @@ def hash_file(path, cutoff_position=None, return_hex=True):
     """
     Calculate the SHA-512 hash value of a file.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     path : str
         The path to the file for which to calculate the hash value.
     cutoff_position : int or None, optional
@@ -303,8 +303,8 @@ def hash_file(path, cutoff_position=None, return_hex=True):
         If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
         `True`.
 
-    Returns:
-    --------
+    Returns
+    -------
     str or bytes
         The hash value of the file.
     """
@@ -318,8 +318,8 @@ def hash_image(image, cutoff_position=None, return_hex=True):
 
     In addition to the image's raw byte data, the image shape and dtype also influence the hash value.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     image : numpy.ndarray
         The image for which to calculate the hash value.
     cutoff_position : int or None, optional
@@ -328,8 +328,8 @@ def hash_image(image, cutoff_position=None, return_hex=True):
         If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
         `True`.
 
-    Returns:
-    --------
+    Returns
+    -------
     str or bytes
         The hash value of the image.
     """
@@ -347,8 +347,8 @@ def hash_image_any_row_order(image, cutoff_position=None, return_hex=True):
     Even if the hash value is invariant to the order of the rows: the column order, image shape, and image dtype do
     influence the hash value.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     image : numpy.ndarray
         The image for which to calculate the hash value.
     cutoff_position : int or None, optional
@@ -357,8 +357,8 @@ def hash_image_any_row_order(image, cutoff_position=None, return_hex=True):
         If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
         `True`.
 
-    Returns:
-    --------
+    Returns
+    -------
     str or bytes
         The row-order-invariant hash value of the image.
     """
@@ -374,8 +374,8 @@ def hash_image_any_col_order(image, cutoff_position=None, return_hex=True):
     Even if the hash value is invariant to the order of the columns: the row order, image shape, and image dtype do
     influence the hash value.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     image : numpy.ndarray
         The image for which to calculate the hash value.
     cutoff_position : int or None, optional
@@ -384,8 +384,8 @@ def hash_image_any_col_order(image, cutoff_position=None, return_hex=True):
         If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
         `True`.
 
-    Returns:
-    --------
+    Returns
+    -------
     str or bytes
         The column-order-invariant hash value of the image.
     """
@@ -401,8 +401,8 @@ def hash_image_any_pixel_order(image, cutoff_position=None, return_hex=True):
     Even if the hash value is invariant to the order of the pixels: the image shape and dtype do influence the hash
     value.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     image : numpy.ndarray
         The image for which to calculate the hash value.
     cutoff_position : int or None, optional
@@ -411,8 +411,8 @@ def hash_image_any_pixel_order(image, cutoff_position=None, return_hex=True):
         If `True`, the hash value is returned as a hexadecimal string. If `False`, it is returned as bytes. Default is
         `True`.
 
-    Returns:
-    --------
+    Returns
+    -------
     str or bytes
         The row-order-invariant hash value of the image.
     """
