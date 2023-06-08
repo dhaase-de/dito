@@ -1550,8 +1550,8 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", sty
 
     This function is a wrapper for `MonospaceBitmapFont.render_into_image`.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     image : numpy.ndarray
         The image into which the text message is to be rendered. The original `image` is not altered.
     message : str
