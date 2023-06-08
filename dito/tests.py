@@ -1293,6 +1293,24 @@ class random_image_Tests(TestCase):
         self.assertNumpyShape(image, (image_size[1], image_size[0]))
 
 
+class resize_Tests(TestCase):
+    def test_resize_scale(self):
+        image = dito.pm5544()
+        image_resized = dito.resize(image, 0.5)
+        self.assertEqual(image_resized.shape, (288, 384, 3))
+
+    def test_resize_size(self):
+        image = dito.pm5544()
+        image_resized = dito.resize(image, (384, 288))
+        self.assertEqual(image_resized.shape, (288, 384, 3))
+
+    def test_resize_bool(self):
+        image = dito.pm5544()
+        image_bool = image > 127
+        image_resized = dito.resize(image_bool, 0.5)
+        self.assertEqual(image_resized.shape, (288, 384, 3))
+
+
 class rotate_Tests(TestCase):
     def setUp(self):
         self.image = dito.pm5544()
@@ -1735,16 +1753,6 @@ class geometry_Tests(TestCase):
     def test_size(self):
         image = dito.pm5544()
         self.assertEqual(dito.size(image), (768, 576))
-
-    def test_resize_scale(self):
-        image = dito.pm5544()
-        image2 = dito.resize(image, 0.5)
-        self.assertEqual(image2.shape, (288, 384, 3))
-        
-    def test_resize_size(self):
-        image = dito.pm5544()
-        image2 = dito.resize(image, (384, 288))
-        self.assertEqual(image2.shape, (288, 384, 3))
 
 
 class infos_Tests(TestCase):

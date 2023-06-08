@@ -421,10 +421,18 @@ def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolati
     (800, 600)
     """
 
+    # OpenCV does not support resizing of bool images - this is a workaround
+    if image.dtype == bool:
+        image_uint8 = image.astype(np.uint8)
+        image_uint8 = resize(image=image_uint8, scale_or_size=scale_or_size, interpolation_down=interpolation_down, interpolation_up=interpolation_up)
+        return image_uint8 > 0
+
+    # resize by scale factor
     if isinstance(scale_or_size, float):
         scale = scale_or_size
         return cv2.resize(src=image, dsize=None, dst=None, fx=scale, fy=scale, interpolation=interpolation_up if scale > 1.0 else interpolation_down)
-    
+
+    # resize to target size
     elif isinstance(scale_or_size, tuple) and (len(scale_or_size) == 2):
         target_size = scale_or_size
         current_size = size(image)

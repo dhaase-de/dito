@@ -1724,6 +1724,10 @@ def prepare_for_display(image, scale=None, normalize_mode=None, normalize_kwargs
     else:
         raise ValueError("Invalid value for parameter `image` ({}) - it must either be (i) an image, (ii) a non-empty list of images or a non-empty list of non-empty lists of images".format(image))
 
+    # OpenCV does not support the display of bool images - convert them to uint8
+    if image.dtype == bool:
+        image = dito.core.convert(image=image, dtype=np.uint8)
+
     # normalize intensity values
     if normalize_mode is not None:
         image = dito.core.normalize(image=image, mode=normalize_mode, **normalize_kwargs)
