@@ -64,6 +64,8 @@ def load(filename, color=None):
     # load image
     if filename.endswith(".npy"):
         # use NumPy
+        if color is not None:
+            raise ValueError("Argument 'color' must be 'None' for NumPy images, but is '{}'".format(color))
         image = np.load(file=filename)
     elif filename.endswith(".npz"):
         # use NumPy
