@@ -60,6 +60,10 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.11.0 (2023-06-08) - Hash Update ###
+* added hash functions `hash_image`, `hash_image_any_row_order`, `hash_file`, etc.
+* minor improvements and fixes
+
 ### v2.10.0 (2023-05-12) - Documentation Update ###
 * added documentation framework based on [pdoc](https://pdoc.dev/)
 * added/revised docstrings for all objects
