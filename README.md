@@ -60,6 +60,10 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.11.1 (2023-11-28) - Bugfixes ###
+* fixed (in the wrapper functions `save` and `load`) OpenCV silently failing when reading/writing images with non-ASCII filenames under Windows  
+* fixed `gamma` removing the third image axis if it was of size one
+
 ### v2.11.0 (2023-06-08) - Hash Update ###
 * added hash functions `hash_image`, `hash_image_any_row_order`, `hash_file`, etc.
 * minor improvements and fixes
