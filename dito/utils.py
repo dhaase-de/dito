@@ -241,6 +241,42 @@ def human_bytes(byte_count):
         return "{:.2f} {}".format(count, unit)
 
 
+def is_ascii(s):
+    """
+    Returns `True` if the given string `s` only contains ASCII chars.
+
+    This is needed because under Windows, OpenCV can't save or load images whose
+    filenames contain non-ASCII characters.
+
+    Parameters
+    ----------
+    s : str
+        The string to check.
+
+    Returns
+    -------
+    bool
+        `True` if `s` contains only ASCII characters, and `False` otherwise.
+
+    Example
+    -------
+    >>> is_ascii('abc')
+    True
+
+    >>> is_ascii('äbc')
+    False
+
+    >>> is_ascii('')
+    True
+    """
+    try:
+        s.encode("ascii")
+    except UnicodeEncodeError:
+        return False
+    else:
+        return True
+
+
 #
 # output-related
 #

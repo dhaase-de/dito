@@ -4,6 +4,7 @@ This submodule provides functionality for low-level image input/output functions
 
 import functools
 import glob
+import os
 import os.path
 import pathlib
 import tempfile
@@ -76,13 +77,19 @@ def load(filename, color=None):
             image = npz_file[npz_keys[0]]
     else:
         # use OpenCV
-        if color is None:
-            # load the image as it is
-            flags = cv2.IMREAD_ANYDEPTH | cv2.IMREAD_UNCHANGED
+        if (os.name == "nt") and not dito.utils.is_ascii(s=str(filename)):
+            # workaround for filenames containing non-ASCII chars under Windows
+            with open(filename, "rb") as image_file:
+                image = decode(b=image_file, color=color)
         else:
-            # force gray/color mode
-            flags = cv2.IMREAD_ANYDEPTH | (cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE)
-        image = cv2.imread(filename=filename, flags=flags)
+            # all other cases
+            if color is None:
+                # load the image as it is
+                flags = cv2.IMREAD_ANYDEPTH | cv2.IMREAD_UNCHANGED
+            else:
+                # force gray/color mode
+                flags = cv2.IMREAD_ANYDEPTH | (cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE)
+            image = cv2.imread(filename=filename, flags=flags)
 
     # check if loading was successful
     if image is None:
