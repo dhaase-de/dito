@@ -80,7 +80,7 @@ def load(filename, color=None):
         if (os.name == "nt") and not dito.utils.is_ascii(s=str(filename)):
             # workaround for filenames containing non-ASCII chars under Windows
             with open(filename, "rb") as image_file:
-                image = decode(b=image_file, color=color)
+                image = decode(b=image_file.read(), color=color)
         else:
             # all other cases
             if color is None:
