@@ -190,7 +190,13 @@ def save(filename, image, mkdir=True):
         np.savez_compressed(file=filename, arr_0=image)
     else:
         # use OpenCV
-        cv2.imwrite(filename=filename, img=image)
+        if (os.name == "nt") and not dito.utils.is_ascii(s=str(filename)):
+            # workaround for filenames containing non-ASCII chars under Windows
+            with open(filename, "wb") as image_file:
+                image_file.write(encode(image=image, extension=pathlib.Path(filename).suffix))
+        else:
+            # all other cases
+            cv2.imwrite(filename=filename, img=image)
 
 
 def save_tmp(image):
