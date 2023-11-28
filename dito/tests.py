@@ -592,9 +592,15 @@ class gamma_Tests(TestCase):
         dito.gamma(image=self.image, exponent=0.5)
         self.assertEqualImages(self.image, image_copy)
 
-    def test_gamma_shape(self):
+    def test_gamma_shape_unchanged(self):
         image_gamma = dito.gamma(image=self.image, exponent=0.5)
         self.assertEqualImageContainers(image_gamma, self.image)
+
+    def test_gamma_shape_with_gray_axis_unchanged(self):
+        image_1 = dito.pm5544()
+        image_1 = image_1[:, :, 0:1]
+        image_gamma = dito.gamma(image=image_1, exponent=0.5)
+        self.assertEqualImageContainers(image_gamma, image_1)
 
     def test_gamma_1_0_unchanged(self):
         image_gamma = dito.gamma(image=self.image, exponent=1.0)

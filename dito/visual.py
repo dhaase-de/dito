@@ -283,12 +283,18 @@ def gamma(image, exponent):
     if image.dtype == np.uint8:
         lut = np.round(255.0 * np.linspace(start=0.0, stop=1.0, num=256)**exponent).astype(np.uint8)
         lut.shape = (256, 1, 1)
-        return cv2.LUT(src=image, lut=lut)
+        result = cv2.LUT(src=image, lut=lut)
     else:
         dtype = image.dtype
         image_float = dito.convert(image=image, dtype=np.float32)
         image_float = image_float**exponent
-        return dito.convert(image=image_float, dtype=dtype)
+        result = dito.convert(image=image_float, dtype=dtype)
+
+    # make sure that the output shape is identical to the input shape
+    # (cv2.LUT removes the channel axis if it had size one)
+    result.shape = image.shape
+
+    return result
 
 
 #
