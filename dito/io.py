@@ -4,6 +4,8 @@ This submodule provides functionality for low-level image input/output functions
 
 import functools
 import glob
+import itertools
+import operator
 import os
 import os.path
 import pathlib
@@ -17,13 +19,16 @@ import numpy as np
 import dito.utils
 
 
-def load(filename, color=None):
+def load(filename, color=None, czi_kwargs=None):
     """
     Load image from file given by `filename` and return NumPy array.
 
     It supports all file types that can be loaded by OpenCV (via `cv2.imread`),
     plus arrays that can be loaded by NumPy (file extensions ".npy" and ".npz",
     via `numpy.load`).
+
+    In addition, it can load ".czi" (Carl Zeiss Image) files, if the package
+    `pylibCZIrw` is installed.
 
     Parameters
     ----------
@@ -32,6 +37,8 @@ def load(filename, color=None):
     color : bool or None, optional
         Whether to load the image as color (True), grayscale (False), or as is (None). Default is None.
         Is ignored if the image is loaded via NumPy (i.e., for file extensions ".npy" and ".npz").
+    czi_kwargs : dict
+        Arguments to supply to `_load_czi` when loading ".czi" files.
 
     Returns
     -------
@@ -63,18 +70,24 @@ def load(filename, color=None):
         raise FileNotFoundError("Image file '{}' does not exist".format(filename))
 
     # load image
-    if filename.endswith(".npy"):
+    image = None
+    extension = os.path.splitext(filename)[1].lower()
+    if extension == ".npy":
         # use NumPy
         if color is not None:
             raise ValueError("Argument 'color' must be 'None' for NumPy images, but is '{}'".format(color))
         image = np.load(file=filename)
-    elif filename.endswith(".npz"):
+    elif extension == ".npz":
         # use NumPy
         with np.load(file=filename) as npz_file:
             npz_keys = tuple(npz_file.keys())
             if len(npz_keys) != 1:
                 raise ValueError("Expected exactly one image in '{}', but got {} (keys: {})".format(filename, len(npz_keys), npz_keys))
             image = npz_file[npz_keys[0]]
+    elif extension == ".czi":
+        if czi_kwargs is None:
+            czi_kwargs = {}
+        image = _load_czi(filename=filename, **czi_kwargs)
     else:
         # use OpenCV
         if (os.name == "nt") and not dito.utils.is_ascii(s=str(filename)):
@@ -98,6 +111,102 @@ def load(filename, color=None):
         raise TypeError("Image file '{}' exists, but has wrong type (expected object of type 'np.ndarray', but got '{}'".format(filename, type(image)))
 
     return image
+
+
+def _load_czi(filename, keep_singleton_dimensions=False, keep_all_dimensions=False):
+    """
+    Load a "*.czi" (Carl Zeiss Image) image from file given by `filename` and return NumPy array.
+
+    Internal function used by `load`. It requires the package `pylibCZIrw` to be installed.
+
+    In addition to X, Y, and the (BGR or gray) channel dimensions, CZI files can have more dimensions, such as time, Z,
+    etc. The returned array will be of shape `(dim_1, dim_2, ..., dim_N, Y, X, channel_count)`, where `dim_n` is the
+    size of the n-th dimension of the CZI file. The order of `dim_1`, ... `dim_N` is the same as defined in
+    `pylibCZIrw.czi.CziReader.CZI_DIMS`.
+
+    Parameters
+    ----------
+    filename : str or pathlib.Path
+        Path of the image file to be loaded.
+    keep_singleton_dimensions : bool
+        If `True`, keep dimensions in the final NumPy array even if their size is 1.
+    keep_all_dimensions : bool
+        If `True`, the final NumPy array will have all possible dimensions as defined in `pylibCZIrw.czi.CziReader.CZI_DIMS`.
+        Dimensions not present in the CZI file will then be of size 1.
+
+    Returns
+    -------
+    numpy.ndarray
+        The loaded image as a NumPy array.
+
+    Raises
+    ------
+    ImportError
+        If `pylibCZIrw` is not installed.
+    ValueError
+        If `keep_all_dimensions` is `True`, but `keep_singleton_dimensions` is not.
+    """
+
+    # only import on demand
+    import pylibCZIrw.czi
+
+    # check arguments
+    if keep_all_dimensions and (not keep_singleton_dimensions):
+        raise ValueError("Argument 'keep_all_dimensions' is True, but 'keep_singleton_dimensions' is not")
+
+    # be on the safe side and get all possible dimension names in the order defined by `pylibCZIrw.czi.CziReader.CZI_DIMS`
+    dim_names = tuple(dim_item[0] for dim_item in sorted(pylibCZIrw.czi.CziReader.CZI_DIMS.items(), key=operator.itemgetter(1)))
+
+    with pylibCZIrw.czi.open_czi(str(filename)) as czi:
+        # get the bounding box for all dimensions
+        bbox = czi.total_bounding_box
+
+        # collect which dimensions are actually used in the image
+        used_dim_names = []
+        used_dim_sizes = []
+        for dim_name in dim_names:
+            try:
+                dim_bbox = bbox[dim_name]
+            except KeyError:
+                # dimension is not present in this file
+                if keep_all_dimensions:
+                    dim_bbox = (0, 1)
+                else:
+                    continue
+
+            # skip singleton dimensions if not specified otherwise
+            if (not keep_singleton_dimensions) and (dim_bbox == (0, 1)):
+                continue
+
+            # if a dimension is present, assume that its bounding box is of the form (0, dim_size)
+            assert dim_bbox[0] == 0
+            dim_size = dim_bbox[1]
+
+            # save used dimension name and its size
+            used_dim_names.append(dim_name)
+            used_dim_sizes.append(dim_size)
+
+        # create all possible combinations for the indices of all dimensions
+        used_dim_indices = [tuple(range(used_dim_size)) for used_dim_size in used_dim_sizes]
+        index_product = itertools.product(*used_dim_indices)
+
+        # for each index combination ("plane"), ...
+        combined_image = None
+        for indices in index_product:
+            # ... get the image plane for the current index combination
+            plane = {}
+            for (used_dim_name, index) in zip(used_dim_names, indices):
+                plane[used_dim_name] = index
+            image = czi.read(plane=plane)
+
+            # use the first plane image to get the correct shape and dtype of the final NumPy array
+            if combined_image is None:
+                combined_image = np.zeros(shape=tuple(used_dim_sizes) + image.shape, dtype=image.dtype)
+
+            # insert the image plane into the final NumPy array
+            combined_image[indices, ...] = image
+
+    return combined_image
 
 
 def load_multiple_iter(*args, color=None):
