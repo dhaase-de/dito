@@ -320,7 +320,10 @@ def save(filename, image, mkdir=True, czi_kwargs=None):
             cv2.imwrite(filename=filename, img=image)
 
 
-def _save_czi(filename, image, extra_dim_names=None, compression_options="zstd1:ExplicitLevel=10"):
+def _save_czi(
+        filename, image, extra_dim_names=None, compression_options="zstd1:ExplicitLevel=10", microns_per_px_x=None,
+        microns_per_px_y=None, microns_per_px_z=None, channel_names=None, document_name=None, custom_attributes=None,
+):
     """
     Save a NumPy array `image` as a ".czi" (Carl Zeiss Image) file at `filename`.
 
@@ -350,6 +353,19 @@ def _save_czi(filename, image, extra_dim_names=None, compression_options="zstd1:
     compression_options : str
         Compression options to use. Can be, among other values, `"uncompressed"` or `zstd<V>:ExplicitLevel=<N>`
         (for 0 <= V <= 1 and -131072 <= N <= 22). See `pylibCZIrw.czi.create_czi` for details.
+    microns_per_px_x : None or float
+        If given, will be saved in the .czi metadata as pixel scaling for the x-axis (in µm/px).
+    microns_per_px_y : None or float
+        If given, will be saved in the .czi metadata as pixel scaling for the y-axis (in µm/px).
+    microns_per_px_z : None or float
+        If given, will be saved in the .czi metadata as pixel scaling for the z-axis (in µm/px).
+    channel_names : None or dict
+        If given, must be a dict of the form `{0: 'Channel_0_Name', ...}`, which will then be saved in the .czi
+        metadata.
+    document_name : None or str
+        If given, will be saved in the .czi metadata as document name.
+    custom_attributes : None or dict
+        If given, will be saved in the .czi metadata as arbitrary key-value store.
 
     Raises
     ------
@@ -411,6 +427,23 @@ def _save_czi(filename, image, extra_dim_names=None, compression_options="zstd1:
                 data=image[extra_indices + (slice(None), slice(None), slice(None))],
                 plane=plane,
             )
+
+        # write metadata
+        metadata_kwargs = {}
+        if microns_per_px_x is not None:
+            metadata_kwargs["scale_x"] = 1e-6 * microns_per_px_x
+        if microns_per_px_y is not None:
+            metadata_kwargs["scale_y"] = 1e-6 * microns_per_px_y
+        if microns_per_px_z is not None:
+            metadata_kwargs["scale_z"] = 1e-6 * microns_per_px_z
+        if channel_names is not None:
+            metadata_kwargs["channel_names"] = channel_names
+        if document_name is not None:
+            metadata_kwargs["document_name"] = document_name
+        if custom_attributes is not None:
+            metadata_kwargs["custom_attributes"] = custom_attributes
+        if len(metadata_kwargs) > 0:
+            czi.write_metadata(**metadata_kwargs)
 
 
 def save_tmp(image):
