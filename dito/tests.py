@@ -1055,7 +1055,7 @@ class is_gray_Tests(TestCase):
         self.assertFalse(dito.is_gray(self.image[:, :, 0:2]))
 
 
-class load_Tests(TestCase):
+class load_Tests(TempDirTestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.image_filename = os.path.join(dito.RESOURCES_FILENAMES["image:PM5544"])
@@ -1082,6 +1082,32 @@ class load_Tests(TestCase):
         image_str = dito.load(filename=str(self.image_filename))
         image_pathlib = dito.load(filename=pathlib.Path(self.image_filename))
         self.assertEqualImages(image_str, image_pathlib)
+
+    def test_load_czi_no_keep_singleton_dimensions(self):
+        image = dito.pm5544()
+        image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
+        dito.save(image_path, image[np.newaxis, np.newaxis, ...], czi_kwargs={"extra_dim_names": "TZ"})
+
+        image_loaded = dito.load(image_path, czi_kwargs={"keep_singleton_dimensions": False, "keep_all_dimensions": False})
+        self.assertEqual(image_loaded.shape, (576, 768, 3))
+
+    def test_load_czi_keep_singleton_dimensions(self):
+        image = dito.pm5544()
+        image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
+        dito.save(image_path, image[np.newaxis, np.newaxis, ...], czi_kwargs={"extra_dim_names": "TZ"})
+
+        # according to pylibCZIrw, the dimensions T, Z, and C are always present, even if not available in the .czi file
+        # so instead of the expected (1, 1, 576, 768, 3), we actually get (1, 1, 1, 576, 768, 3)
+        image_loaded = dito.load(image_path, czi_kwargs={"keep_singleton_dimensions": True, "keep_all_dimensions": False})
+        self.assertEqual(image_loaded.shape, (1, 1, 1, 576, 768, 3))
+
+    def test_load_czi_keep_all_dimensions(self):
+        image = dito.pm5544()
+        image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
+        dito.save(image_path, image[np.newaxis, np.newaxis, ...], czi_kwargs={"extra_dim_names": "TZ"})
+
+        image_loaded = dito.load(image_path, czi_kwargs={"keep_singleton_dimensions": True, "keep_all_dimensions": True})
+        self.assertEqual(image_loaded.shape, (1, 1, 1, 1, 1, 1, 1, 1, 576, 768, 3))
 
 
 class mkdir_Tests(TempDirTestCase):
