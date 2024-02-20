@@ -85,6 +85,7 @@ def load(filename, color=None, czi_kwargs=None):
                 raise ValueError("Expected exactly one image in '{}', but got {} (keys: {})".format(filename, len(npz_keys), npz_keys))
             image = npz_file[npz_keys[0]]
     elif extension == ".czi":
+        # use pylibCZIrw
         if czi_kwargs is None:
             czi_kwargs = {}
         image = _load_czi(filename=filename, **czi_kwargs)
@@ -119,7 +120,7 @@ def _load_czi(filename, keep_singleton_dimensions=False, keep_all_dimensions=Fal
 
     Internal function used by `load`. It requires the package `pylibCZIrw` to be installed.
 
-    In addition to X, Y, and the (BGR or gray) channel dimensions, CZI files can have more dimensions, such as time, Z,
+    In addition to X, Y, and the (BGR or gray) color dimensions, CZI files can have more dimensions, such as time, Z,
     etc. The returned array will be of shape `(dim_1, dim_2, ..., dim_N, Y, X, channel_count)`, where `dim_n` is the
     size of the n-th dimension of the CZI file. The order of `dim_1`, ... `dim_N` is the same as defined in
     `pylibCZIrw.czi.CziReader.CZI_DIMS`.
@@ -204,7 +205,7 @@ def _load_czi(filename, keep_singleton_dimensions=False, keep_all_dimensions=Fal
                 combined_image = np.zeros(shape=tuple(used_dim_sizes) + image.shape, dtype=image.dtype)
 
             # insert the image plane into the final NumPy array
-            combined_image[indices, ...] = image
+            combined_image[indices + (slice(None), slice(None), slice(None))] = image
 
     return combined_image
 
@@ -251,7 +252,7 @@ def load_multiple(*args, color=None):
     return list(load_multiple_iter(*args, color=color))
 
 
-def save(filename, image, mkdir=True):
+def save(filename, image, mkdir=True, czi_kwargs=None):
     """
     Save a NumPy array `image` as an image file at `filename`.
 
@@ -259,6 +260,9 @@ def save(filename, image, mkdir=True):
     e.g., ".jpg", ".png", ".tif", etc.) and uncompressed or compressed NumPy
     binary files (via `numpy.save` for ".npy" or via `np.savez_compressed` for
     ".npz").
+
+    In addition, it can save ".czi" (Carl Zeiss Image) files, if the package
+    `pylibCZIrw` is installed.
 
     If `mkdir` is `True`, create the parent directories of the given filename
     before saving the image.
@@ -274,6 +278,8 @@ def save(filename, image, mkdir=True):
     mkdir : bool, optional
         Whether to create the parent directories of the given filename if they
         do not exist. Default is True.
+    czi_kwargs : dict
+        Arguments to supply to `_save_czi` when saving ".czi" files.
 
     Raises
     ------
@@ -291,12 +297,18 @@ def save(filename, image, mkdir=True):
     if mkdir:
         dito.utils.mkdir(dirname=os.path.dirname(filename))
 
-    if filename.endswith(".npy"):
+    extension = os.path.splitext(filename)[1].lower()
+    if extension == ".npy":
         # use NumPy
         np.save(file=filename, arr=image)
-    elif filename.endswith(".npz"):
+    elif extension == ".npz":
         # use NumPy
         np.savez_compressed(file=filename, arr_0=image)
+    elif extension == ".czi":
+        # use pylibCZIrw
+        if czi_kwargs is None:
+            czi_kwargs = {}
+        _save_czi(filename=filename, image=image, **czi_kwargs)
     else:
         # use OpenCV
         if (os.name == "nt") and not dito.utils.is_ascii(s=str(filename)):
@@ -306,6 +318,96 @@ def save(filename, image, mkdir=True):
         else:
             # all other cases
             cv2.imwrite(filename=filename, img=image)
+
+
+def _save_czi(filename, image, extra_dim_names=None, compression_options="zstd1:ExplicitLevel=10"):
+    """
+    Save a NumPy array `image` as a ".czi" (Carl Zeiss Image) file at `filename`.
+
+    Internal function used by `save`. It requires the package `pylibCZIrw` to be installed.
+
+    The array to be saved must be of shape `(Y, X)`, `(Y, X, 1)`, `(Y, X, 3)` or
+    `(extra_dim_1, ..., extra_dim_N, Y, X, 1 | 3)`. In the latter case (i.e., more than three dimensions),
+    argument `extra_dim_names` must be a string which contains one identifying letter for each extra dimension.
+    Examples for identifying letters are `T` for time, `C` for channel and `Z` for Z.
+    All possible identifying letters are defined in `pylibCZIrw.czi.CziReader.CZI_DIMS`.
+
+    If, for instance, the array to be saved is of shape `(5, 25, 512, 512, 3)` with dimensions time, Z, Y, X, and color,
+    then `extra_dim_names` should be `"TZ"`: `T` for time and `Z` for Z - the last three dimensions need no identifying
+    letter, as they are always the same.
+
+    Parameters
+    ----------
+    filename : str or pathlib.Path
+        Path of the image file to be loaded.
+    image : numpy.ndarray
+        The image data to be saved. Must be of shape `(Y, X)`, `(Y, X, 1)`, `(Y, X, 3)` or
+        `(extra_dim_1, ..., extra_dim_N, Y, X, 1 | 3)`. In the last case (i.e., more than three dimensions),
+        `extra_dim_names` must also be specified.
+    extra_dim_names : None or str
+        If `image` has more than three dimensions, must be specified. For each dimension not being (Y, X, color), one
+        letter must be given. All possible identifying letters are defined in `pylibCZIrw.czi.CziReader.CZI_DIMS`.
+    compression_options : str
+        Compression options to use. Can be, among other values, `"uncompressed"` or `zstd<V>:ExplicitLevel=<N>`
+        (for 0 <= V <= 1 and -131072 <= N <= 22). See `pylibCZIrw.czi.create_czi` for details.
+
+    Raises
+    ------
+    ImportError
+        If `pylibCZIrw` is not installed.
+    ValueError
+        If `image` has an invalid shape or the image shape is not compatible with `extra_dim_names`.
+    """
+
+    # only import on demand
+    import pylibCZIrw.czi
+
+    shape = image.shape
+    dim_count = len(shape)
+    extra_dim_count = max(0, dim_count - 3)
+    extra_dim_shape = shape[:extra_dim_count]
+
+    # check image dimensions
+    if dim_count < 2:
+        # invalid image
+        raise ValueError("Invalid image shape: {}".format(shape))
+    elif dim_count == 2:
+        # if the image has only two axes (Y and X), add a third color axis of size of 1
+        image = image[:, :, np.newaxis]
+    else:
+        # if the image has three or more axes, make sure that the last one is of size 1 (gray) or 3 (BGR)
+        if shape[-1] not in (1, 3):
+            raise ValueError("The last axis of the image must be of size 1 or 3, but it is {} (full shape: {})".format(shape[-1], shape))
+
+        # if there are more than three axes, we need dim_names to identify which dimensions should be used
+        if extra_dim_count > 0:
+            # check the size of extra_dim_names
+            if (extra_dim_names is None) or (extra_dim_count != len(extra_dim_names)):
+                raise ValueError("For image of {} dimensions, 'extra_dim_names' must be of length {}-3={} (containing one identifying letter for each extra dimension), but 'extra_dim_names' is {}".format(dim_count, dim_count, extra_dim_count, extra_dim_names))
+
+            # check if each extra dim name is correct
+            allowed_dim_names = tuple(pylibCZIrw.czi.CziReader.CZI_DIMS.keys())
+            for extra_dim_name in extra_dim_names:
+                if extra_dim_name not in allowed_dim_names:
+                    raise ValueError("Invalid dimension name '{}' - allowed values are {}".format(extra_dim_name, allowed_dim_names))
+
+    # create all combinations of indices for extra dimensions (dimensions which are not Y, X, color)
+    extra_dim_indices = [tuple(range(extra_dim_size)) for extra_dim_size in extra_dim_shape]
+    extra_index_product = itertools.product(*extra_dim_indices)
+
+    # create file
+    with pylibCZIrw.czi.create_czi(
+            str(filename),
+            exist_ok=True,
+            compression_options=compression_options,
+    ) as czi:
+        # for each plane (identified by the indices for the extra dimensions), write the (Y, X, color)-shaped image
+        for extra_indices in extra_index_product:
+            plane = {extra_dim_name: extra_index for (extra_dim_name, extra_index) in zip(extra_dim_names, extra_indices)}
+            czi.write(
+                data=image[extra_indices + (slice(None), slice(None), slice(None))],
+                plane=plane,
+            )
 
 
 def save_tmp(image):
