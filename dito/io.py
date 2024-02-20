@@ -367,6 +367,9 @@ def _save_czi(filename, image, extra_dim_names=None, compression_options="zstd1:
     extra_dim_count = max(0, dim_count - 3)
     extra_dim_shape = shape[:extra_dim_count]
 
+    if extra_dim_names is None:
+        extra_dim_names = ""
+
     # check image dimensions
     if dim_count < 2:
         # invalid image
@@ -382,7 +385,7 @@ def _save_czi(filename, image, extra_dim_names=None, compression_options="zstd1:
         # if there are more than three axes, we need dim_names to identify which dimensions should be used
         if extra_dim_count > 0:
             # check the size of extra_dim_names
-            if (extra_dim_names is None) or (extra_dim_count != len(extra_dim_names)):
+            if extra_dim_count != len(extra_dim_names):
                 raise ValueError("For image of {} dimensions, 'extra_dim_names' must be of length {}-3={} (containing one identifying letter for each extra dimension), but 'extra_dim_names' is {}".format(dim_count, dim_count, extra_dim_count, extra_dim_names))
 
             # check if each extra dim name is correct

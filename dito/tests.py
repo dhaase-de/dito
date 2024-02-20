@@ -26,14 +26,15 @@ class TestCase(unittest.TestCase):
     def assertIsImage(self, x):
         self.assertTrue(dito.is_image(image=x))
     
-    def assertEqualImageContainers(self, x, y):
-        self.assertIsImage(x)
-        self.assertIsImage(y)
+    def assertEqualImageContainers(self, x, y, enforce_is_image=True):
+        if enforce_is_image:
+            self.assertIsImage(x)
+            self.assertIsImage(y)
         self.assertEqual(x.dtype, y.dtype)
         self.assertEqual(x.shape, y.shape)
     
-    def assertEqualImages(self, x, y):
-        self.assertEqualImageContainers(x, y)
+    def assertEqualImages(self, x, y, enforce_is_image=True):
+        self.assertEqualImageContainers(x, y, enforce_is_image=enforce_is_image)
         if np.issubdtype(x.dtype, np.floating):
             self.assertTrue(np.allclose(x, y))
         else:
@@ -1392,11 +1393,89 @@ class save_Tests(TempDirTestCase):
     def test_save_load_npz(self):
         self._test_save_load(extension="npz")
 
+    def test_save_load_czi(self):
+        self._test_save_load(extension="czi")
+
     def test_save_load_nonascii(self):
         # under Windows, OpenCV silently fails when trying to save an image
         # with a non-ASCII filename - dito.save fixes that
         self._test_save_load(extension="png", basename="image_äöü")
         self._test_save_load(extension="npy", basename="image_äöü")
+
+    def test_save_czi_raise_on_invalid_shape(self):
+        (X, Y) = (128, 64)
+        invalid_shapes = [
+            tuple(),
+            (Y,),
+            (Y, X, 2),
+            (Y, X, 4),
+        ]
+
+        image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
+
+        for invalid_shape in invalid_shapes:
+            image = np.zeros(shape=invalid_shape, dtype=np.uint8)
+            self.assertRaises(ValueError, lambda: dito.save(image_path, image))
+
+    def test_save_czi_no_raise_on_valid_shape(self):
+        (X, Y) = (128, 64)
+        shapes = [
+            (Y, X),
+            (Y, X, 1),
+            (Y, X, 3),
+        ]
+
+        image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
+
+        for shape in shapes:
+            image = np.zeros(shape=shape, dtype=np.uint8)
+            dito.save(image_path, image)
+
+    def test_save_czi_no_extra_dims_gray_implicit(self):
+        image = dito.pm5544()[:, :, 0]
+        image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
+        dito.save(image_path, image)
+        image_loaded = dito.load(image_path)
+        self.assertEqual(image.shape + (1,), image_loaded.shape)
+        self.assertEqualImages(image, image_loaded[:, :, 0])
+
+    def test_save_czi_no_extra_dims_gray(self):
+        image = dito.pm5544()[:, :, :1]
+        image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
+        dito.save(image_path, image)
+        image_loaded = dito.load(image_path)
+        self.assertEqualImages(image, image_loaded)
+
+    def test_save_czi_no_extra_dims_color(self):
+        image = dito.pm5544()
+        image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
+        dito.save(image_path, image)
+        image_loaded = dito.load(image_path)
+        self.assertEqualImages(image, image_loaded)
+
+    def test_save_czi_raise_on_missing_extra_dim_names(self):
+        image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
+
+        # no extra dimension -> should not raise
+        image_1 = np.zeros(shape=(64, 128, 3), dtype=np.uint8)
+        dito.save(image_path, image_1)
+
+        # extra dimension but no extra_dim_names -> should raise
+        image_2 = np.zeros(shape=(2,) + image_1.shape, dtype=np.uint8)
+        self.assertRaises(ValueError, lambda: dito.save(image_path, image_2))
+
+    def test_save_czi_extra_dims(self):
+        image = np.random.uniform(size=(2, 5, 64, 128, 3))
+        image = dito.convert(image, np.uint8)
+        image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
+        dito.save(image_path, image, czi_kwargs={"extra_dim_names": "TZ"})
+
+        # when loading, the Z dimension comes before the T dimension
+        image_loaded = dito.load(image_path)
+        self.assertEqual(image_loaded.shape, (5, 2, 64, 128, 3))
+
+        image_transposed = np.transpose(image, (1, 0, 2, 3, 4)).copy()
+        self.assertEqualImages(image_transposed, image_loaded, enforce_is_image=False)
 
 
 class save_tmp_Tests(TestCase):
