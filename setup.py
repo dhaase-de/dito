@@ -72,6 +72,7 @@ setup(
         "resources/images/*.png",
     ]},
     scripts=[
+        "bin/dito_czi_to_npy.py",
         "bin/dito_images_to_video.py",
         "bin/dito_pinfo.py",
     ],
