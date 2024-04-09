@@ -60,6 +60,9 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.12.0 (2024-04-09) - CZI support ###
+* add support to read and write CZI image files (as a wrapper for the library `pylibCZIrw`)
+
 ### v2.11.1 (2023-11-28) - Bugfixes ###
 * fixed (in the wrapper functions `save` and `load`) OpenCV silently failing when reading/writing images with non-ASCII filenames under Windows  
 * fixed `gamma` removing the third image axis if it was of size one
