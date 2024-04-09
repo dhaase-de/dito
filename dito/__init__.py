@@ -42,7 +42,7 @@ Submodule         | Description                                                 
 `dito.visual`     | functions for visualizing images                                  | `dito.visual.text`
 """
 
-__version__ = "2.11.2.dev0"
+__version__ = "2.12.0"
 
 
 from dito.analysis import *
