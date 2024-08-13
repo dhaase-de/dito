@@ -844,6 +844,55 @@ def rotate_270(image):
     return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_CLOCKWISE)
 
 
+def warp_affine(image, angle_deg=0.0, scale=1.0, tx=0.0, ty=0.0, interpolation=cv2.INTER_LINEAR, border_mode=cv2.BORDER_REFLECT_101, border_value=0):
+    """
+    Apply an affine transformation to the given `image`, including rotation, scaling, and translation.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Input image to be transformed.
+    angle_deg : float, optional
+        Rotation angle in degrees. Default is 0.0.
+    scale : float, optional
+        Scaling factor. A value greater than 1.0 enlarges the image content, while a value less than 1.0 shrinks it.
+        Note: the resulting image shape is the same as the input image shape in either case.
+        Default is 1.0.
+    tx : float, optional
+        Horizontal translation (shift) in pixels. Positive values move the image to the right,
+        and negative values move it to the left. Default is 0.0.
+    ty : float, optional
+        Vertical translation (shift) in pixels. Positive values move the image downwards,
+        and negative values move it upwards. Default is 0.0.
+    interpolation : int, optional
+        Interpolation method to use. See `cv2.warpAffine()` for valid options.
+        Defaults to `cv2.INTER_LINEAR`.
+    border_mode : int, optional
+        Pixel extrapolation method when the image is transformed out of bounds. See `cv2.warpAffine()` for options.
+        Defaults to `cv2.BORDER_REFLECT_101`.
+    border_value : int, optional
+        Value used in case of a constant border. Default is 0.
+
+    Returns
+    -------
+    np.ndarray
+        Transformed image.
+
+    See Also
+    --------
+    cv2.getRotationMatrix2D : Function to get the 2D rotation and scaling matrix.
+    cv2.warpAffine : Function that performs the affine transformation.
+    """
+
+    image_size = size(image=image)
+
+    rotation_matrix = cv2.getRotationMatrix2D(center=(image.shape[1] // 2, image.shape[0] // 2), angle=angle_deg, scale=scale)
+    rotation_matrix[0, 2] += tx
+    rotation_matrix[1, 2] += ty
+
+    return cv2.warpAffine(src=image, M=rotation_matrix, dsize=image_size, flags=interpolation, borderMode=border_mode, borderValue=border_value)
+
+
 #
 # channel-related
 #
