@@ -19,14 +19,73 @@ import dito.visual
 
 
 def argmin(image):
+    """
+    Compute the coordinates of the minimum value in the image.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        The input image.
+
+    Returns
+    -------
+    tuple
+        The coordinates of the minimum value in the image.
+
+    Notes
+    -----
+    The order of the indices is equivalent to the order of the image axes.
+    This may differ from common conventions that use (x, y) coordinates.
+    """
     return np.unravel_index(np.argmin(image), image.shape)
 
 
 def argmax(image):
+    """
+    Compute the coordinates of the maximum value in the image.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        The input image.
+
+    Returns
+    -------
+    tuple
+        The coordinates of the maximum value in the image.
+
+    Notes
+    -----
+    The order of the indices is equivalent to the order of the image axes.
+    This may differ from common conventions that use (x, y) coordinates.
+    """
     return np.unravel_index(np.argmax(image), image.shape)
 
 
 def nms_iter(image, peak_radius):
+    """
+    Iterate through peaks in the image using non-maximum suppression (NMS).
+
+    The function yields peaks by repeatedly finding the maximum value in the image, suppressing its
+    neighborhood within the given peak radius, and repeating the process. The iteration stops when no
+    more positive values remain in the image.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        The input grayscale image.
+    peak_radius : int
+        The radius around each peak to suppress in subsequent iterations.
+
+    Yields
+    ------
+    dict
+        A dictionary containing the peak index, coordinates, and value:
+        - 'n_peak' : int, the index of the current peak.
+        - 'peak_xy' : tuple, the (x, y) coordinates of the peak.
+        - 'peak_value' : float, the value of the peak.
+    """
+
     # peak radius must be a non-negative int
     if not (isinstance(peak_radius, int) and (peak_radius >= 0)):
         raise ValueError(f"Argument 'peak_radius' must be a non-negative integer (but is: {peak_radius})")
@@ -63,6 +122,33 @@ def nms_iter(image, peak_radius):
 
 
 def nms(image, peak_radius, max_peak_count=1000, rel_max_value=0.1):
+    """
+    Perform non-maximum suppression (NMS) to extract peaks from the image.
+
+    The function finds peaks in the image, suppressing neighboring values around each peak and iterating
+    until the specified maximum peak count or relative peak value threshold is reached.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        The input grayscale image.
+    peak_radius : int
+        The radius around each peak to suppress in subsequent iterations.
+    max_peak_count : int, optional
+        The maximum number of peaks to extract (default is 1000).
+    rel_max_value : float, optional
+        The relative peak value threshold. The extraction process stops when the peak value falls below
+        this proportion of the maximum peak value (default is 0.1).
+
+    Returns
+    -------
+    list of dict
+        A list of dictionaries, where each dictionary contains information about a detected peak:
+        - 'n_peak' : int, the index of the peak.
+        - 'peak_xy' : tuple, the (x, y) coordinates of the peak.
+        - 'peak_value' : the value of the peak.
+    """
+
     # check argument 'max_peak_count'
     if not (isinstance(max_peak_count, int) and (max_peak_count >= 1)):
         raise ValueError(f"Argument 'max_peak_count' must be an integer >= 1, but is: {max_peak_count}")
