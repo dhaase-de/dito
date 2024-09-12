@@ -2,6 +2,7 @@
 This submodule provides functionality for basic image processing.
 """
 
+import itertools
 import math
 import operator
 
@@ -15,6 +16,77 @@ import dito.visual
 #
 # basic processing
 #
+
+
+def argmin(image):
+    return np.unravel_index(np.argmin(image), image.shape)
+
+
+def argmax(image):
+    return np.unravel_index(np.argmax(image), image.shape)
+
+
+def nms_iter(image, peak_radius):
+    # peak radius must be a non-negative int
+    if not (isinstance(peak_radius, int) and (peak_radius >= 0)):
+        raise ValueError(f"Argument 'peak_radius' must be a non-negative integer (but is: {peak_radius})")
+
+    # only allow images of shape (Y, X) or (Y, X, 1)
+    if not dito.is_gray(image):
+        raise ValueError(f"Image must be grayscale (shapes (Y, X) or (Y, X, 1)), but has shape {image.shape}")
+
+    # remove the last singleton dimension if necessary
+    image_work = image.copy()
+    if len(image_work.shape) == 3:
+        image_work = image_work[:, :, 0]
+
+    for n_peak in itertools.count():
+        # extract max
+        (peak_y, peak_x) = argmax(image_work)
+        peak_value = image_work[peak_y, peak_x]
+
+        # stop if there are no positive values left (otherwise, we might hit an infinite loop)
+        if peak_value <= 0:
+            return
+
+        # suppress neighborhood
+        image_work[
+            max(0, peak_y - peak_radius):min(image_work.shape[0], peak_y + peak_radius + 1),
+            max(0, peak_x - peak_radius):min(image_work.shape[1], peak_x + peak_radius + 1),
+        ] = 0
+
+        yield {
+            "n_peak": n_peak,
+            "peak_xy": (peak_x, peak_y),
+            "peak_value": peak_value,
+        }
+
+
+def nms(image, peak_radius, max_peak_count=1000, rel_max_value=0.1):
+    # check argument 'max_peak_count'
+    if not (isinstance(max_peak_count, int) and (max_peak_count >= 1)):
+        raise ValueError(f"Argument 'max_peak_count' must be an integer >= 1, but is: {max_peak_count}")
+
+    # check argument 'rel_max_value'
+    if not (isinstance(rel_max_value, float) and (0.0 <= rel_max_value <= 1.0)):
+        raise ValueError(f"Argument 'rel_max_value' must be a float between 0.0 and 1.0 (both inclusive), but is: {rel_max_value}")
+
+    peaks = []
+    max_value = None
+    for peak in nms_iter(image=image, peak_radius=peak_radius):
+        if (peak["n_peak"] + 1) >= max_peak_count:
+            # stop if max peak count was reached
+            break
+        if max_value is None:
+            # use first peak's value as reference for all other values (when comparing)
+            max_value = peak["peak_value"]
+        else:
+            # stop if peak value is too small
+            if (peak["peak_value"] / max_value) < rel_max_value:
+                break
+        peaks.append(peak)
+
+    return peaks
 
 
 def clipped_diff(image1, image2, scale=None, offset=None, apply_abs=False):

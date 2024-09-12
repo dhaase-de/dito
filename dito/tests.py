@@ -1191,6 +1191,82 @@ class MultiShow_Tests(TempDirTestCase):
             self.assertEqualImages(image_loaded, images[n_image])
 
 
+class nms_Tests(TestCase):
+    @staticmethod
+    def get_example_data():
+        image = np.zeros(shape=(100, 200), dtype=np.float32)
+        peak_xys = [
+            [0, 0],
+            [20, 20],
+            [30, 20],
+            [100, 50],
+            [150, 50],
+            [199, 99],
+        ]
+
+        for (n_peak, (peak_x, peak_y)) in enumerate(peak_xys):
+            image[peak_y, peak_x] = 1.0 - min(0.9, n_peak * 0.1)
+
+        image = dito.gaussian_blur(image, sigma=1.0)
+        image = image / np.max(image)
+
+        return (image, peak_xys)
+
+    def test_input_image_unaltered(self):
+        image = dito.test_image_segments()
+        image = dito.as_gray(image)
+
+        image_copy = image.copy()
+        dito.nms(image=image, peak_radius=2)
+        self.assertEqualImages(image, image_copy)
+
+    def test_full_example(self):
+        (image, peak_xys) = self.get_example_data()
+
+        for dtype in (np.float32, np.uint8, np.uint16):
+            image_converted = dito.convert(image, dtype=dtype)
+            peaks_nms = dito.nms(image=image_converted, peak_radius=2, max_peak_count=1000, rel_max_value=0.1)
+            self.assertEqual(len(peak_xys), len(peaks_nms))
+
+            for n_peak in range(len(peak_xys)):
+                self.assertEqual(tuple(peak_xys[n_peak]), peaks_nms[n_peak]["peak_xy"])
+
+    def test_zero_image(self):
+        image = np.zeros(shape=(100, 200), dtype=np.float32)
+
+        for dtype in (np.float32, np.uint8, np.uint16):
+            image_converted = dito.convert(image, dtype=dtype)
+            peaks_nms = dito.nms(image=image_converted, peak_radius=2, max_peak_count=1000, rel_max_value=0.1)
+            self.assertEqual(len(peaks_nms), 0)
+
+    def test_invalid_image_shape(self):
+        image = dito.pm5544()
+        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2))
+
+        image.shape = (1,) + image.shape
+        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2))
+
+        image = image[0, 0, :, 0]
+        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2))
+
+    def test_invalid_peak_radius(self):
+        (image, _) = self.get_example_data()
+        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=-1))
+        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2.0))
+
+    def test_invalid_max_peak_count(self):
+        (image, _) = self.get_example_data()
+        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2, max_peak_count=0))
+        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2, max_peak_count=-1))
+        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2, max_peak_count=2.0))
+
+    def test_invalid_rel_max_value(self):
+        (image, _) = self.get_example_data()
+        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2, rel_max_value=1))
+        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2, rel_max_value=-1.0))
+        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2, rel_max_value=2.0))
+
+
 class normalize_Tests(TestCase):
     def run_in_out_test(self, image_in, image_out, **kwargs):
         image_normalized = dito.normalize(image=image_in, **kwargs)
