@@ -258,7 +258,7 @@ def load_multiple(*args, color=None):
     return list(load_multiple_iter(*args, color=color))
 
 
-def save(filename, image, mkdir=True, czi_kwargs=None):
+def save(filename, image, mkdir=True, np_kwargs=None, czi_kwargs=None):
     """
     Save a NumPy array `image` as an image file at `filename`.
 
@@ -284,6 +284,8 @@ def save(filename, image, mkdir=True, czi_kwargs=None):
     mkdir : bool, optional
         Whether to create the parent directories of the given filename if they
         do not exist. Default is True.
+    np_kwargs : dict
+        Arguments to supply to `np.save` (but not `np.savez_compressed` for ".npz" files) when saving NumPy files.
     czi_kwargs : dict
         Arguments to supply to `_save_czi` when saving ".czi" files.
 
@@ -306,7 +308,9 @@ def save(filename, image, mkdir=True, czi_kwargs=None):
     extension = os.path.splitext(filename)[1].lower()
     if extension == ".npy":
         # use NumPy
-        np.save(file=filename, arr=image)
+        if np_kwargs is None:
+            np_kwargs = {}
+        np.save(file=filename, arr=image, **np_kwargs)
     elif extension == ".npz":
         # use NumPy
         np.savez_compressed(file=filename, arr_0=image)
