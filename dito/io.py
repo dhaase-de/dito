@@ -19,7 +19,7 @@ import numpy as np
 import dito.utils
 
 
-def load(filename, color=None, czi_kwargs=None):
+def load(filename, color=None, np_kwargs=None, czi_kwargs=None):
     """
     Load image from file given by `filename` and return NumPy array.
 
@@ -37,6 +37,8 @@ def load(filename, color=None, czi_kwargs=None):
     color : bool or None, optional
         Whether to load the image as color (True), grayscale (False), or as is (None). Default is None.
         Is ignored if the image is loaded via NumPy (i.e., for file extensions ".npy" and ".npz").
+    np_kwargs : dict
+        Arguments to supply to `np.load` when loading NumPy files.
     czi_kwargs : dict
         Arguments to supply to `_load_czi` when loading ".czi" files.
 
@@ -76,10 +78,14 @@ def load(filename, color=None, czi_kwargs=None):
         # use NumPy
         if color is not None:
             raise ValueError("Argument 'color' must be 'None' for NumPy images, but is '{}'".format(color))
-        image = np.load(file=filename)
+        if np_kwargs is None:
+            np_kwargs = {}
+        image = np.load(file=filename, **np_kwargs)
     elif extension == ".npz":
         # use NumPy
-        with np.load(file=filename) as npz_file:
+        if np_kwargs is None:
+            np_kwargs = {}
+        with np.load(file=filename, **np_kwargs) as npz_file:
             npz_keys = tuple(npz_file.keys())
             if len(npz_keys) != 1:
                 raise ValueError("Expected exactly one image in '{}', but got {} (keys: {})".format(filename, len(npz_keys), npz_keys))
