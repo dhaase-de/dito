@@ -475,7 +475,7 @@ class PaddedImageIndexer():
 
         Parameters
         ----------
-        item : tuple of slices
+        item : tuple of slices (with one ellipsis allowed) or slice or ellipsis
             Index tuple to extract the subregion from the image.
 
         Returns
@@ -485,16 +485,44 @@ class PaddedImageIndexer():
 
         Raises
         ------
+        IndexError
+            If more than one ellipsis is used.
         ValueError
             If the indices are invalid.
         TypeError
             If any of the indices are not slices.
         """
-        indices = item
+        if isinstance(item, tuple):
+            indices = item
+        elif isinstance(item, slice):
+            indices = (item,)
+        elif item is Ellipsis:
+            indices = tuple()
+        else:
+            raise ValueError("Index must be either a (i) tuple of slices (with optional ellipsis), (ii) a slice, or (iii) an ellipsis, but is of type '{}'".format(type(item)))
+
         axis_count = len(self.image.shape)
 
-        if len(indices) != axis_count:
-            raise ValueError("The axis count is {}, and does not match the axis count of the image ({})".format(len(indices), axis_count))
+        # find and replace Ellipsis
+        ellipsis_positions = []
+        for (n_axis, index) in enumerate(indices):
+            if isinstance(index, type(Ellipsis)):
+                ellipsis_positions.append(n_axis)
+        if len(ellipsis_positions) == 1:
+            ellipsis_position = ellipsis_positions[0]
+            ellipsis_axis_span = axis_count - len(indices)
+            indices = tuple(indices[:ellipsis_position]) + tuple([slice(None, None, None)] * ellipsis_axis_span) + tuple(indices[(ellipsis_position + 1):])
+        elif len(ellipsis_positions) > 1:
+            raise IndexError("An index can only have a single ellipsis ('...')")
+
+        # add slices (::) for missing axes
+        if len(indices) < axis_count:
+            indices = list(indices)
+            while len(indices) < axis_count:
+                indices.append(slice(None, None, None))
+            indices = tuple(indices)
+        elif len(indices) > axis_count:
+            raise ValueError("The axis count ({}) is larger than the axis count of the image ({})".format(len(indices), axis_count))
 
         # for each axis collect the in-bound cropping indices and the pad widths
         pad_widths = []
