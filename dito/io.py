@@ -478,45 +478,6 @@ def save_tmp(image):
     return filename
 
 
-def decode(b, color=None):
-    """
-    Decode the image data from the given byte array `b` and return a NumPy array.
-
-    The byte array should contain the *encoded* image data, which can be obtained
-    with the `encode` function or by loading the raw bytes of an image file.
-
-    Parameters
-    ----------
-    b : bytes
-        The byte array containing the encoded image data.
-    color : bool or None, optional
-        Whether to load the image as color (True), grayscale (False), or as is (None). Default is None. See `load`.
-
-    Returns
-    -------
-    numpy.ndarray
-        The loaded image as a NumPy array.
-
-    See Also
-    --------
-    `cv2.imdecode` : OpenCV function used for the decoding.
-    """
-
-    # byte array -> NumPy array
-    buf = np.frombuffer(b, dtype=np.uint8)
-
-    # flags - select grayscale or color mode
-    if color is None:
-        flags = cv2.IMREAD_UNCHANGED
-    else:
-        flags = cv2.IMREAD_ANYDEPTH | (cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE)
-
-    # read image
-    image = cv2.imdecode(buf=buf, flags=flags)
-
-    return image
-
-
 def encode(image, extension="png", params=None):
     """
     Encode the given `image` into a byte array which contains the same bytes
@@ -555,6 +516,45 @@ def encode(image, extension="png", params=None):
     (_, array) = cv2.imencode(ext=extension, img=image, params=params)
 
     return array.tobytes()
+
+
+def decode(b, color=None):
+    """
+    Decode the image data from the given byte array `b` and return a NumPy array.
+
+    The byte array should contain the *encoded* image data, which can be obtained
+    with the `encode` function or by loading the raw bytes of an image file.
+
+    Parameters
+    ----------
+    b : bytes
+        The byte array containing the encoded image data.
+    color : bool or None, optional
+        Whether to load the image as color (True), grayscale (False), or as is (None). Default is None. See `load`.
+
+    Returns
+    -------
+    numpy.ndarray
+        The loaded image as a NumPy array.
+
+    See Also
+    --------
+    `cv2.imdecode` : OpenCV function used for the decoding.
+    """
+
+    # byte array -> NumPy array
+    buf = np.frombuffer(b, dtype=np.uint8)
+
+    # flags - select grayscale or color mode
+    if color is None:
+        flags = cv2.IMREAD_UNCHANGED
+    else:
+        flags = cv2.IMREAD_ANYDEPTH | (cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE)
+
+    # read image
+    image = cv2.imdecode(buf=buf, flags=flags)
+
+    return image
 
 
 class CachedImageLoader():
