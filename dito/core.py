@@ -497,8 +497,8 @@ class PaddedImageIndexer():
             raise ValueError("The axis count is {}, and does not match the axis count of the image ({})".format(len(indices), axis_count))
 
         # for each axis collect the in-bound cropping indices and the pad widths
-        in_bound_indices = []
         pad_widths = []
+        indices_after_padding = []
         for (n_axis, index) in enumerate(indices):
             if not isinstance(index, slice):
                 raise TypeError("All indices must be slices, but index #{} is of type '{}'".format(n_axis, type(index).__name__))
@@ -510,35 +510,29 @@ class PaddedImageIndexer():
             # replace None entries of the slice with numbers
             start = index.start if (index.start is not None) else 0
             stop = index.stop if (index.stop is not None) else axis_size
+            step = index.step if (index.step is not None) else 1
 
             if start >= stop:
                 raise ValueError("Slice start ({}) is not smaller than slice stop ({})".format(start, stop))
 
-            # determine padding at the start of the axis
-            if start >= 0:
-                pad_before = 0
-            else:
-                pad_before = -start
-                start = 0
-
-            # determine padding at the end of the axis
-            if stop <= axis_size:
-                pad_after = 0
-            else:
-                pad_after = stop - axis_size
-                stop = axis_size
-
-            # store pad widths and
-            in_bound_indices.append(slice(start, stop))
+            # store pad widths and crop indices
+            pad_before = max(0, -start)
+            pad_after = max(0, stop - axis_size)
             pad_widths.append((pad_before, pad_after))
+            indices_after_padding.append(slice(start + pad_before, stop + pad_before, step))
 
-        # perform a valid crop within the original image
-        image_cropped = self.image[tuple(in_bound_indices)]
+        print("=" * 40)
+        print(indices)
+        print(pad_widths)
+        print(indices_after_padding)
 
         # apply padding where necessary
-        image_padded = np.pad(array=image_cropped, pad_width=pad_widths, **self.pad_kwargs)
+        image_padded = np.pad(array=self.image, pad_width=pad_widths, **self.pad_kwargs)
 
-        return image_padded
+        # perform a valid crop within the padded image
+        image_cropped = image_padded[tuple(indices_after_padding)]
+
+        return image_cropped
 
 
 def pad(image, count=None, count_top=None, count_right=None, count_bottom=None, count_left=None, mode=cv2.BORDER_CONSTANT, constant_value=0):

@@ -1366,6 +1366,58 @@ class otsu_Tests(TestCase):
         self.assertIsInstance(result[1], np.ndarray)
 
 
+class PaddedImageIndexer_Tests(TestCase):
+    def setUp(self):
+        self.image = dito.data.pm5544()
+        self.indexer = dito.core.PaddedImageIndexer(self.image)
+
+    def test_PaddedImageIndexer_no_pad(self):
+        results = [
+            self.indexer[:, :, :],
+            self.indexer[:576, :768, :3],
+            self.indexer[0:576, 0:768, 0:3],
+            self.indexer[0:576:1, 0:768:1, 0:3:1],
+        ]
+        for result in results:
+            self.assertEqualImages(result, self.image)
+
+    def test_PaddedImageIndexer_raise_on_reverse(self):
+        self.assertRaises(ValueError, lambda: self.indexer[::-1, :, :])
+        self.assertRaises(ValueError, lambda: self.indexer[slice(0, 10, -1), :, :])
+        self.assertRaises(ValueError, lambda: self.indexer[slice(10, 0), :, :])
+
+    def test_PaddedImageIndexer_ellipses(self):
+        results = [
+            self.indexer[...],
+            self.indexer[:, ...],
+            self.indexer[:, :, ...],
+            self.indexer[:, :, :, ...],
+        ]
+        for result in results:
+            self.assertEqualImages(result, self.image)
+
+    def test_PaddedImageIndexer_less_axes(self):
+        results = [
+            self.indexer[tuple()],
+            self.indexer[:],
+            self.indexer[:, :],
+        ]
+        for result in results:
+            self.assertEqualImages(result, self.image)
+
+    def test_PaddedImageIndexer_full_out_of_bounds_black_image(self):
+        result = self.indexer[-100:-50, :, :]
+        self.assertNumpyShape(result, (50,) + self.image.shape[1:])
+        self.assertEqualImages(result, np.zeros(shape=(50,) + self.image.shape[1:], dtype=self.image.dtype))
+
+    def test_PaddedImageIndexer_resulting_axis_size(self):
+        for start in (-100, -10, -1, 0, 1, 10, 100):
+            for stop in (-50, -5, -1, 0, 1, 5, 50, self.image.shape[0] + 1, self.image.shape[0] + 50):
+                if start < stop:
+                    result = self.indexer[start:stop, :, :]
+                    self.assertNumpyShape(result, (stop - start,) + self.image.shape[1:])
+
+
 class otsu_theta_Tests(TestCase):
     def test_otsu_theta(self):
         image = dito.pm5544()
