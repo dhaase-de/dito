@@ -1541,11 +1541,14 @@ class rotate_Tests(TestCase):
 
 
 class save_Tests(TempDirTestCase):
-    def _test_save_load(self, extension, basename="image"):
+    def _test_save_load(self, extension, basename="image", save_kwargs=None):
         image = dito.pm5544()
 
+        if save_kwargs is None:
+            save_kwargs = {}
+
         filename_str = str(os.path.join(self.temp_dir.name, "dir_str", "{}_str.{}".format(basename, extension)))
-        dito.save(filename=filename_str, image=image)
+        dito.save(filename=filename_str, image=image, **save_kwargs)
         image_str_loaded = dito.load(filename=filename_str)
 
         filename_pathlib = pathlib.Path(os.path.join(self.temp_dir.name, "dir_pathlib", "{}_pathlib.{}".format(basename, extension)))
@@ -1566,6 +1569,23 @@ class save_Tests(TempDirTestCase):
 
     def test_save_load_png(self):
         self._test_save_load(extension="png")
+
+    def test_save_imwrite_params(self):
+        self._test_save_load(extension="png", save_kwargs=dict(imwrite_params=None))
+        self._test_save_load(extension="png", save_kwargs=dict(imwrite_params=tuple()))
+        self._test_save_load(extension="png", save_kwargs=dict(imwrite_params=(cv2.IMWRITE_PNG_STRATEGY, cv2.IMWRITE_PNG_STRATEGY_RLE)))
+        self._test_save_load(extension="png", save_kwargs=dict(imwrite_params=(cv2.IMWRITE_PNG_STRATEGY, cv2.IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY)))
+
+    def test_save_imwrite_params_jpg_size(self):
+        image = dito.pm5544()
+
+        filename_q90 = str(os.path.join(self.temp_dir.name, "jpg_size_q90.jpg"))
+        filename_q50 = str(os.path.join(self.temp_dir.name, "jpg_size_q50.jpg"))
+
+        dito.save(filename=filename_q90, image=image, imwrite_params=(cv2.IMWRITE_JPEG_QUALITY, 90))
+        dito.save(filename=filename_q50, image=image, imwrite_params=(cv2.IMWRITE_JPEG_QUALITY, 50))
+
+        self.assertGreater(os.stat(filename_q90).st_size, os.stat(filename_q50).st_size)
 
     def test_save_load_npy(self):
         self._test_save_load(extension="npy")

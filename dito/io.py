@@ -258,7 +258,7 @@ def load_multiple(*args, color=None):
     return list(load_multiple_iter(*args, color=color))
 
 
-def save(filename, image, mkdir=True, np_kwargs=None, czi_kwargs=None):
+def save(filename, image, mkdir=True, imwrite_params=None, np_kwargs=None, czi_kwargs=None):
     """
     Save a NumPy array `image` as an image file at `filename`.
 
@@ -284,9 +284,11 @@ def save(filename, image, mkdir=True, np_kwargs=None, czi_kwargs=None):
     mkdir : bool, optional
         Whether to create the parent directories of the given filename if they
         do not exist. Default is True.
-    np_kwargs : dict
+    imwrite_params : tuple or None
+        Tuple to use as value for the argument `params` of `cv2.imwrite`.
+    np_kwargs : dict or None
         Arguments to supply to `np.save` (but not `np.savez_compressed` for ".npz" files) when saving NumPy files.
-    czi_kwargs : dict
+    czi_kwargs : dict or None
         Arguments to supply to `_save_czi` when saving ".czi" files.
 
     Raises
@@ -327,7 +329,9 @@ def save(filename, image, mkdir=True, np_kwargs=None, czi_kwargs=None):
                 image_file.write(encode(image=image, extension=pathlib.Path(filename).suffix))
         else:
             # all other cases
-            cv2.imwrite(filename=filename, img=image)
+            if imwrite_params is None:
+                imwrite_params = tuple()
+            cv2.imwrite(filename=filename, img=image, params=imwrite_params)
 
 
 def _save_czi(
