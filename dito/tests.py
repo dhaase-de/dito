@@ -1381,11 +1381,6 @@ class PaddedImageIndexer_Tests(TestCase):
         for result in results:
             self.assertEqualImages(result, self.image)
 
-    def test_PaddedImageIndexer_raise_on_reverse(self):
-        self.assertRaises(ValueError, lambda: self.indexer[::-1, :, :])
-        self.assertRaises(ValueError, lambda: self.indexer[slice(0, 10, -1), :, :])
-        self.assertRaises(ValueError, lambda: self.indexer[slice(10, 0), :, :])
-
     def test_PaddedImageIndexer_ellipses(self):
         results = [
             self.indexer[...],
@@ -1412,10 +1407,41 @@ class PaddedImageIndexer_Tests(TestCase):
 
     def test_PaddedImageIndexer_resulting_axis_size(self):
         for start in (-100, -10, -1, 0, 1, 10, 100):
-            for stop in (-50, -5, -1, 0, 1, 5, 50, self.image.shape[0] + 1, self.image.shape[0] + 50):
-                if start < stop:
-                    result = self.indexer[start:stop, :, :]
-                    self.assertNumpyShape(result, (stop - start,) + self.image.shape[1:])
+            for delta in (0, 1, 10, self.image.shape[0]):
+                stop = start + delta
+                result = self.indexer[start:stop, :, :]
+                self.assertNumpyShape(result, (max(0, stop - start),) + self.image.shape[1:])
+
+    def test_PaddedImageIndexer_large_step(self):
+        for start in (None, 0, 1, 100):
+            for step in (1, 10, 1000):
+                result = self.indexer[slice(start, None, step), :, :]
+                self.assertEqualImages(result, self.image[slice(start, None, step), :, :])
+
+    def test_PaddedImageIndexer_mirror_pad(self):
+        mirror_indexer = dito.core.PaddedImageIndexer(
+            image=self.image,
+            pad_kwargs=dict(
+                mode="reflect",
+            ),
+        )
+        result = mirror_indexer[-288:288, :, :]
+        self.assertEqualImages(
+            result,
+            dito.visual.stack([
+                [self.image[:289, :, :][::-1, :, :]],
+                [self.image[1:288, :, :]]],
+            ),
+        )
+
+    def test_PaddedImageIndexer_raise_on_negative_step(self):
+        self.assertRaises(ValueError, lambda: self.indexer[::-1, :, :])
+        self.assertRaises(ValueError, lambda: self.indexer[slice(0, 10, -1), :, :])
+        self.assertRaises(ValueError, lambda: self.indexer[slice(10, None, -1), :, :])
+
+    def test_PaddedImageIndexer_raise_on_start_larger_than_stop(self):
+        self.assertRaises(ValueError, lambda: self.indexer[100:10, :, :])
+        self.assertRaises(ValueError, lambda: self.indexer[slice(1000, None), :, :])
 
 
 class otsu_theta_Tests(TestCase):

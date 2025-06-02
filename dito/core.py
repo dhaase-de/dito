@@ -502,8 +502,8 @@ class PaddedImageIndexer():
         for (n_axis, index) in enumerate(indices):
             if not isinstance(index, slice):
                 raise TypeError("All indices must be slices, but index #{} is of type '{}'".format(n_axis, type(index).__name__))
-            if (index.step is not None) and (index.step != 1):
-                raise ValueError("Step sizes != 1 are currently not supported, but index #{} has step size {}".format(n_axis, index.step))
+            if (index.step is not None) and (index.step < 0):
+                raise ValueError("Negative step sizes are currently not supported, but index #{} has step size {}".format(n_axis, index.step))
 
             axis_size = self.image.shape[n_axis]
 
@@ -512,19 +512,14 @@ class PaddedImageIndexer():
             stop = index.stop if (index.stop is not None) else axis_size
             step = index.step if (index.step is not None) else 1
 
-            if start >= stop:
-                raise ValueError("Slice start ({}) is not smaller than slice stop ({})".format(start, stop))
+            if start > stop:
+                raise ValueError("Slice start ({}) is larger than slice stop ({})".format(start, stop))
 
             # store pad widths and crop indices
             pad_before = max(0, -start)
             pad_after = max(0, stop - axis_size)
             pad_widths.append((pad_before, pad_after))
             indices_after_padding.append(slice(start + pad_before, stop + pad_before, step))
-
-        print("=" * 40)
-        print(indices)
-        print(pad_widths)
-        print(indices_after_padding)
 
         # apply padding where necessary
         image_padded = np.pad(array=self.image, pad_width=pad_widths, **self.pad_kwargs)
