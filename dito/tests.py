@@ -8,6 +8,12 @@ import numpy as np
 
 import dito
 
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    plt = None
+    print("Could not import matplotlib -- skipping its related tests")
+
 
 ####
 #%%% base classes
@@ -562,6 +568,40 @@ class dtype_range_Tests(TestCase):
     def test_dtype_range_bool(self):
         range_ = dito.dtype_range(dtype=np.bool_)
         self.assertEqual(range_, (False, True))
+
+
+@unittest.skipIf(plt is None, "Skipped due to failed matplotlib import")
+class fig_to_image_Tests(TestCase):
+    def setUp(self):
+        # create matplotlib plot
+        (self.fig, self.ax) = plt.subplots()
+        xs = list(range(10))
+        ys = [x**2 for x in xs]
+        self.ax.plot(xs, ys)
+
+    def test_fig_to_image_shape(self):
+        sizes = [
+            (640, 480),
+            (800, 600),
+            (1600, 900),
+        ]
+        for size in sizes:
+            image = dito.fig_to_image(fig=self.fig, size=size)
+            self.assertNumpyShape(image, (size[1], size[0], 3))
+
+    def test_fig_to_image_dtype(self):
+        image = dito.fig_to_image(fig=self.fig)
+        self.assertEqual(image.dtype, np.uint8)
+
+    def test_fig_to_image_white_background(self):
+        image = dito.fig_to_image(fig=self.fig, size=(800, 600))
+        self.assertTrue(np.all(image[0, 0, :] == np.array([255, 255, 255], dtype=np.uint8)))
+
+    def test_fig_to_image_savefig_kwargs(self):
+        image_default = dito.fig_to_image(fig=self.fig, size=(300, 200))
+        image_custom = dito.fig_to_image(fig=self.fig, size=(300, 200), savefig_kwargs=dict(facecolor="black"))
+        self.assertEqualImageContainers(image_default, image_custom)
+        self.assertDifferingImages(image_default, image_custom)
 
 
 class encode_Tests(TestCase):

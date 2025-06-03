@@ -1,11 +1,78 @@
 """
-This submodule provides functionality for the conversion of NumPy arrays to other formats.
+This submodule provides functionality for the conversion of NumPy arrays to other formats and vice versa.
 """
+import io
 
+import cv2
 import numpy as np
 
 import dito.core
 import dito.exceptions
+
+
+#
+# matplotlib
+#
+
+
+def fig_to_image(fig, size=(800, 600), savefig_kwargs=None):
+    """
+    Convert a Matplotlib figure to a NumPy image array.
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        The Matplotlib figure to convert.
+    size : tuple of int, optional
+        Desired output image size in pixels as (width, height). Default is (800, 600).
+    savefig_kwargs : dict, optional
+        Additional keyword arguments passed to `fig.savefig`. Can override default options
+        like facecolor or transparency.
+
+    Returns
+    -------
+    numpy.ndarray
+        Image array in HWC format (height, width, 3), with BGR channels.
+
+    Notes
+    -----
+    Removes alpha channel from the saved PNG to avoid transparency artifacts,
+    following known Matplotlib behavior (see issue #14339).
+
+    Examples
+    --------
+    >>> (fig, ax) = plt.subplots()
+    >>> ax.plot([0, 1], [0, 1])
+    >>> image = fig_to_image(fig, size=(400, 300))
+    >>> image.shape
+    (300, 400, 3)
+    """
+
+    # set figure size in pixels
+    (width, height) = size
+    dpi = width / fig.get_size_inches()[0]
+    fig.set_size_inches(width / dpi, height / dpi)
+
+    # save figure to buffer
+    savefig_kwargs_merged = dict(
+        facecolor="white",
+        transparent=False,
+    )
+    if savefig_kwargs is not None:
+        savefig_kwargs_merged.update(savefig_kwargs)
+    buffer = io.BytesIO()
+    fig.savefig(buffer, format="png", dpi=dpi, **savefig_kwargs_merged)
+
+    # read image from buffer
+    buffer.seek(0)
+    png_bytes = np.frombuffer(buffer.getvalue(), dtype=np.uint8)
+    image = cv2.imdecode(buf=png_bytes, flags=cv2.IMREAD_UNCHANGED)
+
+    # remove alpha channel (see https://github.com/matplotlib/matplotlib/issues/14339)
+    if (len(image.shape) == 3) and (image.shape[2] == 4):
+        image = image[:, :, :3]
+
+    return image
 
 
 #
