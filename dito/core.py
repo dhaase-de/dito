@@ -392,6 +392,10 @@ def check_shape(image_or_shape, shape_def):
         missing_part_count = len(image_shape) - (len(shape_def_parts) - 1)
         shape_def_parts = shape_def_parts[:ellipsis_index] + (["_"] * missing_part_count) + shape_def_parts[(ellipsis_index + 1):]
 
+    # this should not happen, but let's better check it
+    if len(shape_def_parts) != len(image_shape):
+        raise RuntimeError("Internal error: shape definition length and image shape length differ after ellipsis expansion")
+
     # parse every part of the shape definition
     shape_def_numss = []
     for shape_def_part in shape_def_parts:
@@ -402,7 +406,13 @@ def check_shape(image_or_shape, shape_def):
 
         # try to parse one or multiple numbers separated by "|"
         pipe_parts = shape_def_part.split("|")
+
+        # check for empty parts after pipe splitting (e.g., caused by "3|" or "3||4")
+        if any(pipe_part == "" for pipe_part in pipe_parts):
+            raise ValueError("Invalid part '{}' in shape definition '{}'".format(shape_def_part, shape_def))
+
         try:
+            # first try to parse numbers after pipe splitting
             nums = [int(pipe_part) for pipe_part in pipe_parts]
         except ValueError:
             # no number(s) -> now try to parse a name
