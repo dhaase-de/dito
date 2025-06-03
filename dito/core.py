@@ -356,7 +356,9 @@ def tir(*args):
 #
 
 
-def check_shape(image_or_shape, shape_def):
+def parse_shape(image_or_shape, shape_def):
+    # TODO: make sure axis names are unique, except for "_"
+
     # check types
     if isinstance(image_or_shape, np.ndarray):
         image_shape = image_or_shape.shape
@@ -397,45 +399,90 @@ def check_shape(image_or_shape, shape_def):
         raise RuntimeError("Internal error: shape definition length and image shape length differ after ellipsis expansion")
 
     # parse every part of the shape definition
-    shape_def_numss = []
+    shape_def_paramss = []
     for shape_def_part in shape_def_parts:
-        # a shape_def part must be one of:
-        # - a non-negative int
+        # a shape_def part can contain:
+        # - just a name (e.g., "c"), or
+        # - just a value definition (e.g., "1|3"), or
+        # - both a name and a value definition (e.g., "c=1|3"),
+        # and the value definition must be:
+        # - a non-negative int, or
         # - non-negative ints, separated by "|"
-        # - a name (letters and underscores allowed)
 
-        # try to parse one or multiple numbers separated by "|"
-        pipe_parts = shape_def_part.split("|")
-
-        # check for empty parts after pipe splitting (e.g., caused by "3|" or "3||4")
-        if any(pipe_part == "" for pipe_part in pipe_parts):
-            raise ValueError("Invalid part '{}' in shape definition '{}'".format(shape_def_part, shape_def))
-
-        try:
-            # first try to parse numbers after pipe splitting
-            nums = [int(pipe_part) for pipe_part in pipe_parts]
-        except ValueError:
-            # no number(s) -> now try to parse a name
-            name_match = re.fullmatch(r"[a-zA-Z_]+", shape_def_part)
+        # for the current shape definition part, get the name (if specified) and/or the value string (if specified)
+        # it is possible that both are specified (e.g., "c=1|3") or that only one of them is specified ("c" or "1|3")
+        name_pattern = r"[a-zA-Z_]+"
+        if "=" in shape_def_part:
+            # the shape definition part contains both a name and a value specification
+            (part_name, part_value_str) = shape_def_part.split("=", 1)
+        else:
+            # the shape definition part contains either a name or a value specification, and we need to find out which
+            name_match = re.fullmatch(name_pattern, shape_def_part)
             if name_match is not None:
-                nums = None
+                # it is just the name
+                (part_name, part_value_str) = (shape_def_part, None)
             else:
-                raise ValueError("Invalid part '{}' in shape definition '{}'".format(shape_def_part, shape_def))
+                # otherwise, it must be a value string
+                (part_name, part_value_str) = (None, shape_def_part)
 
-        # if part consists of numbers, make sure that they are non-negative
-        if nums is not None:
-            for num in nums:
-                if num < 0:
-                    raise ValueError("Shape definition '{}' contains negative number: {}".format(shape_def, num))
+        # verify the name (if it is specified)
+        if part_name is not None:
+            name_match = re.fullmatch(name_pattern, part_name)
+            if name_match is None:
+                raise ValueError(f"Invalid axis name '{part_name}' in part '{shape_def_part}' of shape definition '{shape_def}'")
 
-        shape_def_numss.append(nums)
+        # special case: part name "_" is treated as no name (-> placeholder)
+        if (part_name is not None) and (part_name == "_"):
+            part_name = None
 
-    # check each entry of the shape
-    for (n_axis, (item, nums)) in enumerate(zip(image_shape, shape_def_numss)):
-        if nums is None:
+        # verify the number part (if it is specified)
+        if part_value_str is None:
+            part_values = None
+        else:
+            # try to parse one or multiple numbers separated by "|"
+            pipe_parts = part_value_str.split("|")
+
+            # check for empty parts after pipe splitting (e.g., caused by "3|" or "3||4")
+            if any(pipe_part == "" for pipe_part in pipe_parts):
+                raise ValueError("Missing numeric value in part '{}' of shape definition '{}' (possibly caused by '|' not being surrounded by a number on each side)".format(shape_def_part, shape_def))
+
+            # parse integers
+            try:
+                part_values = [int(pipe_part) for pipe_part in pipe_parts]
+            except ValueError:
+                raise ValueError(f"Invalid numeric value in part '{shape_def_part}' of shape definition '{shape_def}'")
+
+            # make sure that the integers are non-negative
+            for value in part_values:
+                if value < 0:
+                    raise ValueError("Negative numeric value in part '{}' of shape definition '{}'".format(shape_def_part, shape_def))
+
+        # save name (possibly None) and list of allowed values (possibly None, meaning "any")
+        # for the current shape definition part
+        shape_def_paramss.append({
+            "name": part_name,
+            "part_values": part_values,
+        })
+
+    # check each entry of the shape and fill collect values for named shape definition parts
+    axis_names_to_sizes = {}
+    for (n_axis, (axis_size, shape_def_params)) in enumerate(zip(image_shape, shape_def_paramss)):
+        axis_name = shape_def_params["name"]
+        axis_size_constraints = shape_def_params["part_values"]
+
+        # if name for the current axis is given in the shape definition, collect the actual axis size
+        if axis_name is not None:
+            axis_names_to_sizes[axis_name] = axis_size
+
+        # if there are no value constraints for the current axis, proceed without error
+        if axis_size_constraints is None:
             continue
-        if item not in nums:
-            raise ValueError("Shape mismatch ({} vs. {}) for axis index {} between image shape '{}' and shape definition '{}'".format(item, shape_def_parts[n_axis], n_axis, image_shape, shape_def))
+
+        # if there are value constraints for the current axis, raise an error of they are violated
+        if axis_size not in axis_size_constraints:
+            raise ValueError(f"Shape mismatch ({axis_size} vs. {'|'.join(str(constraint) for constraint in axis_size_constraints)}) for axis index {n_axis} {'(' + axis_name + ') ' if axis_name is not None else ''}between image shape '{image_shape}' and shape definition '{shape_def}'")
+
+    return axis_names_to_sizes
 
 
 def size(image):
