@@ -1752,6 +1752,10 @@ def prepare_for_display(image, scale=None, normalize_mode=None, normalize_kwargs
     return image
 
 
+def showr(*args, **kwargs):
+    return show(*args, raise_on_qkey=True, **kwargs)
+
+
 def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name=DEFAULT_WINDOW_NAME, close_window=False, engine=None, raise_on_qkey=False):
     """
     Display the image on the screen.
