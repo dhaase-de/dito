@@ -105,6 +105,39 @@ def draw_ring(image, center, radius1, radius2, color, thickness, line_type, star
         draw_circle(image=image, center=center, radius=radius2, color=color, thickness=thickness, line_type=line_type, start_angle=start_angle, end_angle=end_angle)
 
 
+def draw_rectangle(image, point1, point2, color, thickness, line_type):
+    """
+    Draw a rectangle into the given image.
+
+    This function uses OpenCV's `cv2.rectangle` to draw a rectangle between two corner points.
+    The image is modified in-place.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        Input image to draw into. This image will be altered in-place, just like using similar OpenCV drawing functions such as `cv2.line`.
+    point1 : tuple of float
+        One corner of the rectangle (typically top-left).
+    point2 : tuple of float
+        The opposite corner of the rectangle (typically bottom-right).
+    color : tuple of int
+        The color of the rectangle as a tuple of values for each color channel.
+    thickness : int
+        Thickness of the rectangle lines in pixels. Use `cv2.FILLED` to draw a filled rectangle.
+    line_type : int
+        The type of line used to draw the rectangle. Options include `cv2.LINE_4`, `cv2.LINE_8`, and `cv2.LINE_AA`.
+
+    Note
+    ----
+    The image is altered in-place.
+
+    Returns
+    -------
+    None
+    """
+    cv2.rectangle(img=image, pt1=point1, pt2=point2, color=color, thickness=thickness, lineType=line_type)
+
+
 def draw_polygon(image, points, color, thickness, line_type):
     """
     Draw a polygon into the given image.
