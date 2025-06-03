@@ -357,6 +357,15 @@ def tir(*args):
 #
 
 
+def check_shape(image_or_shape, shape_def):
+    """
+    TODO: docstring
+
+    Alias for `parse_shape` which does not return anyting, it only raises an error if the shape does not match.
+    """
+    parse_shape(image_or_shape=image_or_shape, shape_def=shape_def)
+
+
 def parse_shape(image_or_shape, shape_def):
     """
     TODO: docstring
@@ -367,7 +376,7 @@ def parse_shape(image_or_shape, shape_def):
     dito.exceptions.ParseShapeDefinitionError
     dito.exceptions.ParseShapeMismatchError
     """
-    
+
     # check types
     if isinstance(image_or_shape, np.ndarray):
         image_shape = image_or_shape.shape
