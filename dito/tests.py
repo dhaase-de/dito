@@ -1391,6 +1391,153 @@ class now_str_Tests(TestCase):
             self.assertGreater(len(result_microtime), case["expected_length"])
 
 
+class parse_shape_Tests(TestCase):
+    def setUp(self):
+        self.shape4 = (8, 100, 200, 3)
+
+    def test_parse_shape_bad_inputs(self):
+        cases = [
+            (None, "b h w c"),
+            ((8, 100, 200, 3), None),
+            ("b h w c", "b h w c"),
+            ((8, 100, 200, 3), 123),
+            ((8, 100, 200, 3), (8, 100, 200, 3)),
+            (123, "b h w c"),
+            ([], "b h w c"),
+        ]
+        for (shape, shape_def) in cases:
+            with self.assertRaises(TypeError):
+                dito.parse_shape(shape, shape_def)
+
+    def test_parse_shape_values_only(self):
+        cases = [
+            "8 100 200 3",
+            "8  100  200  3",
+            "  8  100  200  3  ",
+        ]
+        for shape_def in cases:
+            result = dito.parse_shape(self.shape4, shape_def)
+            self.assertEqual(result, {})
+
+    def test_parse_shape_named_axes(self):
+        cases = [
+            ("b h w c", {"b": 8, "h": 100, "w": 200, "c": 3}),
+            ("b  h  w  c", {"b": 8, "h": 100, "w": 200, "c": 3}),
+            ("  b  h  w  c  ", {"b": 8, "h": 100, "w": 200, "c": 3}),
+            ("batch height width channel", {"batch": 8, "height": 100, "width": 200, "channel": 3}),
+        ]
+        for (shape_def, expected_result) in cases:
+            result = dito.parse_shape(self.shape4, shape_def)
+            self.assertEqual(result, expected_result)
+
+    def test_parse_shape_named_axis_with_single_value(self):
+        shape = (100, 200, 3)
+        result = dito.parse_shape(shape, "h w c=3")
+        self.assertEqual(result, {"h": 100, "w": 200, "c": 3})
+
+    def test_parse_shape_named_axis_with_multiple_values(self):
+        cases = [
+            "b h w c=1|3",
+            "b h w c=1|3|3",
+            "b h w c=1|3|1000",
+        ]
+        for shape_def in cases:
+            result = dito.parse_shape(self.shape4, shape_def)
+            self.assertEqual(result, {"b": 8, "h": 100, "w": 200, "c": 3})
+
+    def test_parse_shape_placeholder_names(self):
+        cases = [
+            ("_ _ _ _", {}),
+            ("_ _ _ 3", {}),
+            ("_ _ 200 3", {}),
+            ("_ 100 200 3", {}),
+            ("8 100 200 _", {}),
+            ("8 100 _ _", {}),
+            ("8 _ _ _", {}),
+            ("8 _ 200 3", {}),
+            ("8 100 _ 3", {}),
+        ]
+        for (shape_def, expected_result) in cases:
+            result = dito.parse_shape(self.shape4, shape_def)
+            self.assertEqual(result, expected_result)
+
+    def test_parse_shape_with_nonempty_ellipsis(self):
+        shape = (8, 100, 200, 3)
+        cases = [
+            ("... c=3", {"c": 3}),
+            ("... c=1|3", {"c": 3}),
+            ("b ... c=3", {"b": 8, "c": 3}),
+            ("b=8 ... c=3", {"b": 8, "c": 3}),
+            ("b=4|8 ... c=1|3", {"b": 8, "c": 3}),
+            ("b ...", {"b": 8}),
+            ("b h ... c", {"b": 8, "h": 100, "c": 3}),
+            ("_ ... c", {"c": 3}),
+        ]
+        for (shape_def, expected_result) in cases:
+            result = dito.parse_shape(shape, shape_def)
+            self.assertEqual(result, expected_result)
+
+    def test_parse_shape_with_empty_ellipsis(self):
+        shape = (100, 200, 3)
+        shape_defs = [
+            "... h w c",
+            "... h w c=3",
+            "... h w c=1|3",
+            "... h=100 w=200 c=1|3",
+            "h ... w c=3",
+            "h w ... c=3",
+            "h w c=3 ...",
+        ]
+        for shape_def in shape_defs:
+            result = dito.parse_shape(shape, shape_def)
+            self.assertEqual(result, {"h": 100, "w": 200, "c": 3})
+
+    def test_parse_shape_empty(self):
+        shape = tuple()
+        self.assertEqual(dito.parse_shape(shape, ""), {})
+
+    def test_parse_shape_singleton(self):
+        shape = (8,)
+        self.assertEqual(dito.parse_shape(shape, "_"), {})
+        self.assertEqual(dito.parse_shape(shape, "8"), {})
+        self.assertEqual(dito.parse_shape(shape, "_=8"), {})
+        self.assertEqual(dito.parse_shape(shape, "x=8"), {"x": 8})
+        self.assertEqual(dito.parse_shape(shape, "x=1|2|4|8|16"), {"x": 8})
+
+    def test_parse_shape_raise_definition_error(self):
+        cases = [
+            "b h w .",          # invalid character in name
+            "b h w *",          # invalid character in name
+            "b h w #",          # invalid character in name
+            "b h h c",          # duplicate names
+            "b ... h ... c",    # multiple ellipses
+            "b h w =",          # neither name nor value
+            "b h w c=",         # missing value
+            "b h w c=|",        # missing value
+            "b h w c=1|",       # missing value
+            "b h w c=1||3",     # missing value
+            "b h w c=1.0",      # invalid value
+            "b h w c=a",        # invalid value
+            "b h w c=0xff",     # invalid value
+        ]
+        for shape_def in cases:
+            with self.assertRaises(dito.ParseShapeDefinitionError):
+                dito.parse_shape(self.shape4, shape_def)
+
+    def test_parse_shape_raise_mismatch_error(self):
+        cases = [
+            "",
+            "3",
+            "200 3",
+            "100 200 3",
+            "8 100 200 4",
+            "8 100 200 3 1",
+        ]
+        for shape_def in cases:
+            with self.assertRaises(dito.ParseShapeMismatchError):
+                dito.parse_shape(self.shape4, shape_def)
+
+
 class otsu_Tests(TestCase):
     def test_otsu_raise(self):
         image = dito.pm5544()
