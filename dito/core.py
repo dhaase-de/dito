@@ -1,6 +1,7 @@
 """
 This submodule provides essential tools and helpers for OpenCV images represented as NumPy arrays.
 """
+import re
 
 import cv2
 import numpy as np
@@ -353,6 +354,78 @@ def tir(*args):
 #
 # geometry related
 #
+
+
+def check_shape(image_or_shape, shape_def):
+    # check types
+    if isinstance(image_or_shape, np.ndarray):
+        image_shape = image_or_shape.shape
+    elif isinstance(image_or_shape, tuple):
+        image_shape = image_or_shape
+    else:
+        raise TypeError("Argument 'image_or_shape' must be an image or a tuple, but is of type '{}'".format(type(image_or_shape)))
+
+    if not isinstance(shape_def, str):
+        raise TypeError("Argument 'shape_def' must be a string")
+
+    shape_def_parts = shape_def.strip().split()
+
+    # check if shape definition contains an ellipsis
+    ellipsis_index = None
+    for (n_part, shape_def_part) in enumerate(shape_def_parts):
+        if shape_def_part == "...":
+            if ellipsis_index is None:
+                ellipsis_index = n_part
+            else:
+                raise ValueError("Shape definition must not contain more than one ellipsis ('...'), but is: '{}'".format(shape_def))
+
+    # check if the lengths of the shape and the shape definition are compatible
+    if (
+        (ellipsis_index is None) and (len(image_shape) != len(shape_def_parts))
+    ) or (
+        (ellipsis_index is not None) and ((len(shape_def_parts) - 1) > len(image_shape))
+    ):
+        raise ValueError("Shape definition '{}' and shape '{}' have conflicting lengths".format(shape_def, image_shape))
+
+    # if there is an ellipsis in the shape definition, fill in the missing parts
+    if ellipsis_index is not None:
+        missing_part_count = len(image_shape) - (len(shape_def_parts) - 1)
+        shape_def_parts = shape_def_parts[:ellipsis_index] + (["_"] * missing_part_count) + shape_def_parts[(ellipsis_index + 1):]
+
+    # parse every part of the shape definition
+    shape_def_numss = []
+    for shape_def_part in shape_def_parts:
+        # a shape_def part must be one of:
+        # - a non-negative int
+        # - non-negative ints, separated by "|"
+        # - a name (letters and underscores allowed)
+
+        # try to parse one or multiple numbers separated by "|"
+        pipe_parts = shape_def_part.split("|")
+        try:
+            nums = [int(pipe_part) for pipe_part in pipe_parts]
+        except ValueError:
+            # no number(s) -> now try to parse a name
+            name_match = re.fullmatch(r"[a-zA-Z_]+", shape_def_part)
+            if name_match is not None:
+                nums = None
+            else:
+                raise ValueError("Invalid part '{}' in shape definition '{}'".format(shape_def_part, shape_def))
+
+        # if part consists of numbers, make sure that they are non-negative
+        if nums is not None:
+            for num in nums:
+                if num < 0:
+                    raise ValueError("Shape definition '{}' contains negative number: {}".format(shape_def, num))
+
+        shape_def_numss.append(nums)
+
+    # check each entry of the shape
+    for (n_axis, (item, nums)) in enumerate(zip(image_shape, shape_def_numss)):
+        if nums is None:
+            continue
+        if item not in nums:
+            raise ValueError("Shape mismatch ({} vs. {}) for axis index {} between image shape '{}' and shape definition '{}'".format(item, shape_def_parts[n_axis], n_axis, image_shape, shape_def))
 
 
 def size(image):
