@@ -17,3 +17,17 @@ class InvalidImageShapeError(DitoException):
 
 class QkeyInterrupt(DitoException):
     """Raised when the user presses the Q key during an image display, causing the display to be closed."""
+
+
+class ParseShapeError(DitoException):
+    """Base exception for `parse_shape`-related errors."""
+    pass
+
+
+class ParseShapeDefinitionError(ParseShapeError):
+    """Raised when the shape definition string is invalid."""
+
+
+class ParseShapeMismatchError(ParseShapeError):
+    """Raised when the shape does not match the shape definition."""
+    pass

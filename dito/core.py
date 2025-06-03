@@ -6,6 +6,7 @@ import re
 import cv2
 import numpy as np
 
+import dito.exceptions
 import dito.utils
 
 
@@ -357,8 +358,16 @@ def tir(*args):
 
 
 def parse_shape(image_or_shape, shape_def):
-    # TODO: make sure axis names are unique, except for "_"
+    """
+    TODO: docstring
 
+    Raises
+    ------
+    TypeError
+    dito.exceptions.ParseShapeDefinitionError
+    dito.exceptions.ParseShapeMismatchError
+    """
+    
     # check types
     if isinstance(image_or_shape, np.ndarray):
         image_shape = image_or_shape.shape
@@ -379,7 +388,7 @@ def parse_shape(image_or_shape, shape_def):
             if ellipsis_index is None:
                 ellipsis_index = n_part
             else:
-                raise ValueError("Shape definition must not contain more than one ellipsis ('...'), but is: '{}'".format(shape_def))
+                raise dito.exceptions.ParseShapeDefinitionError(f"Shape definition must not contain more than one ellipsis ('...'), but is: '{shape_def}'")
 
     # check if the lengths of the shape and the shape definition are compatible
     if (
@@ -387,7 +396,7 @@ def parse_shape(image_or_shape, shape_def):
     ) or (
         (ellipsis_index is not None) and ((len(shape_def_parts) - 1) > len(image_shape))
     ):
-        raise ValueError("Shape definition '{}' and shape '{}' have conflicting lengths".format(shape_def, image_shape))
+        raise dito.exceptions.ParseShapeMismatchError(f"Shape definition '{shape_def}' and shape '{image_shape}' have conflicting lengths")
 
     # if there is an ellipsis in the shape definition, fill in the missing parts
     if ellipsis_index is not None:
@@ -429,7 +438,7 @@ def parse_shape(image_or_shape, shape_def):
         if part_name is not None:
             name_match = re.fullmatch(name_pattern, part_name)
             if name_match is None:
-                raise ValueError(f"Invalid axis name '{part_name}' in part '{shape_def_part}' of shape definition '{shape_def}'")
+                raise dito.exceptions.ParseShapeDefinitionError(f"Invalid axis name '{part_name}' in part '{shape_def_part}' of shape definition '{shape_def}'")
 
         # special case: part name "_" is treated as no name (-> placeholder)
         if (part_name is not None) and (part_name == "_"):
@@ -444,18 +453,18 @@ def parse_shape(image_or_shape, shape_def):
 
             # check for empty parts after pipe splitting (e.g., caused by "3|" or "3||4")
             if any(pipe_part == "" for pipe_part in pipe_parts):
-                raise ValueError("Missing numeric value in part '{}' of shape definition '{}' (possibly caused by '|' not being surrounded by a number on each side)".format(shape_def_part, shape_def))
+                raise dito.exceptions.ParseShapeDefinitionError(f"Missing numeric value in part '{shape_def_part}' of shape definition '{shape_def}' (possibly caused by '|' not being surrounded by a number on each side)")
 
             # parse integers
             try:
                 part_values = [int(pipe_part) for pipe_part in pipe_parts]
             except ValueError:
-                raise ValueError(f"Invalid numeric value in part '{shape_def_part}' of shape definition '{shape_def}'")
+                raise dito.exceptions.ParseShapeDefinitionError(f"Invalid numeric value in part '{shape_def_part}' of shape definition '{shape_def}'")
 
             # make sure that the integers are non-negative
             for value in part_values:
                 if value < 0:
-                    raise ValueError("Negative numeric value in part '{}' of shape definition '{}'".format(shape_def_part, shape_def))
+                    raise dito.exceptions.ParseShapeDefinitionError(f"Negative numeric value in part '{shape_def_part}' of shape definition '{shape_def}'")
 
         # save name (possibly None) and list of allowed values (possibly None, meaning "any")
         # for the current shape definition part
@@ -472,6 +481,8 @@ def parse_shape(image_or_shape, shape_def):
 
         # if name for the current axis is given in the shape definition, collect the actual axis size
         if axis_name is not None:
+            if axis_name in axis_names_to_sizes.keys():
+                raise dito.exceptions.ParseShapeDefinitionError(f"Duplicate axis name '{axis_name}' in shape definition '{shape_def}")
             axis_names_to_sizes[axis_name] = axis_size
 
         # if there are no value constraints for the current axis, proceed without error
@@ -480,7 +491,7 @@ def parse_shape(image_or_shape, shape_def):
 
         # if there are value constraints for the current axis, raise an error of they are violated
         if axis_size not in axis_size_constraints:
-            raise ValueError(f"Shape mismatch ({axis_size} vs. {'|'.join(str(constraint) for constraint in axis_size_constraints)}) for axis index {n_axis} {'(' + axis_name + ') ' if axis_name is not None else ''}between image shape '{image_shape}' and shape definition '{shape_def}'")
+            raise dito.exceptions.ParseShapeMismatchError(f"Shape mismatch ({axis_size} vs. {'|'.join(str(constraint) for constraint in axis_size_constraints)}) for axis index {n_axis} {'(' + axis_name + ') ' if axis_name is not None else ''}between image shape '{image_shape}' and shape definition '{shape_def}'")
 
     return axis_names_to_sizes
 
