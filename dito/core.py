@@ -361,7 +361,7 @@ def check_shape(image_or_shape, shape_def):
     """
     TODO: docstring
 
-    Alias for `parse_shape` which does not return anyting, it only raises an error if the shape does not match.
+    Alias for `parse_shape` which does not return anything, it only raises an error if the shape does not match.
     """
     parse_shape(image_or_shape=image_or_shape, shape_def=shape_def)
 
