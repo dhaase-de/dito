@@ -756,7 +756,7 @@ def pm5544():
 
     Returns
     -------
-    numpy.ndarray, shape (576, 720, 3), dtype uint8
+    numpy.ndarray, shape (576, 768, 3), dtype uint8
         The PM5544 test pattern image.
     """
     return dito.io.load(filename=RESOURCES_FILENAMES["image:PM5544"])

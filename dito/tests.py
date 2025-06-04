@@ -1409,6 +1409,29 @@ class parse_shape_Tests(TestCase):
             with self.assertRaises(TypeError):
                 dito.parse_shape(shape, shape_def)
 
+    def test_parse_shape_named_inputs(self):
+        shape_def = "b h w c"
+        results = [
+            dito.parse_shape(self.shape4, shape_def),
+            dito.parse_shape(self.shape4, shape_def=shape_def),
+            dito.parse_shape(image_or_shape=self.shape4, shape_def=shape_def),
+            dito.parse_shape(shape_def=shape_def, image_or_shape=self.shape4),
+        ]
+        for result in results[1:]:
+            self.assertEqual(result, results[0])
+
+    def test_parse_shape_ndarray_or_shape(self):
+        image = dito.pm5544()
+        cases = [
+            (image, "h w c", {"h": 576, "w": 768, "c": 3}),
+            (image.shape, "h w c", {"h": 576, "w": 768, "c": 3}),
+            (image[:, :, 0], "h w", {"h": 576, "w": 768}),
+            (image.shape[:2], "h w", {"h": 576, "w": 768}),
+        ]
+        for (image_or_shape, shape_def, expected_result) in cases:
+            result = dito.parse_shape(image_or_shape, shape_def)
+            self.assertEqual(result, expected_result)
+
     def test_parse_shape_values_only(self):
         cases = [
             "8 100 200 3",
