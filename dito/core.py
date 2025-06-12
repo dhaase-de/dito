@@ -359,22 +359,92 @@ def tir(*args):
 
 def check_shape(image_or_shape, shape_def):
     """
-    TODO: docstring
+    Validate that a given shape matches the specified shape definition.
 
-    Alias for `parse_shape` which does not return anything, it only raises an error if the shape does not match.
+    Parameters
+    ----------
+    image_or_shape : numpy.ndarray or tuple
+        The input image or shape tuple to validate.
+    shape_def : str
+        The shape definition string, describing expected dimensions, names, and/or values. See `parse_shape()` for
+        details.
+
+    Returns
+    -------
+    None
+        Returns nothing if the shape is valid. Raises an error if the shape does not match the definition.
+
+    Raises
+    ------
+    TypeError
+        If the inputs are not of expected types.
+    dito.exceptions.ParseShapeDefinitionError
+        If the shape definition string is malformed.
+    dito.exceptions.ParseShapeMismatchError
+        If the actual shape does not match the definition.
     """
     parse_shape(image_or_shape=image_or_shape, shape_def=shape_def)
 
 
 def parse_shape(image_or_shape, shape_def):
     """
-    TODO: docstring
+    Parse and validate a shape against a textual shape definition, and collect axis sizes into a dictionary using the
+    axis names of the shape definition as keys.
+
+    Parameters
+    ----------
+    image_or_shape : numpy.ndarray or tuple
+        The shape to validate. Can be a NumPy image (uses `.shape`) or a shape tuple.
+    shape_def : str
+        A space-separated shape definition string. Each part describes one axis, and may be:
+        - An axis name without value constraint (e.g., `h` or `height`): accepts any value and is collected into the result.
+        - An unnamed value constraint (e.g., `3` or `1|3|5`): requires the axis to match one of the given sizes.
+        - An axis name with value constraint (e.g., `c=1|3` or `d=256`): must match one of the values and is collected.
+
+        Special symbols and rules:
+        - `...` (ellipsis) may appear once to absorb zero or more axes; these are neither validated nor collected.
+        - `_` is a special named placeholder axis. It may be used multiple times, and is not collected into the output dict.
+        - Axis names must match `[a-zA-Z_]+` and be unique except `_`, which can repeat.
+
+    Returns
+    -------
+    dict
+        A dictionary mapping axis names (excluding `_` and ellipsis-absorbed axes) to their sizes.
 
     Raises
     ------
     TypeError
+        If input types are invalid.
     dito.exceptions.ParseShapeDefinitionError
+        If the shape definition is malformed (e.g., invalid syntax, duplicate names).
     dito.exceptions.ParseShapeMismatchError
+        If the shape does not match the constraints in the definition.
+
+    Examples
+    --------
+    >>> parse_shape((224, 224, 3), "h w 3")
+    {'h': 224, 'w': 224}
+
+    >>> parse_shape((224, 224, 3), "h w c=3")
+    {'h': 224, 'w': 224, 'c': 3}
+
+    >>> parse_shape((224, 224, 1), "h w c=1|3")
+    {'h': 224, 'w': 224, 'c': 1}
+
+    >>> parse_shape((224, 224, 3), "h w ...")
+    {'h': 224, 'w': 224}
+
+    >>> parse_shape((224, 224, 3), "h w c ...")
+    {'h': 224, 'w': 224, 'c': 3}
+
+    >>> parse_shape((8, 224, 224, 3), "batch=8 ... channel=3")
+    {'batch': 8, 'channel': 3}
+
+    >>> parse_shape((1, 14, 28), "1 _ 28")
+    {}
+
+    >>> parse_shape((224, 224, 3), "... c")
+    {'c': 3}
     """
 
     # check types
