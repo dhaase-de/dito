@@ -60,8 +60,16 @@ This is equivalent to `python3 -m dito.tests --verbose`.
 Changelog
 ---------
 
+### v2.13.0 (2025-06-13) - QoL Update III ###
+* added shape-related functions `parse_shape` and `check_shape`
+* added processing functions for non-maximum suppression (`nms` and `nms_iter`)
+* added convenience functions `warp_affine`, `argmin`, `argmax`, `draw_rectangle`, and `showr`
+* added more flexibility for `save` and `load` via optional argument `np_kwargs` (and also `imwrite_params` for `save`)
+* extended `PaddedImageIndexer` to allow an ellipsis (`...`) and step sizes > 1 and fixed the all-out-of-bounds case
+* add function `fig_to_image` to turn a Matplotlib figure into a NumPy image
+
 ### v2.12.0 (2024-04-09) - CZI support ###
-* add support to read and write CZI image files (as a wrapper for the library `pylibCZIrw`)
+* added support to read and write CZI image files (as a wrapper for the library `pylibCZIrw`)
 
 ### v2.11.1 (2023-11-28) - Bugfixes ###
 * fixed (in the wrapper functions `save` and `load`) OpenCV silently failing when reading/writing images with non-ASCII filenames under Windows  
