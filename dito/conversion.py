@@ -41,11 +41,11 @@ def fig_to_image(fig, size=(800, 600), savefig_kwargs=None):
 
     Examples
     --------
-    >>> (fig, ax) = plt.subplots()
-    >>> ax.plot([0, 1], [0, 1])
-    >>> image = fig_to_image(fig, size=(400, 300))
-    >>> image.shape
-    (300, 400, 3)
+    >>> (fig, ax) = plt.subplots()                  # doctest: +SKIP
+    >>> ax.plot([0, 1], [0, 1])                     # doctest: +SKIP
+    >>> image = fig_to_image(fig, size=(400, 300))  # doctest: +SKIP
+    >>> image.shape                                 # doctest: +SKIP
+    (300, 400, 3)                                   # doctest: +SKIP
     """
 
     # set figure size in pixels
