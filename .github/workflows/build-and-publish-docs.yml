@@ -32,7 +32,7 @@ jobs:
       # build documentation into docs/.
       - run: ./scripts/build_docs.sh
 
-      - uses: actions/upload-pages-artifact@v1
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: docs/
 
