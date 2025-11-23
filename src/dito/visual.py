@@ -1796,6 +1796,7 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
         The backend to use for displaying the image. Possible backends are
         - OpenCV (None, `"cv2"`),
         - Matplotlib (`"matplotlib"`, `"plt"`),
+        - Napari (`"napari"`),
         - Jupyter (`"ipython"`, `"jupyter"`), and
         - PyGame (`"pygame"`).
         Default is `None`, which means OpenCV.
@@ -1837,6 +1838,12 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
         plt.imshow(X=dito.core.flip_channels(image=image_show))
         plt.tight_layout()
         plt.show()
+        key = -1
+
+    elif engine in ("napari",):
+        import napari
+        (viewer, _) = napari.imshow(image_show)
+        napari.run()
         key = -1
 
     elif engine in ("ipython", "jupyter"):

@@ -40,6 +40,7 @@ dependencies = [
 [project.optional-dependencies]
 extras = [
     "matplotlib",
+    "napari",
     "pylibczirw",
     "pyside6",
     "scikit-learn",
@@ -50,6 +51,7 @@ dev = [
     "dito",
     "docstr-coverage",
     "matplotlib",
+    "napari",
     "pdoc",
     "pylibczirw",
     "pyside6",
