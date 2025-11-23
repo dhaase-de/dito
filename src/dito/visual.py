@@ -1753,6 +1753,20 @@ def prepare_for_display(image, scale=None, normalize_mode=None, normalize_kwargs
 
 
 def showr(*args, **kwargs):
+    """
+    Same as `show`, but with `raise_on_qkey=True`.
+
+    This wrapper forwards all arguments to `show` and forces `raise_on_qkey=True`. See `show` for detailed parameter,
+    return-value, and exception semantics.
+
+    Parameters
+    ----------
+    *args
+        Positional arguments forwarded to `show`.
+    **kwargs
+        Keyword arguments forwarded to `show` (except `raise_on_qkey`,
+        which is always overridden).
+    """
     return show(*args, raise_on_qkey=True, **kwargs)
 
 
