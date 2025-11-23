@@ -8,4 +8,4 @@ set -o nounset
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 source "$SCRIPT_DIR"/setenv.sh
-cd "$PACKAGE_DIR" && docstr-coverage --exclude='.*/tests' dito/ 2>&1 | tee .docstr_coverage
+cd "$PACKAGE_DIR" && uv run --dev docstr-coverage --exclude='.*/tests' src/dito/ 2>&1 | tee .docstr_coverage

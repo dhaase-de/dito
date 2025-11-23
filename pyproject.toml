@@ -1,0 +1,104 @@
+#
+# build config
+#
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+#
+# project config
+#
+
+[project]
+name = "dito"
+version = "2.14.0.dev0"
+authors = [{name="Daniel Haase", email="git@dhaase.de"}]
+description = "Yet another toolbox for the daily work with OpenCV under Python."
+keywords = ["OpenCV", "image processing"]
+readme = "README.md"
+license = "MIT"
+license-files = [
+    "LICENSE.txt",
+    "src/dito/resources/colormaps/colorbrewer/LICENSE.txt",
+    "src/dito/resources/colormaps/colorbrewer/LICENSE.txt",
+    "src/dito/resources/fonts/scientifica/LICENSE.txt",
+    "src/dito/resources/fonts/source_code_pro/LICENSE.txt",
+    "src/dito/resources/fonts/terminus/LICENSE.txt",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.13.3",
+    "opencv-python>=3.0.0",
+]
+
+[project.optional-dependencies]
+extras = [
+    "matplotlib",
+    "pylibczirw",
+    "pyside6",
+    "scikit-learn",
+]
+
+[dependency-groups]
+dev = [
+    "dito",
+    "docstr-coverage",
+    "matplotlib",
+    "pdoc",
+    "pylibczirw",
+    "pyside6",
+    "ruff>=0.11.13",
+    "scikit-learn",
+]
+
+[project.urls]
+Documentation = "https://dhaase-de.github.io/dito/"
+Repository = "https://github.com/dhaase-de/dito.git"
+
+#
+# tool specific configs
+#
+
+[tool.setuptools]
+include-package-data = true
+script-files=[
+    "bin/dito_czi_to_npy.py",
+    "bin/dito_images_to_video.py",
+    "bin/dito_pinfo.py",
+]
+
+[tool.setuptools.package-data]
+dito = [
+    "resources/colormaps/*.png",
+    "resources/colormaps/colorbrewer/LICENSE.txt",
+    "resources/colormaps/colorbrewer/colorbrewer.json",
+    "resources/colormaps/colorbrewer/*.png",
+    "resources/fonts/*/LICENSE.txt",
+    "resources/fonts/scientifica/*.png",
+    "resources/fonts/source_code_pro/*.png",
+    "resources/fonts/terminus/*.png",
+    "resources/images/*.png",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.uv.sources]
+dito = {workspace = true}
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+publish-url = "https://upload.pypi.org/legacy/"
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true

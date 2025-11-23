@@ -9,4 +9,4 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 source "$SCRIPT_DIR"/setenv.sh
 
 # run setup script
-cd "$PACKAGE_DIR" && /usr/bin/env python3 setup.py bdist_wheel
+cd "$PACKAGE_DIR" && uv build

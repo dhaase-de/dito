@@ -6,6 +6,6 @@ set -o nounset
 
 # get absolute path of this script
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-source "$SCRIPT_DIR"/setenv.sh
 
-cd "$PACKAGE_DIR" && twine upload dist/dito-*-py3-none-any.whl
+source "$SCRIPT_DIR"/setenv.sh
+cd "$PACKAGE_DIR" && uv publish --verbose

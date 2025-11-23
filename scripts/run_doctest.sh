@@ -8,4 +8,4 @@ set -o nounset
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 source "$SCRIPT_DIR"/setenv.sh
-cd "$PACKAGE_DIR" && python3 -m doctest -v ./dito/*.py --option REPORT_NDIFF
+cd "$PACKAGE_DIR" && uv run --dev python -m doctest -v "$SOURCE_DIR"/*.py --option REPORT_NDIFF

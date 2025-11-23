@@ -1,3 +1,0 @@
-pylibCZIrw
-PySide6
-scikit-learn

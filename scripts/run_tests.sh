@@ -6,6 +6,6 @@ set -o nounset
 
 # get absolute path of this script
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-source "$SCRIPT_DIR"/setenv.sh
 
-/usr/bin/env python3 "$SOURCE_DIR"/tests.py --verbose "$@"
+source "$SCRIPT_DIR"/setenv.sh
+cd "$PACKAGE_DIR" && uv run --dev "$SOURCE_DIR"/tests.py --verbose "$@"
