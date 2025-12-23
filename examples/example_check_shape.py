@@ -38,7 +38,7 @@ def main():
         else:
             status = "OK"
 
-        print("shape_def='{}': {}".format(shape_def, status))
+        print(f"shape_def='{shape_def}': {status}")
 
 
 if __name__ == '__main__':
