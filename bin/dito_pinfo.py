@@ -30,7 +30,7 @@ def main():
     filenames = sorted(filenames)
     file_count = len(filenames)
     if file_count == 0:
-        raise FileNotFoundError("Found no images with the filenames(s) {}".format(args.image_filenames))
+        raise FileNotFoundError(f"Found no images with the filenames(s) {args.image_filenames}")
 
     dito.pinfo(*filenames, extended_=args.extended, minimal_=args.minimal)
 
@@ -43,5 +43,5 @@ if __name__ == "__main__":
         if args.debug:
             raise
         else:
-            print("ERROR: {} ({})".format(e, type(e).__name__))
+            print(f"ERROR: {e} ({type(e).__name__})")
             sys.exit(1)

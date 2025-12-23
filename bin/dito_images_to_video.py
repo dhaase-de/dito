@@ -29,13 +29,13 @@ def main():
     filenames = sorted(filenames)
     file_count = len(filenames)
     if file_count == 0:
-        raise FileNotFoundError("Found no images with the filenames(s) {}".format(args.input_filenames))
-    print("Found {} image(s)".format(file_count))
+        raise FileNotFoundError(f"Found no images with the filenames(s) {args.input_filenames}")
+    print(f"Found {file_count} image(s)")
 
-    print("Saving video '{}'...".format(args.output_filename))
+    print(f"Saving video '{args.output_filename}'...")
     with dito.VideoSaver(filename=args.output_filename, codec=args.codec, fps=args.fps, color=not args.gray) as saver:
         for (n_file, filename) in enumerate(filenames):
-            print("[{}/{}]  {}".format(n_file + 1, file_count, filename))
+            print(f"[{n_file + 1}/{file_count}]  {filename}")
             image = dito.load(filename=filename)
             saver.append(image)
     saver.print_summary()
@@ -49,5 +49,5 @@ if __name__ == "__main__":
         if args.debug:
             raise
         else:
-            print("ERROR: {} ({})".format(e, type(e).__name__))
+            print(f"ERROR: {e} ({type(e).__name__})")
             sys.exit(1)

@@ -29,13 +29,13 @@ def main(args):
 
     file_count = len(filenames)
     if file_count == 0:
-        raise FileNotFoundError("Found no images with the filenames(s) {}".format(args.image_filenames))
+        raise FileNotFoundError(f"Found no images with the filenames(s) {args.image_filenames}")
 
     for filename_czi in filenames:
         # check if extension is '.czi'
         filename_split = os.path.splitext(filename_czi)
         if filename_split[1].lower() != ".czi":
-            raise RuntimeError("File '{}' does not end on '.czi'".format(filename_czi))
+            raise RuntimeError(f"File '{filename_czi}' does not end on '.czi'")
 
         # load image from CZI
         image = dito.load(
@@ -59,5 +59,5 @@ if __name__ == "__main__":
         if args_.debug:
             raise
         else:
-            print("ERROR: {} ({})".format(e, type(e).__name__))
+            print(f"ERROR: {e} ({type(e).__name__})")
             sys.exit(1)
