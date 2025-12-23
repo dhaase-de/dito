@@ -603,7 +603,7 @@ def decode(b, color=None):
     return image
 
 
-class CachedImageLoader():
+class CachedImageLoader:
     """
     A class that wraps the `load` function and caches the results.
 
@@ -683,7 +683,7 @@ class CachedImageLoader():
         self.load.cache_clear()
 
 
-class VideoSaver():
+class VideoSaver:
     """
     Convenience wrapper for `cv2.VideoWriter`.
 

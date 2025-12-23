@@ -751,7 +751,7 @@ def overlay_constant(target_image, source_color, source_mask):
 #
 
 
-class Font():
+class Font:
     """
     Base class for font handling.
 
@@ -1905,7 +1905,7 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
     return key
 
 
-class MultiShow():
+class MultiShow:
     """
     Extension of the functionality provided by the `dito.show` function.
 

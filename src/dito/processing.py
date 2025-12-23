@@ -687,7 +687,7 @@ def dog_interactive(image, colormap=None):
 #
 
 
-class Contour():
+class Contour:
     """
     A class to represent a contour.
 
@@ -1047,7 +1047,7 @@ class Contour():
         return image
 
 
-class ContourList():
+class ContourList:
     """
     A class representing a list of contours.
 

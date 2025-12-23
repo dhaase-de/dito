@@ -348,7 +348,7 @@ def test_image_segments():
     return image
 
 
-class DitoTestImageGeneratorV1():
+class DitoTestImageGeneratorV1:
     """
     Class which is used to generate test input images for processing functions.
 

@@ -662,7 +662,7 @@ def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolati
         raise ValueError(f"Expected a float (= scale factor) or a 2-tuple (= target size) for argument 'scale_or_size', but got type '{type(scale_or_size)}'")
 
 
-class PaddedImageIndexer():
+class PaddedImageIndexer:
     """
     Wrapper for an `np.ndarray` which allows indexing out-of-bounds and returns
     a padded image.
