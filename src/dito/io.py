@@ -366,7 +366,7 @@ def _save_czi(
     Parameters
     ----------
     filename : str or pathlib.Path
-        Path of the image file to be loaded.
+        Path of the image file to be saved.
     image : numpy.ndarray
         The image data to be saved. Must be of shape `(Y, X)`, `(Y, X, 1)`, `(Y, X, 3)` or
         `(extra_dim_1, ..., extra_dim_N, Y, X, 1 | 3)`. In the last case (i.e., more than three dimensions),
@@ -386,17 +386,23 @@ def _save_czi(
     channel_names : None or dict
         If given, must be a dict of the form `{0: 'Channel_0_Name', ...}`, which will then be saved in the .czi
         metadata.
+    channel_display_settings : None or dict
+        If given, must be a dict mapping channel indices to display setting dicts. Each display setting dict
+        may contain the keys `"color_bgr"`, `"is_enabled"`, `"black_point"`, and `"white_point"`.
     document_name : None or str
         If given, will be saved in the .czi metadata as document name.
     custom_attributes : None or dict
         If given, will be saved in the .czi metadata as arbitrary key-value store.
+    metadata : None or dict
+        Additional metadata entries which override automatically generated metadata.
 
     Raises
     ------
     ImportError
         If `pylibCZIrw` is not installed.
     ValueError
-        If `image` has an invalid shape or the image shape is not compatible with `extra_dim_names`.
+        If `image` has an invalid shape or the image shape is not compatible with `extra_dim_names`,
+        or if invalid keys are present in `channel_display_settings`.
     """
 
     # only import on demand
