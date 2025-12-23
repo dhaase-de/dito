@@ -335,9 +335,19 @@ def save(filename, image, mkdir=True, imwrite_params=None, np_kwargs=None, czi_k
 
 
 def _save_czi(
-        filename, image, extra_dim_names=None, compression_options="zstd1:ExplicitLevel=10", microns_per_px_x=None,
-        microns_per_px_y=None, microns_per_px_z=None, channel_names=None, document_name=None, custom_attributes=None,
-):
+    filename: str | pathlib.Path,
+    image: np.ndarray,
+    extra_dim_names: str | None = None,
+    compression_options: str = "zstd1:ExplicitLevel=10",
+    microns_per_px_x: float | None = None,
+    microns_per_px_y: float | None = None,
+    microns_per_px_z: float | None = None,
+    channel_names: dict[int, str] | None = None,
+    channel_display_settings: dict[int, dict] | None = None,
+    document_name: str | None = None,
+    custom_attributes: dict | None = None,
+    metadata: dict | None = None,
+) -> None:
     """
     Save a NumPy array `image` as a ".czi" (Carl Zeiss Image) file at `filename`.
 
@@ -442,7 +452,7 @@ def _save_czi(
                 plane=plane,
             )
 
-        # write metadata
+        # create metadata dict based on given infos
         metadata_kwargs = {}
         if microns_per_px_x is not None:
             metadata_kwargs["scale_x"] = 1e-6 * microns_per_px_x
@@ -452,10 +462,36 @@ def _save_czi(
             metadata_kwargs["scale_z"] = 1e-6 * microns_per_px_z
         if channel_names is not None:
             metadata_kwargs["channel_names"] = channel_names
+        if channel_display_settings is not None:
+            metadata_kwargs["display_settings"] = {}
+            for (channel_key, channel_display_setting) in channel_display_settings.items():
+                # check for invalid keys to prevent typos
+                for key in channel_display_setting.keys():
+                    if key not in ("color_bgr", "is_enabled", "black_point", "white_point"):
+                        raise ValueError(f"Invalid key in channel_display_settings[{channel_key}]: '{key}'")
+
+                # convert channel color from 3-tuple to Rgb8Color
+                channel_color_bgr = channel_display_setting.get("color_bgr", (255, 255, 255))
+                channel_color_czi = pylibCZIrw.czi.Rgb8Color(np.uint8(channel_color_bgr[2]), np.uint8(channel_color_bgr[1]), np.uint8(channel_color_bgr[0]))
+
+                # instantiate ChannelDisplaySettingsDataClass
+                metadata_kwargs["display_settings"][channel_key] = pylibCZIrw.czi.ChannelDisplaySettingsDataClass(
+                    is_enabled=channel_display_setting.get("is_enabled", True),
+                    tinting_mode=pylibCZIrw.czi.TintingMode.Color,
+                    tinting_color=channel_color_czi,
+                    black_point=channel_display_setting.get("black_point", 0.0),
+                    white_point=channel_display_setting.get("white_point", 1.0),
+                )
         if document_name is not None:
             metadata_kwargs["document_name"] = document_name
         if custom_attributes is not None:
             metadata_kwargs["custom_attributes"] = custom_attributes
+
+        # update metadata dict with explicit user-given metadata
+        if metadata is not None:
+            metadata_kwargs.update(metadata)
+
+        # save metadata
         if len(metadata_kwargs) > 0:
             czi.write_metadata(**metadata_kwargs)
 
