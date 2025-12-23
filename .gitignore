@@ -11,6 +11,7 @@ dist/
 # dev files
 dev/
 venv*/
+examples/work/
 .docstr_coverage
 
 # documentation
