@@ -49,16 +49,16 @@ import importlib.metadata
 __version__ = importlib.metadata.version("dito")
 
 
-from dito.analysis import *
-from dito.conversion import *
-from dito.core import *
-from dito.data import *
-from dito.draw import *
-from dito.exceptions import *
-from dito.highgui import *
-from dito.inspection import *
-from dito.io import *
-from dito.parallel import *
-from dito.processing import *
-from dito.utils import *
-from dito.visual import *
+from dito.analysis import *  # noqa: F403
+from dito.conversion import *  # noqa: F403
+from dito.core import *  # noqa: F403
+from dito.data import *  # noqa: F403
+from dito.draw import *  # noqa: F403
+from dito.exceptions import *  # noqa: F403
+from dito.highgui import *  # noqa: F403
+from dito.inspection import *  # noqa: F403
+from dito.io import *  # noqa: F403
+from dito.parallel import *  # noqa: F403
+from dito.processing import *  # noqa: F403
+from dito.utils import *  # noqa: F403
+from dito.visual import *  # noqa: F403
