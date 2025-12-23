@@ -202,7 +202,7 @@ def dtype_range(dtype):
     elif is_bool_dtype(dtype=dtype):
         return (False, True)
     else:
-        raise TypeError("Unsupported dtype '{}'".format(dtype))
+        raise TypeError(f"Unsupported dtype '{dtype}'")
 
 
 def dtype_common(dtypes):
@@ -249,7 +249,7 @@ def dtype_common(dtypes):
         try:
             np.dtype(dtype)
         except TypeError:
-            raise ValueError("Invalid image type '{}'".format(dtype))
+            raise ValueError(f"Invalid image type '{dtype}'")
 
         # search for `dtype` in the hierarchy and update the max index if found
         for (index, value) in enumerate(hierarchy):
@@ -257,7 +257,7 @@ def dtype_common(dtypes):
                 max_index = max(max_index, index)
                 break
         else:
-            raise ValueError("Invalid image type '{}'".format(dtype))
+            raise ValueError(f"Invalid image type '{dtype}'")
     return hierarchy[max_index]
 
 
@@ -453,7 +453,7 @@ def parse_shape(image_or_shape, shape_def):
     elif isinstance(image_or_shape, tuple):
         image_shape = image_or_shape
     else:
-        raise TypeError("Argument 'image_or_shape' must be an image or a tuple, but is of type '{}'".format(type(image_or_shape)))
+        raise TypeError(f"Argument 'image_or_shape' must be an image or a tuple, but is of type '{type(image_or_shape)}'")
 
     if not isinstance(shape_def, str):
         raise TypeError("Argument 'shape_def' must be a string")
@@ -659,7 +659,7 @@ def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolati
         return cv2.resize(src=image, dsize=target_size, dst=None, fx=0.0, fy=0.0, interpolation=interpolation_up if all(target_size[n_dim] > current_size[n_dim] for n_dim in range(2)) else interpolation_down)
     
     else:
-        raise ValueError("Expected a float (= scale factor) or a 2-tuple (= target size) for argument 'scale_or_size', but got type '{}'".format(type(scale_or_size)))
+        raise ValueError(f"Expected a float (= scale factor) or a 2-tuple (= target size) for argument 'scale_or_size', but got type '{type(scale_or_size)}'")
 
 
 class PaddedImageIndexer():
@@ -719,7 +719,7 @@ class PaddedImageIndexer():
         elif item is Ellipsis:
             indices = tuple()
         else:
-            raise ValueError("Index must be either a (i) tuple of slices (with optional ellipsis), (ii) a slice, or (iii) an ellipsis, but is of type '{}'".format(type(item)))
+            raise ValueError(f"Index must be either a (i) tuple of slices (with optional ellipsis), (ii) a slice, or (iii) an ellipsis, but is of type '{type(item)}'")
 
         axis_count = len(self.image.shape)
 
@@ -742,16 +742,16 @@ class PaddedImageIndexer():
                 indices.append(slice(None, None, None))
             indices = tuple(indices)
         elif len(indices) > axis_count:
-            raise ValueError("The axis count ({}) is larger than the axis count of the image ({})".format(len(indices), axis_count))
+            raise ValueError(f"The axis count ({len(indices)}) is larger than the axis count of the image ({axis_count})")
 
         # for each axis collect the in-bound cropping indices and the pad widths
         pad_widths = []
         indices_after_padding = []
         for (n_axis, index) in enumerate(indices):
             if not isinstance(index, slice):
-                raise TypeError("All indices must be slices, but index #{} is of type '{}'".format(n_axis, type(index).__name__))
+                raise TypeError(f"All indices must be slices, but index #{n_axis} is of type '{type(index).__name__}'")
             if (index.step is not None) and (index.step < 0):
-                raise ValueError("Negative step sizes are currently not supported, but index #{} has step size {}".format(n_axis, index.step))
+                raise ValueError(f"Negative step sizes are currently not supported, but index #{n_axis} has step size {index.step}")
 
             axis_size = self.image.shape[n_axis]
 
@@ -761,7 +761,7 @@ class PaddedImageIndexer():
             step = index.step if (index.step is not None) else 1
 
             if start > stop:
-                raise ValueError("Slice start ({}) is larger than slice stop ({})".format(start, stop))
+                raise ValueError(f"Slice start ({start}) is larger than slice stop ({stop})")
 
             # store pad widths and crop indices
             pad_before = max(0, -start)
@@ -838,10 +838,10 @@ def pad(image, count=None, count_top=None, count_right=None, count_bottom=None, 
         # assume mode to be one of cv2.BORDER_*
         pass
     elif isinstance(mode, str):
-        attr_name = "BORDER_{}".format(mode.upper())
+        attr_name = f"BORDER_{mode.upper()}"
         mode = getattr(cv2, attr_name)
     else:
-        raise ValueError("Invalid border mode '{}'".format(mode))
+        raise ValueError(f"Invalid border mode '{mode}'")
 
     trbl_all_none = (count_top is None) and (count_right is None) and (count_bottom is None) and (count_left is None)
 
@@ -1008,7 +1008,7 @@ def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
         diag = int(np.ceil(np.sqrt(image_size[0]**2 + image_size[1]**2)))
         target_size = (diag, diag)
     else:
-        raise ValueError("Invalid padding mode '{}'".format(padding_mode))
+        raise ValueError(f"Invalid padding mode '{padding_mode}'")
 
     # get rotation matrix and change the translation to match the target image size
     rotation_matrix = cv2.getRotationMatrix2D(center=(image.shape[1] // 2, image.shape[0] // 2), angle=angle_deg, scale=1.0)
@@ -1278,7 +1278,7 @@ def convert_color(image_or_color, code):
         # image mode
         return cv2.cvtColor(src=image_or_color, code=code)
     else:
-        raise ValueError("Argument 'image_or_color' must be an image or a color, but is '{}'".format(type(image_or_color)))
+        raise ValueError(f"Argument 'image_or_color' must be an image or a color, but is '{type(image_or_color)}'")
 
 
 def bgr_to_hsv(image_or_color):
@@ -1374,7 +1374,7 @@ def split_channels(image):
     elif axis_count == 3:
         return tuple(image[:, :, n_channel] for n_channel in range(image.shape[2]))
     else:
-        raise dito.exceptions.InvalidImageShapeError("Image shape must have two or three axes, but is {}".format(image.shape))
+        raise dito.exceptions.InvalidImageShapeError(f"Image shape must have two or three axes, but is {image.shape}")
 
 
 def as_channels(b=None, g=None, r=None):
@@ -1627,7 +1627,7 @@ def normalize(image, mode="minmax", **kwargs):
         return normalize(image, mode="interval", lower=np.percentile(image, q), upper=np.percentile(image, 100.0 - q))
 
     else:
-        raise ValueError("Invalid mode '{mode}'".format(mode=mode))
+        raise ValueError(f"Invalid mode '{mode}'")
 
 
 def invert(image):
@@ -1664,11 +1664,11 @@ def invert(image):
     if is_integer_image(image=image) or is_float_image(image=image):
         image_dtype_range = dtype_range(dtype=image.dtype)
         if float(image_dtype_range[0]) != 0.0:
-            raise ValueError("Argument 'image' must have dtype with min value of zero (but has dtype '{}')".format(image.dtype))
+            raise ValueError(f"Argument 'image' must have dtype with min value of zero (but has dtype '{image.dtype}')")
         return image_dtype_range[1] - image
 
     elif is_bool_image(image=image):
         return np.logical_not(image)
 
     else:
-        raise ValueError("Unsupported image dtype '{}'".format(image.dtype))
+        raise ValueError(f"Unsupported image dtype '{image.dtype}'")

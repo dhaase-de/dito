@@ -401,7 +401,7 @@ class DitoTestImageGeneratorV1():
 
         # checks
         if min(self.size) < 2 * self.grid_size:
-            raise RuntimeError("Size '{}' is too small".format(self.size))
+            raise RuntimeError(f"Size '{self.size}' is too small")
         assert (self.dtype in (np.uint8, np.uint16)) or dito.core.is_float_dtype(dtype=self.dtype)
 
         # derived properties
@@ -460,7 +460,7 @@ class DitoTestImageGeneratorV1():
         elif dito.core.is_float_dtype(dtype=self.dtype):
             color = tuple(value / 255.0 for value in color)
         else:
-            raise TypeError("Invalid dtype '{}'".format(self.dtype))
+            raise TypeError(f"Invalid dtype '{self.dtype}'")
 
         if return_scalar:
             assert len(color) == 1

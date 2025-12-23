@@ -110,16 +110,16 @@ def to_PySide6_QPixmap_format(image):
         elif dtype == np.uint16:
             return PySide6.QtGui.QImage.Format_Grayscale16
         else:
-            raise dito.exceptions.ConversionError("Conversion of grayscale image with dtype '{}' to QPixmap is not supported".format(dtype))
+            raise dito.exceptions.ConversionError(f"Conversion of grayscale image with dtype '{dtype}' to QPixmap is not supported")
 
     elif dito.core.is_color(image):
         if dtype == np.uint8:
             return PySide6.QtGui.QImage.Format_BGR888
         else:
-            raise dito.exceptions.ConversionError("Conversion of color image with dtype '{}' to QPixmap is not supported".format(dtype))
+            raise dito.exceptions.ConversionError(f"Conversion of color image with dtype '{dtype}' to QPixmap is not supported")
 
     else:
-        raise dito.exceptions.ConversionError("Conversion image with shape {} to QPixmap is not supported".format(image.shape))
+        raise dito.exceptions.ConversionError(f"Conversion image with shape {image.shape} to QPixmap is not supported")
 
 
 def to_PySide6_QImage(image):

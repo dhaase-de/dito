@@ -254,7 +254,7 @@ class DecompositionTextureModel(abc.ABC):
             max_value=self.image_count - 1,
         )
         for n_component in range(self.component_count):
-            slider_name = "C{}".format(n_component + 1)
+            slider_name = f"C{n_component + 1}"
             sliders[slider_name] = dito.highgui.FloatSlider(
                 window_name=self.slider_window_name,
                 name=slider_name,
@@ -281,7 +281,7 @@ class DecompositionTextureModel(abc.ABC):
         """
         p = np.zeros(shape=(self.component_count,), dtype=np.float32)
         for n_component in range(self.component_count):
-            slider_name = "C{}".format(n_component + 1)
+            slider_name = f"C{n_component + 1}"
             p[n_component] = sliders[slider_name].get_value()
         return p
 
@@ -315,7 +315,7 @@ class DecompositionTextureModel(abc.ABC):
             The parameter vector to use for setting the slider values.
         """
         for n_component in range(self.component_count):
-            slider_name = "C{}".format(n_component + 1)
+            slider_name = f"C{n_component + 1}"
             sliders[slider_name].set_value(float(p[n_component]))
 
     def reset_sliders(self, sliders):
@@ -419,7 +419,7 @@ class DecompositionTextureModel(abc.ABC):
             elif key == ord("s"):
                 # save current image
                 image_filename = dito.io.save_tmp(image)
-                print("Saved image as '{}'".format(image_filename))
+                print(f"Saved image as '{image_filename}'")
 
 
 class PcaTextureModel(DecompositionTextureModel):

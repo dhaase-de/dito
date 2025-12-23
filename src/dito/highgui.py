@@ -394,7 +394,7 @@ class IntegerSlider(Slider):
             return self.max_value
         if initial_value == "mean":
             return (self.max_value - self.min_value) // 2 + self.min_value
-        raise RuntimeError("Invalid initial value '{}'".format(initial_value))
+        raise RuntimeError(f"Invalid initial value '{initial_value}'")
 
     def raw_from_value(self, value):
         """
@@ -512,7 +512,7 @@ class FloatSlider(Slider):
             return self.max_value
         if initial_value == "mean":
             return (self.max_value - self.min_value) * 0.5 + self.min_value
-        raise RuntimeError("Invalid initial value '{}'".format(initial_value))
+        raise RuntimeError(f"Invalid initial value '{initial_value}'")
 
     def raw_from_value(self, value):
         """

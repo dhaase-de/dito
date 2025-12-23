@@ -207,7 +207,7 @@ def clipped_diff(image1, image2, scale=None, offset=None, apply_abs=False):
 
     # assert equal dtypes
     if image1.dtype != image2.dtype:
-        raise ValueError("Both images must have the same dtypes (but have '{}' and '{}')".format(image1.dtype, image2.dtype))
+        raise ValueError(f"Both images must have the same dtypes (but have '{image1.dtype}' and '{image2.dtype}')")
     dtype = image1.dtype
     dtype_range = dito.core.dtype_range(dtype=dtype)
 
@@ -665,7 +665,7 @@ def dog_interactive(image, colormap=None):
     None
     """
     window_name = "dito.dog_interactive"
-    sliders = [dito.highgui.FloatSlider(window_name=window_name, name="sigma{}".format(n_slider + 1), min_value=0.0, max_value=15.0, value_count=1001) for n_slider in range(2)]
+    sliders = [dito.highgui.FloatSlider(window_name=window_name, name=f"sigma{n_slider + 1}", min_value=0.0, max_value=15.0, value_count=1001) for n_slider in range(2)]
     sliders[0].set_value(0.5)
     sliders[1].set_value(0.8)
 
@@ -674,7 +674,7 @@ def dog_interactive(image, colormap=None):
         if (image_show is None) or any(slider.changed for slider in sliders):
             sigmas = [sliders[n_slider].get_value() for n_slider in range(2)]
             images_blur = [gaussian_blur(image=image, sigma=sigmas[n_slider]) for n_slider in range(2)]
-            images_blur = [dito.visual.text(image=image_blur, message="sigma{} = {:.2f}".format(n_slider + 1, sigmas[n_slider])) for (n_slider, image_blur) in enumerate(images_blur)]
+            images_blur = [dito.visual.text(image=image_blur, message=f"sigma{n_slider + 1} = {sigmas[n_slider]:.2f}") for (n_slider, image_blur) in enumerate(images_blur)]
             image_dog = dog(image, sigma1=sigmas[0], sigma2=sigmas[1], return_raw=False, colormap=colormap)
             image_show = dito.stack([[image, image_dog], images_blur])
         key = dito.show(image=image_show, window_name=window_name, wait=10)
@@ -875,7 +875,7 @@ class Contour():
             return cv2.contourArea(contour=self.points)
 
         else:
-            raise ValueError("Invalid value for argument 'mode': '{}'".format(mode))
+            raise ValueError(f"Invalid value for argument 'mode': '{mode}'")
 
     def get_perimeter(self):
         """

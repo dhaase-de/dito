@@ -57,7 +57,7 @@ def random_color(min_hue=0, max_hue=180, min_saturation=128, max_saturation=255,
     """
     # check arguments
     if not (0 <= min_hue <= 180):
-        raise ValueError("Argument 'min_hue' must be a value between 0 and 180 (inclusive), but is '{}'".format(min_hue))
+        raise ValueError(f"Argument 'min_hue' must be a value between 0 and 180 (inclusive), but is '{min_hue}'")
 
     # wrap-around hue
     while max_hue < min_hue:
@@ -128,17 +128,17 @@ def get_colormap(name):
     """
     
     # source 1: non-OpenCV colormaps
-    data_key = "colormap:{}".format(name.lower())
+    data_key = f"colormap:{name.lower()}"
     if data_key in dito.data.RESOURCES_FILENAMES.keys():
         return dito.io.load(filename=dito.data.RESOURCES_FILENAMES[data_key])
     
     # source 2: OpenCV colormaps
-    full_cv2_name = "COLORMAP_{}".format(name.upper())
+    full_cv2_name = f"COLORMAP_{name.upper()}"
     if hasattr(cv2, full_cv2_name):
         return cv2.applyColorMap(src=dito.data.yslope(width=1), colormap=getattr(cv2, full_cv2_name))
     
     # no match
-    raise ValueError("Unknown colormap '{}'".format(name))
+    raise ValueError(f"Unknown colormap '{name}'")
 
 
 def is_colormap(colormap):
@@ -198,7 +198,7 @@ def create_colormap(colors):
 
     # check argument 'colors'
     if not isinstance(colors, collections.abc.Mapping):
-        raise TypeError("Argument 'colors' must be a dictionary, but is of type '{}'".format(type(colors)))
+        raise TypeError(f"Argument 'colors' must be a dictionary, but is of type '{type(colors)}'")
     if len(colors) == 0:
         raise ValueError("Argument 'colors' must be a non-empty dictionary, but is empty")
     if not all(isinstance(key, int) and 0 <= key <= 255 for key in colors.keys()):
@@ -515,7 +515,7 @@ def stack_channels(image, mode="row", **kwargs):
     if len(image.shape) < 3:
         return image
     if len(image.shape) > 3:
-        raise ValueError("Invalid image shape: {}".format(image.shape))
+        raise ValueError(f"Invalid image shape: {image.shape}")
 
     channel_count = image.shape[2]
     channel_images = [image[:, :, n_channel] for n_channel in range(channel_count)]
@@ -528,7 +528,7 @@ def stack_channels(image, mode="row", **kwargs):
     elif mode == "auto":
         return astack(images=channel_images)
     else:
-        raise ValueError("Invalid mode: '{}'".format(mode))
+        raise ValueError(f"Invalid mode: '{mode}'")
 
 
 def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask=None):
@@ -595,7 +595,7 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
 
     # check if source and target have the same dtype
     if target_image.dtype != source_image.dtype:
-        raise ValueError("Arguments 'target_image' and 'source_image' must have the same dtypes (but have dtypes '{}' and '{}')".format(target_image.dtype, source_image.dtype))
+        raise ValueError(f"Arguments 'target_image' and 'source_image' must have the same dtypes (but have dtypes '{target_image.dtype}' and '{source_image.dtype}')")
 
     # make sure that source_mask is either None or a NumPy array
     if source_mask is None:
@@ -639,7 +639,7 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
 
     # adjust offset based on the specified anchor type
     if not (isinstance(anchor, str) and (len(anchor) == 2) and (anchor[0] in ("l", "c", "r")) and (anchor[1] in ("t", "c", "b"))):
-        raise ValueError("Argument 'anchor' must be a string of length two (pattern: '[lcr][tcb]') , but is '{}'".format(anchor))
+        raise ValueError(f"Argument 'anchor' must be a string of length two (pattern: '[lcr][tcb]') , but is '{anchor}'")
     (anchor_h, anchor_v) = anchor
     if anchor_h == "l":
         pass
@@ -921,7 +921,7 @@ class Font():
         for value in (b, g, r):
             if not (isinstance(value, int) and (0 <= value <= 255)):
                 raise ValueError("BGR values must be integers in the range [0, 255]")
-        return "\033[{};2;{};{};{}m".format(38 if foreground else 48, r, g, b)
+        return f"\033[{38 if foreground else 48};2;{r};{g};{b}m"
 
     @classmethod
     def FOREGROUND_BGR(cls, b, g, r):
@@ -1023,11 +1023,11 @@ class MonospaceBitmapFont(Font):
         KeyError
             If the given font name is unknown.
         """
-        key = "font:{}".format(name)
+        key = f"font:{name}"
         try:
             filename = dito.data.RESOURCES_FILENAMES[key]
         except KeyError:
-            raise KeyError("Unknown font '{}'".format(name))
+            raise KeyError(f"Unknown font '{name}'")
         return cls(filename=filename)
 
     @classmethod
@@ -1436,7 +1436,7 @@ class MonospaceBitmapFont(Font):
             elif alignment == "right":
                 alignment_col_offset = max_character_count - character_counts[n_row]
             else:
-                raise ValueError("Invalid alignment '{}'".format(alignment))
+                raise ValueError(f"Invalid alignment '{alignment}'")
 
             for (n_col, char) in enumerate(line):
                 # determine mask indices for current character
@@ -1728,7 +1728,7 @@ def prepare_for_display(image, scale=None, normalize_mode=None, normalize_kwargs
         # list of lists of images: stack them into one image
         image = stack(images=image)
     else:
-        raise ValueError("Invalid value for parameter `image` ({}) - it must either be (i) an image, (ii) a non-empty list of images or a non-empty list of non-empty lists of images".format(image))
+        raise ValueError(f"Invalid value for parameter `image` ({image}) - it must either be (i) an image, (ii) a non-empty list of images or a non-empty list of non-empty lists of images")
 
     # OpenCV does not support the display of bool images - convert them to uint8
     if image.dtype == bool:
@@ -1897,7 +1897,7 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
                 return -1
 
     else:
-        raise RuntimeError("Unsupported engine '{}'".format(engine))
+        raise RuntimeError(f"Unsupported engine '{engine}'")
 
     if raise_on_qkey and (key in qkeys()):
         raise dito.exceptions.QkeyInterrupt()
@@ -1954,11 +1954,11 @@ class MultiShow():
         None
         """
         if self.save_dir is None:
-            self.save_dir = dito.utils.get_temp_dir(prefix="dito.MultiShow.{}.".format(dito.utils.now_str())).name
-        filename = os.path.join(self.save_dir, "{:>08d}.png".format(n_image + 1))
+            self.save_dir = dito.utils.get_temp_dir(prefix=f"dito.MultiShow.{dito.utils.now_str()}.").name
+        filename = os.path.join(self.save_dir, f"{n_image + 1:>08d}.png")
         dito.io.save(filename=filename, image=self.images[n_image])
         if verbose:
-            print("Saved image {}/{} to file '{}'".format(n_image + 1, len(self.images), filename))
+            print(f"Saved image {n_image + 1}/{len(self.images)} to file '{filename}'")
 
     def save_all(self, **kwargs):
         """
@@ -2074,7 +2074,7 @@ class MultiShow():
             # get image to show
             image = self.images[n_image]
             if show_overlay:
-                image = text(image=image, message="{}/{}".format(n_image + 1, image_count), scale=0.5)
+                image = text(image=image, message=f"{n_image + 1}/{image_count}", scale=0.5)
 
             # show image (we need "cv2" as engine, to capture the keyboard inputs)
             key = self._show(image=image, wait=0, engine="cv2")

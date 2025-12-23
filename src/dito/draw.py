@@ -492,4 +492,4 @@ def draw_symbol(image, symbol, position, radius=4, color=None, thickness=1, line
         cv2.line(img=image, pt1=(x, y), pt2=dito.core.tir(x + radius, y), color=color, thickness=thickness, lineType=line_type)
 
     else:
-        raise ValueError("Unknown symbol '{}'".format(symbol))
+        raise ValueError(f"Unknown symbol '{symbol}'")

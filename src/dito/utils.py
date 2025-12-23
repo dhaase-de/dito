@@ -81,7 +81,7 @@ def get_validated_tuple(x, type_, count, min_value=None, max_value=None):
     (0.0, 0.5, 1.0)
     """
 
-    error_text = "Argument must be a scalar or a {}-tuple/list of type '{}' (min_value={}, max_value={})".format(count, type_, min_value, max_value)
+    error_text = f"Argument must be a scalar or a {count}-tuple/list of type '{type_}' (min_value={min_value}, max_value={max_value})"
 
     # check tuple/list
     if isinstance(x, tuple):
@@ -235,10 +235,10 @@ def human_bytes(byte_count):
 
     if isinstance(count, int):
         # count is an integer -> use no decimal places
-        return "{} {}".format(count, unit)
+        return f"{count} {unit}"
     else:
         # count is a float -> use two decimal places
-        return "{:.2f} {}".format(count, unit)
+        return f"{count:.2f} {unit}"
 
 
 def is_ascii(s):
@@ -335,7 +335,7 @@ def now_str(mode="compact", date=True, time=True, microtime=True):
         micro_sep = "."
         micro_fmt = "%f"
     else:
-        raise ValueError("Invalid mode '{}".format(mode))
+        raise ValueError(f"Invalid mode '{mode}")
 
     # build final format string
     fmt = ""
@@ -390,7 +390,7 @@ def ftable(rows, first_row_is_header=False):
     for (n_row, row) in enumerate(rows):
         col_strs = []
         for (col_length, col) in zip(col_lengths, row):
-            col_str = "{{: <{}}}".format(col_length).format(str(col))
+            col_str = f"{{: <{col_length}}}".format(str(col))
             col_strs.append(col_str)
         lines.append(col_sep.join(col_strs))
         if first_row_is_header and (n_row == 0):

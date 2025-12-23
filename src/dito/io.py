@@ -69,7 +69,7 @@ def load(filename, color=None, np_kwargs=None, czi_kwargs=None):
 
     # check if file exists
     if not os.path.exists(filename):
-        raise FileNotFoundError("Image file '{}' does not exist".format(filename))
+        raise FileNotFoundError(f"Image file '{filename}' does not exist")
 
     # load image
     image = None
@@ -77,7 +77,7 @@ def load(filename, color=None, np_kwargs=None, czi_kwargs=None):
     if extension == ".npy":
         # use NumPy
         if color is not None:
-            raise ValueError("Argument 'color' must be 'None' for NumPy images, but is '{}'".format(color))
+            raise ValueError(f"Argument 'color' must be 'None' for NumPy images, but is '{color}'")
         if np_kwargs is None:
             np_kwargs = {}
         image = np.load(file=filename, **np_kwargs)
@@ -88,7 +88,7 @@ def load(filename, color=None, np_kwargs=None, czi_kwargs=None):
         with np.load(file=filename, **np_kwargs) as npz_file:
             npz_keys = tuple(npz_file.keys())
             if len(npz_keys) != 1:
-                raise ValueError("Expected exactly one image in '{}', but got {} (keys: {})".format(filename, len(npz_keys), npz_keys))
+                raise ValueError(f"Expected exactly one image in '{filename}', but got {len(npz_keys)} (keys: {npz_keys})")
             image = npz_file[npz_keys[0]]
     elif extension == ".czi":
         # use pylibCZIrw
@@ -113,9 +113,9 @@ def load(filename, color=None, np_kwargs=None, czi_kwargs=None):
 
     # check if loading was successful
     if image is None:
-        raise RuntimeError("Image file '{}' exists, but could not be loaded".format(filename))
+        raise RuntimeError(f"Image file '{filename}' exists, but could not be loaded")
     if not isinstance(image, np.ndarray):
-        raise TypeError("Image file '{}' exists, but has wrong type (expected object of type 'np.ndarray', but got '{}'".format(filename, type(image)))
+        raise TypeError(f"Image file '{filename}' exists, but has wrong type (expected object of type 'np.ndarray', but got '{type(image)}'")
 
     return image
 
@@ -301,7 +301,7 @@ def save(filename, image, mkdir=True, imwrite_params=None, np_kwargs=None, czi_k
         filename = str(filename)
 
     if not isinstance(image, np.ndarray):
-        raise RuntimeError("Invalid image (type '{}')".format(type(image).__name__))
+        raise RuntimeError(f"Invalid image (type '{type(image).__name__}')")
 
     # create parent dir
     if mkdir:
@@ -419,26 +419,26 @@ def _save_czi(
     # check image dimensions
     if dim_count < 2:
         # invalid image
-        raise ValueError("Invalid image shape: {}".format(shape))
+        raise ValueError(f"Invalid image shape: {shape}")
     elif dim_count == 2:
         # if the image has only two axes (Y and X), add a third color axis of size of 1
         image = image[:, :, np.newaxis]
     else:
         # if the image has three or more axes, make sure that the last one is of size 1 (gray) or 3 (BGR)
         if shape[-1] not in (1, 3):
-            raise ValueError("The last axis of the image must be of size 1 or 3, but it is {} (full shape: {})".format(shape[-1], shape))
+            raise ValueError(f"The last axis of the image must be of size 1 or 3, but it is {shape[-1]} (full shape: {shape})")
 
         # if there are more than three axes, we need dim_names to identify which dimensions should be used
         if extra_dim_count > 0:
             # check the size of extra_dim_names
             if extra_dim_count != len(extra_dim_names):
-                raise ValueError("For image of {} dimensions, 'extra_dim_names' must be of length {}-3={} (containing one identifying letter for each extra dimension), but 'extra_dim_names' is {}".format(dim_count, dim_count, extra_dim_count, extra_dim_names))
+                raise ValueError(f"For image of {dim_count} dimensions, 'extra_dim_names' must be of length {dim_count}-3={extra_dim_count} (containing one identifying letter for each extra dimension), but 'extra_dim_names' is {extra_dim_names}")
 
             # check if each extra dim name is correct
             allowed_dim_names = tuple(pylibCZIrw.czi.CziReader.CZI_DIMS.keys())
             for extra_dim_name in extra_dim_names:
                 if extra_dim_name not in allowed_dim_names:
-                    raise ValueError("Invalid dimension name '{}' - allowed values are {}".format(extra_dim_name, allowed_dim_names))
+                    raise ValueError(f"Invalid dimension name '{extra_dim_name}' - allowed values are {allowed_dim_names}")
 
     # create all combinations of indices for extra dimensions (dimensions which are not Y, X, color)
     extra_dim_indices = [tuple(range(extra_dim_size)) for extra_dim_size in extra_dim_shape]
@@ -805,7 +805,7 @@ class VideoSaver():
 
         # check if the image size is consistent with the previous frames
         if image_size != self.image_size:
-            raise ValueError("Image size '{}' differs from previous image size '{}'".format(image_size, self.image_size))
+            raise ValueError(f"Image size '{image_size}' differs from previous image size '{self.image_size}'")
 
         # apply correct color mode
         if self.color:

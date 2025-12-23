@@ -610,7 +610,7 @@ class encode_Tests(TestCase):
         extensions = ("jpg", "png")
         for extension in extensions:
             for prefix in ("", "."):
-                dito.encode(extension="{}{}".format(prefix, extension), image=image)
+                dito.encode(extension=f"{prefix}{extension}", image=image)
 
     def test_encode_byte(self):
         image = dito.pm5544()
@@ -1226,7 +1226,7 @@ class MultiShow_Tests(TempDirTestCase):
 
         mshow.save_all(verbose=False)
         for n_image in range(image_count):
-            filename = os.path.join(mshow.save_dir, "{:>08d}.png".format(n_image + 1))
+            filename = os.path.join(mshow.save_dir, f"{n_image + 1:>08d}.png")
             image_loaded = dito.load(filename=filename)
             self.assertEqualImages(image_loaded, images[n_image])
 
@@ -1757,11 +1757,11 @@ class save_Tests(TempDirTestCase):
         if save_kwargs is None:
             save_kwargs = {}
 
-        filename_str = str(os.path.join(self.temp_dir.name, "dir_str", "{}_str.{}".format(basename, extension)))
+        filename_str = str(os.path.join(self.temp_dir.name, "dir_str", f"{basename}_str.{extension}"))
         dito.save(filename=filename_str, image=image, **save_kwargs)
         image_str_loaded = dito.load(filename=filename_str)
 
-        filename_pathlib = pathlib.Path(os.path.join(self.temp_dir.name, "dir_pathlib", "{}_pathlib.{}".format(basename, extension)))
+        filename_pathlib = pathlib.Path(os.path.join(self.temp_dir.name, "dir_pathlib", f"{basename}_pathlib.{extension}"))
         dito.save(filename=filename_pathlib, image=image)
         image_pathlib_loaded = dito.load(filename=filename_pathlib)
 
@@ -2210,7 +2210,7 @@ class data_Tests(TestCase):
     
     def test_data_files_exists(self):
         for filename in dito.RESOURCES_FILENAMES.values():
-            self.assertTrue(os.path.exists(filename), "Data file '{}' does not exist".format(filename))
+            self.assertTrue(os.path.exists(filename), f"Data file '{filename}' does not exist")
 
     def test_pm5544_load(self):
         image = dito.pm5544()

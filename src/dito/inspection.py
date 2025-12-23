@@ -58,7 +58,7 @@ def info(image, extended=False, minimal=False):
     """
 
     if not isinstance(image, np.ndarray):
-        raise ValueError("Argument 'image' must be of type 'numpy.ndimage', but is '{}'".format(type(image)))
+        raise ValueError(f"Argument 'image' must be of type 'numpy.ndimage', but is '{type(image)}'")
 
     if extended and minimal:
         raise ValueError("Both arguments 'extended' and 'minimal' must not be true at the same time")
@@ -116,7 +116,7 @@ def pinfo(*args, extended_=False, minimal_=False, file_=None, **kwargs):
             all_kwargs[str(image)] = image
         else:
             # otherwise, use the position of the image in the argument list as key
-            all_kwargs["{}".format(n_image)] = image
+            all_kwargs[f"{n_image}"] = image
     all_kwargs.update(kwargs)
 
     header = None
