@@ -49,6 +49,7 @@ extras = [
 [dependency-groups]
 dev = [
     "dito",
+    "black",
     "docstr-coverage",
     "einops",
     "matplotlib",
@@ -67,6 +68,18 @@ Repository = "https://github.com/dhaase-de/dito.git"
 #
 # tool specific configs
 #
+
+[tool.black]
+line-length = 120
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = [
+    "NPY",
+    "UP032",
+]
 
 [tool.setuptools]
 include-package-data = true
