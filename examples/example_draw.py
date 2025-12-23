@@ -50,5 +50,5 @@ def main():
     dito.show(image, scale=1.0, wait=0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

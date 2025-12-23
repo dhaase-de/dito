@@ -6,5 +6,5 @@ def main():
     dito.show(image, engine="napari")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

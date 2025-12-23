@@ -41,5 +41,5 @@ def main():
         print(f"shape_def='{shape_def}': {status}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
