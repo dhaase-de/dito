@@ -88,11 +88,15 @@ def nms_iter(image, peak_radius):
 
     # peak radius must be a non-negative int
     if not (isinstance(peak_radius, int) and (peak_radius >= 0)):
-        raise ValueError(f"Argument 'peak_radius' must be a non-negative integer (but is: {peak_radius})")
+        raise ValueError(
+            f"Argument 'peak_radius' must be a non-negative integer (but is: {peak_radius})"
+        )
 
     # only allow images of shape (Y, X) or (Y, X, 1)
     if not dito.is_gray(image):
-        raise ValueError(f"Image must be grayscale (shapes (Y, X) or (Y, X, 1)), but has shape {image.shape}")
+        raise ValueError(
+            f"Image must be grayscale (shapes (Y, X) or (Y, X, 1)), but has shape {image.shape}"
+        )
 
     # remove the last singleton dimension if necessary
     image_work = image.copy()
@@ -110,8 +114,12 @@ def nms_iter(image, peak_radius):
 
         # suppress neighborhood
         image_work[
-            max(0, peak_y - peak_radius):min(image_work.shape[0], peak_y + peak_radius + 1),
-            max(0, peak_x - peak_radius):min(image_work.shape[1], peak_x + peak_radius + 1),
+            max(0, peak_y - peak_radius) : min(
+                image_work.shape[0], peak_y + peak_radius + 1
+            ),
+            max(0, peak_x - peak_radius) : min(
+                image_work.shape[1], peak_x + peak_radius + 1
+            ),
         ] = 0
 
         yield {
@@ -151,11 +159,15 @@ def nms(image, peak_radius, max_peak_count=1000, rel_max_value=0.1):
 
     # check argument 'max_peak_count'
     if not (isinstance(max_peak_count, int) and (max_peak_count >= 1)):
-        raise ValueError(f"Argument 'max_peak_count' must be an integer >= 1, but is: {max_peak_count}")
+        raise ValueError(
+            f"Argument 'max_peak_count' must be an integer >= 1, but is: {max_peak_count}"
+        )
 
     # check argument 'rel_max_value'
     if not (isinstance(rel_max_value, float) and (0.0 <= rel_max_value <= 1.0)):
-        raise ValueError(f"Argument 'rel_max_value' must be a float between 0.0 and 1.0 (both inclusive), but is: {rel_max_value}")
+        raise ValueError(
+            f"Argument 'rel_max_value' must be a float between 0.0 and 1.0 (both inclusive), but is: {rel_max_value}"
+        )
 
     peaks = []
     max_value = None
@@ -207,7 +219,9 @@ def clipped_diff(image1, image2, scale=None, offset=None, apply_abs=False):
 
     # assert equal dtypes
     if image1.dtype != image2.dtype:
-        raise ValueError(f"Both images must have the same dtypes (but have '{image1.dtype}' and '{image2.dtype}')")
+        raise ValueError(
+            f"Both images must have the same dtypes (but have '{image1.dtype}' and '{image2.dtype}')"
+        )
     dtype = image1.dtype
     dtype_range = dito.core.dtype_range(dtype=dtype)
 
@@ -248,7 +262,9 @@ def abs_diff(image1, image2):
     numpy.ndarray
         The absolute difference image, with the same shape and dtype as the input images.
     """
-    return clipped_diff(image1=image1, image2=image2, scale=None, offset=None, apply_abs=True)
+    return clipped_diff(
+        image1=image1, image2=image2, scale=None, offset=None, apply_abs=True
+    )
 
 
 def shifted_diff(image1, image2):
@@ -272,7 +288,13 @@ def shifted_diff(image1, image2):
         The shifted difference image, with the same shape and dtype as the input images.
     """
     dtype_range = dito.core.dtype_range(dtype=image1.dtype)
-    return clipped_diff(image1=image1, image2=image2, scale=0.5, offset=0.5 * (dtype_range[0] + dtype_range[1]), apply_abs=False)
+    return clipped_diff(
+        image1=image1,
+        image2=image2,
+        scale=0.5,
+        offset=0.5 * (dtype_range[0] + dtype_range[1]),
+        apply_abs=False,
+    )
 
 
 def gaussian_blur(image, sigma):
@@ -371,8 +393,12 @@ def otsu(image):
         If the input image is not grayscale.
     """
     if dito.core.is_color(image=image):
-        raise ValueError("Expected gray image but got color image for Otsu thresholding")
-    (theta, image2) = cv2.threshold(src=image, thresh=-1, maxval=255, type=cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        raise ValueError(
+            "Expected gray image but got color image for Otsu thresholding"
+        )
+    (theta, image2) = cv2.threshold(
+        src=image, thresh=-1, maxval=255, type=cv2.THRESH_BINARY | cv2.THRESH_OTSU
+    )
     return (theta, image2)
 
 
@@ -447,7 +473,9 @@ def morpho_op_kernel(shape, size):
     return kernel
 
 
-def morpho_op(image, operation, shape=cv2.MORPH_ELLIPSE, size=3, anchor=(-1, -1), iterations=1):
+def morpho_op(
+    image, operation, shape=cv2.MORPH_ELLIPSE, size=3, anchor=(-1, -1), iterations=1
+):
     """
     Apply a morphological operation to an image.
 
@@ -485,7 +513,9 @@ def morpho_op(image, operation, shape=cv2.MORPH_ELLIPSE, size=3, anchor=(-1, -1)
         Resulting image after applying the morphological operation, with the same shape and dtype as the input image.
     """
     kernel = morpho_op_kernel(shape=shape, size=size)
-    return cv2.morphologyEx(src=image, op=operation, kernel=kernel, anchor=anchor, iterations=iterations)
+    return cv2.morphologyEx(
+        src=image, op=operation, kernel=kernel, anchor=anchor, iterations=iterations
+    )
 
 
 def dilate(image, **kwargs):
@@ -665,7 +695,16 @@ def dog_interactive(image, colormap=None):
     None
     """
     window_name = "dito.dog_interactive"
-    sliders = [dito.highgui.FloatSlider(window_name=window_name, name=f"sigma{n_slider + 1}", min_value=0.0, max_value=15.0, value_count=1001) for n_slider in range(2)]
+    sliders = [
+        dito.highgui.FloatSlider(
+            window_name=window_name,
+            name=f"sigma{n_slider + 1}",
+            min_value=0.0,
+            max_value=15.0,
+            value_count=1001,
+        )
+        for n_slider in range(2)
+    ]
     sliders[0].set_value(0.5)
     sliders[1].set_value(0.8)
 
@@ -673,9 +712,24 @@ def dog_interactive(image, colormap=None):
     while True:
         if (image_show is None) or any(slider.changed for slider in sliders):
             sigmas = [sliders[n_slider].get_value() for n_slider in range(2)]
-            images_blur = [gaussian_blur(image=image, sigma=sigmas[n_slider]) for n_slider in range(2)]
-            images_blur = [dito.visual.text(image=image_blur, message=f"sigma{n_slider + 1} = {sigmas[n_slider]:.2f}") for (n_slider, image_blur) in enumerate(images_blur)]
-            image_dog = dog(image, sigma1=sigmas[0], sigma2=sigmas[1], return_raw=False, colormap=colormap)
+            images_blur = [
+                gaussian_blur(image=image, sigma=sigmas[n_slider])
+                for n_slider in range(2)
+            ]
+            images_blur = [
+                dito.visual.text(
+                    image=image_blur,
+                    message=f"sigma{n_slider + 1} = {sigmas[n_slider]:.2f}",
+                )
+                for (n_slider, image_blur) in enumerate(images_blur)
+            ]
+            image_dog = dog(
+                image,
+                sigma1=sigmas[0],
+                sigma2=sigmas[1],
+                return_raw=False,
+                colormap=colormap,
+            )
             image_show = dito.stack([[image, image_dog], images_blur])
         key = dito.show(image=image_show, window_name=window_name, wait=10)
         if key in dito.qkeys():
@@ -868,7 +922,9 @@ class Contour:
             The area of the contour.
         """
         if mode == "draw":
-            image = self.draw_standalone(color=(1,), thickness=1, filled=True, antialias=False, border=2)
+            image = self.draw_standalone(
+                color=(1,), thickness=1, filled=True, antialias=False, border=2
+            )
             return np.sum(image)
 
         elif mode == "calc":
@@ -927,7 +983,7 @@ class Contour:
         (width, height) = ellipse[1]
         semi_major_axis = max(width, height) * 0.5
         semi_minor_axis = min(width, height) * 0.5
-        eccentricity = math.sqrt(1.0 - (semi_minor_axis / semi_major_axis)**2)
+        eccentricity = math.sqrt(1.0 - (semi_minor_axis / semi_major_axis) ** 2)
         return eccentricity
 
     def get_moments(self):
@@ -990,7 +1046,9 @@ class Contour:
         if offset_y is not None:
             self.points[:, 1] += offset_y
 
-    def draw(self, image, color, thickness=1, filled=True, antialias=False, offset=None):
+    def draw(
+        self, image, color, thickness=1, filled=True, antialias=False, offset=None
+    ):
         """
         Draw the contour into an existing image.
 
@@ -1015,9 +1073,19 @@ class Contour:
         -------
         None
         """
-        cv2.drawContours(image=image, contours=[np.round(self.points).astype(np.int32)], contourIdx=0, color=color, thickness=cv2.FILLED if filled else thickness, lineType=cv2.LINE_AA if antialias else cv2.LINE_8, offset=offset)
+        cv2.drawContours(
+            image=image,
+            contours=[np.round(self.points).astype(np.int32)],
+            contourIdx=0,
+            color=color,
+            thickness=cv2.FILLED if filled else thickness,
+            lineType=cv2.LINE_AA if antialias else cv2.LINE_8,
+            offset=offset,
+        )
 
-    def draw_standalone(self, color, thickness=1, filled=True, antialias=False, border=0):
+    def draw_standalone(
+        self, color, thickness=1, filled=True, antialias=False, border=0
+    ):
         """
         Draw the contour as a standalone image.
 
@@ -1042,8 +1110,18 @@ class Contour:
         numpy.ndarray
             A 2D numpy array representing the image of the contour.
         """
-        image = np.zeros(shape=(2 * border + self.get_height(), 2 * border + self.get_width()), dtype=np.uint8)
-        self.draw(image=image, color=color, thickness=thickness, filled=filled, antialias=antialias, offset=(border - self.get_min_x(), border - self.get_min_y()))
+        image = np.zeros(
+            shape=(2 * border + self.get_height(), 2 * border + self.get_width()),
+            dtype=np.uint8,
+        )
+        self.draw(
+            image=image,
+            color=color,
+            thickness=thickness,
+            filled=filled,
+            antialias=antialias,
+            offset=(border - self.get_min_x(), border - self.get_min_y()),
+        )
         return image
 
 
@@ -1105,7 +1183,7 @@ class ContourList:
         if len(self) != len(other):
             return False
 
-        for (contour_self, contour_other) in zip(self.contours, other.contours):
+        for contour_self, contour_other in zip(self.contours, other.contours):
             if contour_self != contour_other:
                 return False
 
@@ -1197,7 +1275,11 @@ class ContourList:
         -------
         None
         """
-        self.filter(func=operator.methodcaller("get_center_x"), min_value=min_value, max_value=max_value)
+        self.filter(
+            func=operator.methodcaller("get_center_x"),
+            min_value=min_value,
+            max_value=max_value,
+        )
 
     def filter_center_y(self, min_value=None, max_value=None):
         """
@@ -1219,7 +1301,11 @@ class ContourList:
         -------
         None
         """
-        self.filter(func=operator.methodcaller("get_center_y"), min_value=min_value, max_value=max_value)
+        self.filter(
+            func=operator.methodcaller("get_center_y"),
+            min_value=min_value,
+            max_value=max_value,
+        )
 
     def filter_area(self, min_value=None, max_value=None, mode="draw"):
         """
@@ -1243,7 +1329,11 @@ class ContourList:
         -------
         None
         """
-        self.filter(func=operator.methodcaller("get_area", mode=mode), min_value=min_value, max_value=max_value)
+        self.filter(
+            func=operator.methodcaller("get_area", mode=mode),
+            min_value=min_value,
+            max_value=max_value,
+        )
 
     def filter_perimeter(self, min_value=None, max_value=None):
         """
@@ -1265,7 +1355,11 @@ class ContourList:
         -------
         None
         """
-        self.filter(func=operator.methodcaller("get_perimeter"), min_value=min_value, max_value=max_value)
+        self.filter(
+            func=operator.methodcaller("get_perimeter"),
+            min_value=min_value,
+            max_value=max_value,
+        )
 
     def filter_circularity(self, min_value=None, max_value=None):
         """
@@ -1287,7 +1381,11 @@ class ContourList:
         -------
         None
         """
-        self.filter(func=operator.methodcaller("get_circularity"), min_value=min_value, max_value=max_value)
+        self.filter(
+            func=operator.methodcaller("get_circularity"),
+            min_value=min_value,
+            max_value=max_value,
+        )
 
     def find_largest(self, return_index=True):
         """
@@ -1307,7 +1405,7 @@ class ContourList:
         """
         max_area = None
         argmax_area = None
-        for (n_contour, contour) in enumerate(self.contours):
+        for n_contour, contour in enumerate(self.contours):
             area = contour.get_area()
             if (max_area is None) or (area > max_area):
                 max_area = area
@@ -1342,7 +1440,7 @@ class ContourList:
         if colors is None:
             colors = tuple(dito.random_color() for _ in range(len(self)))
 
-        for (contour, color) in zip(self.contours, colors):
+        for contour, color in zip(self.contours, colors):
             contour.draw(image=image, color=color, **kwargs)
 
 
@@ -1397,7 +1495,9 @@ class ContourFinder(ContourList):
         """
 
         # find raw contours
-        result = cv2.findContours(image=image, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_NONE)
+        result = cv2.findContours(
+            image=image, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_NONE
+        )
 
         # compatible with OpenCV 3.x and 4.x, see https://stackoverflow.com/a/53909713/1913780
         contours_raw = result[-2]

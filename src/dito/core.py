@@ -1,6 +1,7 @@
 """
 This submodule provides essential tools and helpers for OpenCV images represented as NumPy arrays.
 """
+
 import re
 
 import cv2
@@ -29,7 +30,7 @@ def is_image(image):
     bool
         Returns `True` if input image is valid grayscale or color image.
     """
-    
+
     return is_gray(image=image) or is_color(image=image)
 
 
@@ -252,7 +253,7 @@ def dtype_common(dtypes):
             raise ValueError(f"Invalid image type '{dtype}'")
 
         # search for `dtype` in the hierarchy and update the max index if found
-        for (index, value) in enumerate(hierarchy):
+        for index, value in enumerate(hierarchy):
             if value == np.dtype(dtype):
                 max_index = max(max_index, index)
                 break
@@ -348,7 +349,9 @@ def tir(*args):
     elif len(args) == 2:
         items = args
     else:
-        raise ValueError("The two required arguments must either be (i) given separately or (ii) via a sequence of length two, but got neither")
+        raise ValueError(
+            "The two required arguments must either be (i) given separately or (ii) via a sequence of length two, but got neither"
+        )
     return tuple(int(round(item)) for item in items)
 
 
@@ -453,7 +456,9 @@ def parse_shape(image_or_shape, shape_def):
     elif isinstance(image_or_shape, tuple):
         image_shape = image_or_shape
     else:
-        raise TypeError(f"Argument 'image_or_shape' must be an image or a tuple, but is of type '{type(image_or_shape)}'")
+        raise TypeError(
+            f"Argument 'image_or_shape' must be an image or a tuple, but is of type '{type(image_or_shape)}'"
+        )
 
     if not isinstance(shape_def, str):
         raise TypeError("Argument 'shape_def' must be a string")
@@ -462,29 +467,37 @@ def parse_shape(image_or_shape, shape_def):
 
     # check if shape definition contains an ellipsis
     ellipsis_index = None
-    for (n_part, shape_def_part) in enumerate(shape_def_parts):
+    for n_part, shape_def_part in enumerate(shape_def_parts):
         if shape_def_part == "...":
             if ellipsis_index is None:
                 ellipsis_index = n_part
             else:
-                raise dito.exceptions.ParseShapeDefinitionError(f"Shape definition must not contain more than one ellipsis ('...'), but is: '{shape_def}'")
+                raise dito.exceptions.ParseShapeDefinitionError(
+                    f"Shape definition must not contain more than one ellipsis ('...'), but is: '{shape_def}'"
+                )
 
     # check if the lengths of the shape and the shape definition are compatible
-    if (
-        (ellipsis_index is None) and (len(image_shape) != len(shape_def_parts))
-    ) or (
+    if ((ellipsis_index is None) and (len(image_shape) != len(shape_def_parts))) or (
         (ellipsis_index is not None) and ((len(shape_def_parts) - 1) > len(image_shape))
     ):
-        raise dito.exceptions.ParseShapeMismatchError(f"Shape definition '{shape_def}' and shape '{image_shape}' have conflicting lengths")
+        raise dito.exceptions.ParseShapeMismatchError(
+            f"Shape definition '{shape_def}' and shape '{image_shape}' have conflicting lengths"
+        )
 
     # if there is an ellipsis in the shape definition, fill in the missing parts
     if ellipsis_index is not None:
         missing_part_count = len(image_shape) - (len(shape_def_parts) - 1)
-        shape_def_parts = shape_def_parts[:ellipsis_index] + (["_"] * missing_part_count) + shape_def_parts[(ellipsis_index + 1):]
+        shape_def_parts = (
+            shape_def_parts[:ellipsis_index]
+            + (["_"] * missing_part_count)
+            + shape_def_parts[(ellipsis_index + 1) :]
+        )
 
     # this should not happen, but let's better check it
     if len(shape_def_parts) != len(image_shape):
-        raise RuntimeError("Internal error: shape definition length and image shape length differ after ellipsis expansion")
+        raise RuntimeError(
+            "Internal error: shape definition length and image shape length differ after ellipsis expansion"
+        )
 
     # parse every part of the shape definition
     shape_def_paramss = []
@@ -517,7 +530,9 @@ def parse_shape(image_or_shape, shape_def):
         if part_name is not None:
             name_match = re.fullmatch(name_pattern, part_name)
             if name_match is None:
-                raise dito.exceptions.ParseShapeDefinitionError(f"Invalid axis name '{part_name}' in part '{shape_def_part}' of shape definition '{shape_def}'")
+                raise dito.exceptions.ParseShapeDefinitionError(
+                    f"Invalid axis name '{part_name}' in part '{shape_def_part}' of shape definition '{shape_def}'"
+                )
 
         # special case: part name "_" is treated as no name (-> placeholder)
         if (part_name is not None) and (part_name == "_"):
@@ -532,36 +547,48 @@ def parse_shape(image_or_shape, shape_def):
 
             # check for empty parts after pipe splitting (e.g., caused by "3|" or "3||4")
             if any(pipe_part == "" for pipe_part in pipe_parts):
-                raise dito.exceptions.ParseShapeDefinitionError(f"Missing numeric value in part '{shape_def_part}' of shape definition '{shape_def}' (possibly caused by '|' not being surrounded by a number on each side)")
+                raise dito.exceptions.ParseShapeDefinitionError(
+                    f"Missing numeric value in part '{shape_def_part}' of shape definition '{shape_def}' (possibly caused by '|' not being surrounded by a number on each side)"
+                )
 
             # parse integers
             try:
                 part_values = [int(pipe_part) for pipe_part in pipe_parts]
             except ValueError:
-                raise dito.exceptions.ParseShapeDefinitionError(f"Invalid numeric value in part '{shape_def_part}' of shape definition '{shape_def}'")
+                raise dito.exceptions.ParseShapeDefinitionError(
+                    f"Invalid numeric value in part '{shape_def_part}' of shape definition '{shape_def}'"
+                )
 
             # make sure that the integers are non-negative
             for value in part_values:
                 if value < 0:
-                    raise dito.exceptions.ParseShapeDefinitionError(f"Negative numeric value in part '{shape_def_part}' of shape definition '{shape_def}'")
+                    raise dito.exceptions.ParseShapeDefinitionError(
+                        f"Negative numeric value in part '{shape_def_part}' of shape definition '{shape_def}'"
+                    )
 
         # save name (possibly None) and list of allowed values (possibly None, meaning "any")
         # for the current shape definition part
-        shape_def_paramss.append({
-            "name": part_name,
-            "part_values": part_values,
-        })
+        shape_def_paramss.append(
+            {
+                "name": part_name,
+                "part_values": part_values,
+            }
+        )
 
     # check each entry of the shape and fill collect values for named shape definition parts
     axis_names_to_sizes = {}
-    for (n_axis, (axis_size, shape_def_params)) in enumerate(zip(image_shape, shape_def_paramss)):
+    for n_axis, (axis_size, shape_def_params) in enumerate(
+        zip(image_shape, shape_def_paramss)
+    ):
         axis_name = shape_def_params["name"]
         axis_size_constraints = shape_def_params["part_values"]
 
         # if name for the current axis is given in the shape definition, collect the actual axis size
         if axis_name is not None:
             if axis_name in axis_names_to_sizes.keys():
-                raise dito.exceptions.ParseShapeDefinitionError(f"Duplicate axis name '{axis_name}' in shape definition '{shape_def}")
+                raise dito.exceptions.ParseShapeDefinitionError(
+                    f"Duplicate axis name '{axis_name}' in shape definition '{shape_def}"
+                )
             axis_names_to_sizes[axis_name] = axis_size
 
         # if there are no value constraints for the current axis, proceed without error
@@ -570,7 +597,9 @@ def parse_shape(image_or_shape, shape_def):
 
         # if there are value constraints for the current axis, raise an error of they are violated
         if axis_size not in axis_size_constraints:
-            raise dito.exceptions.ParseShapeMismatchError(f"Shape mismatch ({axis_size} vs. {'|'.join(str(constraint) for constraint in axis_size_constraints)}) for axis index {n_axis} {'(' + axis_name + ') ' if axis_name is not None else ''}between image shape '{image_shape}' and shape definition '{shape_def}'")
+            raise dito.exceptions.ParseShapeMismatchError(
+                f"Shape mismatch ({axis_size} vs. {'|'.join(str(constraint) for constraint in axis_size_constraints)}) for axis index {n_axis} {'(' + axis_name + ') ' if axis_name is not None else ''}between image shape '{image_shape}' and shape definition '{shape_def}'"
+            )
 
     return axis_names_to_sizes
 
@@ -602,7 +631,12 @@ def size(image):
     return (image.shape[1], image.shape[0])
 
 
-def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolation_up=cv2.INTER_NEAREST):
+def resize(
+    image,
+    scale_or_size,
+    interpolation_down=cv2.INTER_CUBIC,
+    interpolation_up=cv2.INTER_NEAREST,
+):
     """
     Resize the input image to a new size or by a scaling factor.
 
@@ -644,22 +678,47 @@ def resize(image, scale_or_size, interpolation_down=cv2.INTER_CUBIC, interpolati
     # OpenCV does not support resizing of bool images - this is a workaround
     if image.dtype == bool:
         image_uint8 = image.astype(np.uint8)
-        image_uint8 = resize(image=image_uint8, scale_or_size=scale_or_size, interpolation_down=interpolation_down, interpolation_up=interpolation_up)
+        image_uint8 = resize(
+            image=image_uint8,
+            scale_or_size=scale_or_size,
+            interpolation_down=interpolation_down,
+            interpolation_up=interpolation_up,
+        )
         return image_uint8 > 0
 
     # resize by scale factor
     if isinstance(scale_or_size, float):
         scale = scale_or_size
-        return cv2.resize(src=image, dsize=None, dst=None, fx=scale, fy=scale, interpolation=interpolation_up if scale > 1.0 else interpolation_down)
+        return cv2.resize(
+            src=image,
+            dsize=None,
+            dst=None,
+            fx=scale,
+            fy=scale,
+            interpolation=interpolation_up if scale > 1.0 else interpolation_down,
+        )
 
     # resize to target size
     elif isinstance(scale_or_size, tuple) and (len(scale_or_size) == 2):
         target_size = scale_or_size
         current_size = size(image)
-        return cv2.resize(src=image, dsize=target_size, dst=None, fx=0.0, fy=0.0, interpolation=interpolation_up if all(target_size[n_dim] > current_size[n_dim] for n_dim in range(2)) else interpolation_down)
-    
+        return cv2.resize(
+            src=image,
+            dsize=target_size,
+            dst=None,
+            fx=0.0,
+            fy=0.0,
+            interpolation=(
+                interpolation_up
+                if all(target_size[n_dim] > current_size[n_dim] for n_dim in range(2))
+                else interpolation_down
+            ),
+        )
+
     else:
-        raise ValueError(f"Expected a float (= scale factor) or a 2-tuple (= target size) for argument 'scale_or_size', but got type '{type(scale_or_size)}'")
+        raise ValueError(
+            f"Expected a float (= scale factor) or a 2-tuple (= target size) for argument 'scale_or_size', but got type '{type(scale_or_size)}'"
+        )
 
 
 class PaddedImageIndexer:
@@ -719,19 +778,25 @@ class PaddedImageIndexer:
         elif item is Ellipsis:
             indices = tuple()
         else:
-            raise ValueError(f"Index must be either a (i) tuple of slices (with optional ellipsis), (ii) a slice, or (iii) an ellipsis, but is of type '{type(item)}'")
+            raise ValueError(
+                f"Index must be either a (i) tuple of slices (with optional ellipsis), (ii) a slice, or (iii) an ellipsis, but is of type '{type(item)}'"
+            )
 
         axis_count = len(self.image.shape)
 
         # find and replace Ellipsis
         ellipsis_positions = []
-        for (n_axis, index) in enumerate(indices):
+        for n_axis, index in enumerate(indices):
             if isinstance(index, type(Ellipsis)):
                 ellipsis_positions.append(n_axis)
         if len(ellipsis_positions) == 1:
             ellipsis_position = ellipsis_positions[0]
             ellipsis_axis_span = axis_count - len(indices)
-            indices = tuple(indices[:ellipsis_position]) + tuple([slice(None, None, None)] * ellipsis_axis_span) + tuple(indices[(ellipsis_position + 1):])
+            indices = (
+                tuple(indices[:ellipsis_position])
+                + tuple([slice(None, None, None)] * ellipsis_axis_span)
+                + tuple(indices[(ellipsis_position + 1) :])
+            )
         elif len(ellipsis_positions) > 1:
             raise IndexError("An index can only have a single ellipsis ('...')")
 
@@ -742,16 +807,22 @@ class PaddedImageIndexer:
                 indices.append(slice(None, None, None))
             indices = tuple(indices)
         elif len(indices) > axis_count:
-            raise ValueError(f"The axis count ({len(indices)}) is larger than the axis count of the image ({axis_count})")
+            raise ValueError(
+                f"The axis count ({len(indices)}) is larger than the axis count of the image ({axis_count})"
+            )
 
         # for each axis collect the in-bound cropping indices and the pad widths
         pad_widths = []
         indices_after_padding = []
-        for (n_axis, index) in enumerate(indices):
+        for n_axis, index in enumerate(indices):
             if not isinstance(index, slice):
-                raise TypeError(f"All indices must be slices, but index #{n_axis} is of type '{type(index).__name__}'")
+                raise TypeError(
+                    f"All indices must be slices, but index #{n_axis} is of type '{type(index).__name__}'"
+                )
             if (index.step is not None) and (index.step < 0):
-                raise ValueError(f"Negative step sizes are currently not supported, but index #{n_axis} has step size {index.step}")
+                raise ValueError(
+                    f"Negative step sizes are currently not supported, but index #{n_axis} has step size {index.step}"
+                )
 
             axis_size = self.image.shape[n_axis]
 
@@ -761,13 +832,17 @@ class PaddedImageIndexer:
             step = index.step if (index.step is not None) else 1
 
             if start > stop:
-                raise ValueError(f"Slice start ({start}) is larger than slice stop ({stop})")
+                raise ValueError(
+                    f"Slice start ({start}) is larger than slice stop ({stop})"
+                )
 
             # store pad widths and crop indices
             pad_before = max(0, -start)
             pad_after = max(0, stop - axis_size)
             pad_widths.append((pad_before, pad_after))
-            indices_after_padding.append(slice(start + pad_before, stop + pad_before, step))
+            indices_after_padding.append(
+                slice(start + pad_before, stop + pad_before, step)
+            )
 
         # apply padding where necessary
         image_padded = np.pad(array=self.image, pad_width=pad_widths, **self.pad_kwargs)
@@ -778,7 +853,16 @@ class PaddedImageIndexer:
         return image_cropped
 
 
-def pad(image, count=None, count_top=None, count_right=None, count_bottom=None, count_left=None, mode=cv2.BORDER_CONSTANT, constant_value=0):
+def pad(
+    image,
+    count=None,
+    count_top=None,
+    count_right=None,
+    count_bottom=None,
+    count_left=None,
+    mode=cv2.BORDER_CONSTANT,
+    constant_value=0,
+):
     """
     Pads an image with a border.
 
@@ -843,11 +927,20 @@ def pad(image, count=None, count_top=None, count_right=None, count_bottom=None, 
     else:
         raise ValueError(f"Invalid border mode '{mode}'")
 
-    trbl_all_none = (count_top is None) and (count_right is None) and (count_bottom is None) and (count_left is None)
+    trbl_all_none = (
+        (count_top is None)
+        and (count_right is None)
+        and (count_bottom is None)
+        and (count_left is None)
+    )
 
     if (count is not None) and trbl_all_none:
         # padding counts are given by argument 'count'
-        (count_top, count_right, count_bottom, count_left) = dito.utils.get_validated_tuple(x=count, type_=int, count=4, min_value=0, max_value=None)
+        (count_top, count_right, count_bottom, count_left) = (
+            dito.utils.get_validated_tuple(
+                x=count, type_=int, count=4, min_value=0, max_value=None
+            )
+        )
     elif (count is None) and (not trbl_all_none):
         # padding counts are given by argument 'count_*'
         count_top = 0 if (count_top is None) else count_top
@@ -855,9 +948,19 @@ def pad(image, count=None, count_top=None, count_right=None, count_bottom=None, 
         count_bottom = 0 if (count_bottom is None) else count_bottom
         count_left = 0 if (count_left is None) else count_left
     else:
-        raise ValueError("If argument 'count' is set, arguments 'top', 'right', 'bottom', 'left' must be unset (None) and vice versa")
+        raise ValueError(
+            "If argument 'count' is set, arguments 'top', 'right', 'bottom', 'left' must be unset (None) and vice versa"
+        )
 
-    return cv2.copyMakeBorder(src=image, top=count_top, bottom=count_bottom, left=count_left, right=count_right, borderType=mode, value=constant_value)
+    return cv2.copyMakeBorder(
+        src=image,
+        top=count_top,
+        bottom=count_bottom,
+        left=count_left,
+        right=count_right,
+        borderType=mode,
+        value=constant_value,
+    )
 
 
 def center_pad_to(image, target_size, **kwargs):
@@ -894,7 +997,15 @@ def center_pad_to(image, target_size, **kwargs):
     count_left = missing_width // 2
     count_right = missing_width - count_left
 
-    return pad(image=image, count=None, count_top=count_top, count_right=count_right, count_bottom=count_bottom, count_left=count_left, **kwargs)
+    return pad(
+        image=image,
+        count=None,
+        count_top=count_top,
+        count_right=count_right,
+        count_bottom=count_bottom,
+        count_left=count_left,
+        **kwargs,
+    )
 
 
 def center_crop_to(image, target_size):
@@ -922,7 +1033,9 @@ def center_crop_to(image, target_size):
     indices = [None, None, Ellipsis]
     for n_dim in range(2):
         offset = max(0, image_size[n_dim] - target_size[n_dim]) // 2
-        indices[1 - n_dim] = slice(offset, min(image_size[n_dim], offset + target_size[n_dim]))
+        indices[1 - n_dim] = slice(
+            offset, min(image_size[n_dim], offset + target_size[n_dim])
+        )
     return image[tuple(indices)]
 
 
@@ -1005,17 +1118,21 @@ def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
         )
     elif padding_mode == "full":
         # full padding: pad the image such that any rotation would fit in
-        diag = int(np.ceil(np.sqrt(image_size[0]**2 + image_size[1]**2)))
+        diag = int(np.ceil(np.sqrt(image_size[0] ** 2 + image_size[1] ** 2)))
         target_size = (diag, diag)
     else:
         raise ValueError(f"Invalid padding mode '{padding_mode}'")
 
     # get rotation matrix and change the translation to match the target image size
-    rotation_matrix = cv2.getRotationMatrix2D(center=(image.shape[1] // 2, image.shape[0] // 2), angle=angle_deg, scale=1.0)
+    rotation_matrix = cv2.getRotationMatrix2D(
+        center=(image.shape[1] // 2, image.shape[0] // 2), angle=angle_deg, scale=1.0
+    )
     rotation_matrix[0, 2] += target_size[0] // 2 - image_size[0] // 2
     rotation_matrix[1, 2] += target_size[1] // 2 - image_size[1] // 2
 
-    return cv2.warpAffine(src=image, M=rotation_matrix, dsize=target_size, flags=interpolation)
+    return cv2.warpAffine(
+        src=image, M=rotation_matrix, dsize=target_size, flags=interpolation
+    )
 
 
 def rotate_90(image):
@@ -1081,7 +1198,16 @@ def rotate_270(image):
     return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_CLOCKWISE)
 
 
-def warp_affine(image, angle_deg=0.0, scale=1.0, tx=0.0, ty=0.0, interpolation=cv2.INTER_LINEAR, border_mode=cv2.BORDER_REFLECT_101, border_value=0):
+def warp_affine(
+    image,
+    angle_deg=0.0,
+    scale=1.0,
+    tx=0.0,
+    ty=0.0,
+    interpolation=cv2.INTER_LINEAR,
+    border_mode=cv2.BORDER_REFLECT_101,
+    border_value=0,
+):
     """
     Apply an affine transformation to the given `image`, including rotation, scaling, and translation.
 
@@ -1123,17 +1249,26 @@ def warp_affine(image, angle_deg=0.0, scale=1.0, tx=0.0, ty=0.0, interpolation=c
 
     image_size = size(image=image)
 
-    rotation_matrix = cv2.getRotationMatrix2D(center=(image.shape[1] // 2, image.shape[0] // 2), angle=angle_deg, scale=scale)
+    rotation_matrix = cv2.getRotationMatrix2D(
+        center=(image.shape[1] // 2, image.shape[0] // 2), angle=angle_deg, scale=scale
+    )
     rotation_matrix[0, 2] += tx
     rotation_matrix[1, 2] += ty
 
-    return cv2.warpAffine(src=image, M=rotation_matrix, dsize=image_size, flags=interpolation, borderMode=border_mode, borderValue=border_value)
+    return cv2.warpAffine(
+        src=image,
+        M=rotation_matrix,
+        dsize=image_size,
+        flags=interpolation,
+        borderMode=border_mode,
+        borderValue=border_value,
+    )
 
 
 #
 # channel-related
 #
-    
+
 
 def is_gray(image):
     """
@@ -1152,8 +1287,10 @@ def is_gray(image):
     bool
         True if the image is grayscale, False otherwise.
     """
-    
-    return (len(image.shape) == 2) or ((len(image.shape) == 3) and (image.shape[2] == 1))
+
+    return (len(image.shape) == 2) or (
+        (len(image.shape) == 3) and (image.shape[2] == 1)
+    )
 
 
 def is_color(image):
@@ -1173,7 +1310,7 @@ def is_color(image):
     bool
         True if the image is color, False otherwise.
     """
-    
+
     return (len(image.shape) == 3) and (image.shape[2] == 3)
 
 
@@ -1234,7 +1371,7 @@ def as_color(image):
     is_color : Check if an image is color.
     cv2.cvtColor : OpenCV function that performs the color conversion.
     """
-    
+
     if is_color(image=image):
         return image
     else:
@@ -1278,7 +1415,9 @@ def convert_color(image_or_color, code):
         # image mode
         return cv2.cvtColor(src=image_or_color, code=code)
     else:
-        raise ValueError(f"Argument 'image_or_color' must be an image or a color, but is '{type(image_or_color)}'")
+        raise ValueError(
+            f"Argument 'image_or_color' must be an image or a color, but is '{type(image_or_color)}'"
+        )
 
 
 def bgr_to_hsv(image_or_color):
@@ -1374,7 +1513,9 @@ def split_channels(image):
     elif axis_count == 3:
         return tuple(image[:, :, n_channel] for n_channel in range(image.shape[2]))
     else:
-        raise dito.exceptions.InvalidImageShapeError(f"Image shape must have two or three axes, but is {image.shape}")
+        raise dito.exceptions.InvalidImageShapeError(
+            f"Image shape must have two or three axes, but is {image.shape}"
+        )
 
 
 def as_channels(b=None, g=None, r=None):
@@ -1425,7 +1566,9 @@ def as_channels(b=None, g=None, r=None):
     for channel_image in (b, g, r):
         if channel_image is not None:
             if not is_gray(image=channel_image):
-                raise ValueError("At least one of the given images is not a gray scale image")
+                raise ValueError(
+                    "At least one of the given images is not a gray scale image"
+                )
             channel_images.append(channel_image)
         else:
             channel_images.append(channel_image_zero)
@@ -1600,16 +1743,20 @@ def normalize(image, mode="minmax", **kwargs):
 
         # we temporarily work with a float image (because values outside the target interval can occur)
         image_work = image.astype("float").copy()
-        
+
         # spread the given interval to the full range, clip outlier values
-        image_work = (image_work - lower_source) / (upper_source - lower_source) * (upper_target - lower_target) + lower_target
+        image_work = (image_work - lower_source) / (upper_source - lower_source) * (
+            upper_target - lower_target
+        ) + lower_target
         image_work = clip(image=image_work, lower=lower_target, upper=upper_target)
 
         # return an image with the original data type
         return image_work.astype(image.dtype)
 
     elif mode == "minmax":
-        return normalize(image, mode="interval", lower=np.min(image), upper=np.max(image))
+        return normalize(
+            image, mode="interval", lower=np.min(image), upper=np.max(image)
+        )
 
     elif mode == "zminmax":
         # "zero-symmetric" minmax (makes only sense for float images)
@@ -1624,7 +1771,12 @@ def normalize(image, mode="minmax", **kwargs):
         else:
             q = 2.0
         q = min(max(0.0, q), 50.0)
-        return normalize(image, mode="interval", lower=np.percentile(image, q), upper=np.percentile(image, 100.0 - q))
+        return normalize(
+            image,
+            mode="interval",
+            lower=np.percentile(image, q),
+            upper=np.percentile(image, 100.0 - q),
+        )
 
     else:
         raise ValueError(f"Invalid mode '{mode}'")
@@ -1664,7 +1816,9 @@ def invert(image):
     if is_integer_image(image=image) or is_float_image(image=image):
         image_dtype_range = dtype_range(dtype=image.dtype)
         if float(image_dtype_range[0]) != 0.0:
-            raise ValueError(f"Argument 'image' must have dtype with min value of zero (but has dtype '{image.dtype}')")
+            raise ValueError(
+                f"Argument 'image' must have dtype with min value of zero (but has dtype '{image.dtype}')"
+            )
         return image_dtype_range[1] - image
 
     elif is_bool_image(image=image):

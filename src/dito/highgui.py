@@ -84,7 +84,13 @@ class Slider(abc.ABC):
         Creates the trackbar in the OpenCV highgui window.
         """
         cv2.namedWindow(winname=self.window_name)
-        cv2.createTrackbar(self.name, self.window_name, self.initial_raw_value, self.max_raw_value, self.callback)
+        cv2.createTrackbar(
+            self.name,
+            self.window_name,
+            self.initial_raw_value,
+            self.max_raw_value,
+            self.callback,
+        )
 
     def get_raw_value(self):
         """
@@ -111,7 +117,9 @@ class Slider(abc.ABC):
             raw_value = 0
         elif raw_value > self.max_raw_value:
             raw_value = self.max_raw_value
-        cv2.setTrackbarPos(trackbarname=self.name, winname=self.window_name, pos=raw_value)
+        cv2.setTrackbarPos(
+            trackbarname=self.name, winname=self.window_name, pos=raw_value
+        )
 
     def reset(self):
         """
@@ -214,7 +222,11 @@ class ChoiceSlider(Slider):
         super().__init__(
             name=name,
             window_name=window_name,
-            initial_raw_value=0 if initial_choice is None else self.raw_from_value(value=initial_choice),
+            initial_raw_value=(
+                0
+                if initial_choice is None
+                else self.raw_from_value(value=initial_choice)
+            ),
             max_raw_value=len(self.choices) - 1,
         )
 
@@ -357,7 +369,9 @@ class IntegerSlider(Slider):
         super().__init__(
             name=name,
             window_name=window_name,
-            initial_raw_value=self.raw_from_value(value=self.resolve_initial_value(initial_value=initial_value)),
+            initial_raw_value=self.raw_from_value(
+                value=self.resolve_initial_value(initial_value=initial_value)
+            ),
             max_raw_value=self.max_value - self.min_value,
         )
 
@@ -443,7 +457,15 @@ class FloatSlider(Slider):
         The maximum value of the slider.
     """
 
-    def __init__(self, window_name, name, min_value, max_value, value_count=101, initial_value=None):
+    def __init__(
+        self,
+        window_name,
+        name,
+        min_value,
+        max_value,
+        value_count=101,
+        initial_value=None,
+    ):
         """
         Set up and create the float slider.
 
@@ -479,7 +501,9 @@ class FloatSlider(Slider):
         super().__init__(
             name=name,
             window_name=window_name,
-            initial_raw_value=self.raw_from_value(value=self.resolve_initial_value(initial_value=initial_value)),
+            initial_raw_value=self.raw_from_value(
+                value=self.resolve_initial_value(initial_value=initial_value)
+            ),
             max_raw_value=self.value_count - 1,
         )
 
@@ -529,7 +553,13 @@ class FloatSlider(Slider):
             The raw integer value corresponding to the slider value.
         """
         # int is required for the case that `value` is a NumPy float
-        return int(round((value - self.min_value) / (self.max_value - self.min_value) * (self.value_count - 1)))
+        return int(
+            round(
+                (value - self.min_value)
+                / (self.max_value - self.min_value)
+                * (self.value_count - 1)
+            )
+        )
 
     def value_from_raw(self, raw_value):
         """
@@ -545,4 +575,7 @@ class FloatSlider(Slider):
         float
             The high-level slider value (the float value) corresponding to the raw integer trackbar value.
         """
-        return raw_value / (self.value_count - 1) * (self.max_value - self.min_value) + self.min_value
+        return (
+            raw_value / (self.value_count - 1) * (self.max_value - self.min_value)
+            + self.min_value
+        )

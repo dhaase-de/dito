@@ -77,7 +77,9 @@ def load(filename, color=None, np_kwargs=None, czi_kwargs=None):
     if extension == ".npy":
         # use NumPy
         if color is not None:
-            raise ValueError(f"Argument 'color' must be 'None' for NumPy images, but is '{color}'")
+            raise ValueError(
+                f"Argument 'color' must be 'None' for NumPy images, but is '{color}'"
+            )
         if np_kwargs is None:
             np_kwargs = {}
         image = np.load(file=filename, **np_kwargs)
@@ -88,7 +90,9 @@ def load(filename, color=None, np_kwargs=None, czi_kwargs=None):
         with np.load(file=filename, **np_kwargs) as npz_file:
             npz_keys = tuple(npz_file.keys())
             if len(npz_keys) != 1:
-                raise ValueError(f"Expected exactly one image in '{filename}', but got {len(npz_keys)} (keys: {npz_keys})")
+                raise ValueError(
+                    f"Expected exactly one image in '{filename}', but got {len(npz_keys)} (keys: {npz_keys})"
+                )
             image = npz_file[npz_keys[0]]
     elif extension == ".czi":
         # use pylibCZIrw
@@ -108,14 +112,18 @@ def load(filename, color=None, np_kwargs=None, czi_kwargs=None):
                 flags = cv2.IMREAD_ANYDEPTH | cv2.IMREAD_UNCHANGED
             else:
                 # force gray/color mode
-                flags = cv2.IMREAD_ANYDEPTH | (cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE)
+                flags = cv2.IMREAD_ANYDEPTH | (
+                    cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE
+                )
             image = cv2.imread(filename=filename, flags=flags)
 
     # check if loading was successful
     if image is None:
         raise RuntimeError(f"Image file '{filename}' exists, but could not be loaded")
     if not isinstance(image, np.ndarray):
-        raise TypeError(f"Image file '{filename}' exists, but has wrong type (expected object of type 'np.ndarray', but got '{type(image)}'")
+        raise TypeError(
+            f"Image file '{filename}' exists, but has wrong type (expected object of type 'np.ndarray', but got '{type(image)}'"
+        )
 
     return image
 
@@ -159,10 +167,17 @@ def _load_czi(filename, keep_singleton_dimensions=False, keep_all_dimensions=Fal
 
     # check arguments
     if keep_all_dimensions and (not keep_singleton_dimensions):
-        raise ValueError("Argument 'keep_all_dimensions' is True, but 'keep_singleton_dimensions' is not")
+        raise ValueError(
+            "Argument 'keep_all_dimensions' is True, but 'keep_singleton_dimensions' is not"
+        )
 
     # be on the safe side and get all possible dimension names in the order defined by `pylibCZIrw.czi.CziReader.CZI_DIMS`
-    dim_names = tuple(dim_item[0] for dim_item in sorted(pylibCZIrw.czi.CziReader.CZI_DIMS.items(), key=operator.itemgetter(1)))
+    dim_names = tuple(
+        dim_item[0]
+        for dim_item in sorted(
+            pylibCZIrw.czi.CziReader.CZI_DIMS.items(), key=operator.itemgetter(1)
+        )
+    )
 
     with pylibCZIrw.czi.open_czi(str(filename)) as czi:
         # get the bounding box for all dimensions
@@ -194,7 +209,9 @@ def _load_czi(filename, keep_singleton_dimensions=False, keep_all_dimensions=Fal
             used_dim_sizes.append(dim_size)
 
         # create all possible combinations for the indices of all dimensions
-        used_dim_indices = [tuple(range(used_dim_size)) for used_dim_size in used_dim_sizes]
+        used_dim_indices = [
+            tuple(range(used_dim_size)) for used_dim_size in used_dim_sizes
+        ]
         index_product = itertools.product(*used_dim_indices)
 
         # for each index combination ("plane"), ...
@@ -202,13 +219,15 @@ def _load_czi(filename, keep_singleton_dimensions=False, keep_all_dimensions=Fal
         for indices in index_product:
             # ... get the image plane for the current index combination
             plane = {}
-            for (used_dim_name, index) in zip(used_dim_names, indices):
+            for used_dim_name, index in zip(used_dim_names, indices):
                 plane[used_dim_name] = index
             image = czi.read(plane=plane)
 
             # use the first plane image to get the correct shape and dtype of the final NumPy array
             if combined_image is None:
-                combined_image = np.zeros(shape=tuple(used_dim_sizes) + image.shape, dtype=image.dtype)
+                combined_image = np.zeros(
+                    shape=tuple(used_dim_sizes) + image.shape, dtype=image.dtype
+                )
 
             # insert the image plane into the final NumPy array
             combined_image[indices + (slice(None), slice(None), slice(None))] = image
@@ -258,7 +277,9 @@ def load_multiple(*args, color=None):
     return list(load_multiple_iter(*args, color=color))
 
 
-def save(filename, image, mkdir=True, imwrite_params=None, np_kwargs=None, czi_kwargs=None):
+def save(
+    filename, image, mkdir=True, imwrite_params=None, np_kwargs=None, czi_kwargs=None
+):
     """
     Save a NumPy array `image` as an image file at `filename`.
 
@@ -326,7 +347,9 @@ def save(filename, image, mkdir=True, imwrite_params=None, np_kwargs=None, czi_k
         if (os.name == "nt") and not dito.utils.is_ascii(s=str(filename)):
             # workaround for filenames containing non-ASCII chars under Windows
             with open(filename, "wb") as image_file:
-                image_file.write(encode(image=image, extension=pathlib.Path(filename).suffix))
+                image_file.write(
+                    encode(image=image, extension=pathlib.Path(filename).suffix)
+                )
         else:
             # all other cases
             if imwrite_params is None:
@@ -426,33 +449,44 @@ def _save_czi(
     else:
         # if the image has three or more axes, make sure that the last one is of size 1 (gray) or 3 (BGR)
         if shape[-1] not in (1, 3):
-            raise ValueError(f"The last axis of the image must be of size 1 or 3, but it is {shape[-1]} (full shape: {shape})")
+            raise ValueError(
+                f"The last axis of the image must be of size 1 or 3, but it is {shape[-1]} (full shape: {shape})"
+            )
 
         # if there are more than three axes, we need dim_names to identify which dimensions should be used
         if extra_dim_count > 0:
             # check the size of extra_dim_names
             if extra_dim_count != len(extra_dim_names):
-                raise ValueError(f"For image of {dim_count} dimensions, 'extra_dim_names' must be of length {dim_count}-3={extra_dim_count} (containing one identifying letter for each extra dimension), but 'extra_dim_names' is {extra_dim_names}")
+                raise ValueError(
+                    f"For image of {dim_count} dimensions, 'extra_dim_names' must be of length {dim_count}-3={extra_dim_count} (containing one identifying letter for each extra dimension), but 'extra_dim_names' is {extra_dim_names}"
+                )
 
             # check if each extra dim name is correct
             allowed_dim_names = tuple(pylibCZIrw.czi.CziReader.CZI_DIMS.keys())
             for extra_dim_name in extra_dim_names:
                 if extra_dim_name not in allowed_dim_names:
-                    raise ValueError(f"Invalid dimension name '{extra_dim_name}' - allowed values are {allowed_dim_names}")
+                    raise ValueError(
+                        f"Invalid dimension name '{extra_dim_name}' - allowed values are {allowed_dim_names}"
+                    )
 
     # create all combinations of indices for extra dimensions (dimensions which are not Y, X, color)
-    extra_dim_indices = [tuple(range(extra_dim_size)) for extra_dim_size in extra_dim_shape]
+    extra_dim_indices = [
+        tuple(range(extra_dim_size)) for extra_dim_size in extra_dim_shape
+    ]
     extra_index_product = itertools.product(*extra_dim_indices)
 
     # create file
     with pylibCZIrw.czi.create_czi(
-            str(filename),
-            exist_ok=True,
-            compression_options=compression_options,
+        str(filename),
+        exist_ok=True,
+        compression_options=compression_options,
     ) as czi:
         # for each plane (identified by the indices for the extra dimensions), write the (Y, X, color)-shaped image
         for extra_indices in extra_index_product:
-            plane = {extra_dim_name: extra_index for (extra_dim_name, extra_index) in zip(extra_dim_names, extra_indices)}
+            plane = {
+                extra_dim_name: extra_index
+                for (extra_dim_name, extra_index) in zip(extra_dim_names, extra_indices)
+            }
             czi.write(
                 data=image[extra_indices + (slice(None), slice(None), slice(None))],
                 plane=plane,
@@ -470,23 +504,41 @@ def _save_czi(
             metadata_kwargs["channel_names"] = channel_names
         if channel_display_settings is not None:
             metadata_kwargs["display_settings"] = {}
-            for (channel_key, channel_display_setting) in channel_display_settings.items():
+            for (
+                channel_key,
+                channel_display_setting,
+            ) in channel_display_settings.items():
                 # check for invalid keys to prevent typos
                 for key in channel_display_setting.keys():
-                    if key not in ("color_bgr", "is_enabled", "black_point", "white_point"):
-                        raise ValueError(f"Invalid key in channel_display_settings[{channel_key}]: '{key}'")
+                    if key not in (
+                        "color_bgr",
+                        "is_enabled",
+                        "black_point",
+                        "white_point",
+                    ):
+                        raise ValueError(
+                            f"Invalid key in channel_display_settings[{channel_key}]: '{key}'"
+                        )
 
                 # convert channel color from 3-tuple to Rgb8Color
-                channel_color_bgr = channel_display_setting.get("color_bgr", (255, 255, 255))
-                channel_color_czi = pylibCZIrw.czi.Rgb8Color(np.uint8(channel_color_bgr[2]), np.uint8(channel_color_bgr[1]), np.uint8(channel_color_bgr[0]))
+                channel_color_bgr = channel_display_setting.get(
+                    "color_bgr", (255, 255, 255)
+                )
+                channel_color_czi = pylibCZIrw.czi.Rgb8Color(
+                    np.uint8(channel_color_bgr[2]),
+                    np.uint8(channel_color_bgr[1]),
+                    np.uint8(channel_color_bgr[0]),
+                )
 
                 # instantiate ChannelDisplaySettingsDataClass
-                metadata_kwargs["display_settings"][channel_key] = pylibCZIrw.czi.ChannelDisplaySettingsDataClass(
-                    is_enabled=channel_display_setting.get("is_enabled", True),
-                    tinting_mode=pylibCZIrw.czi.TintingMode.Color,
-                    tinting_color=channel_color_czi,
-                    black_point=channel_display_setting.get("black_point", 0.0),
-                    white_point=channel_display_setting.get("white_point", 1.0),
+                metadata_kwargs["display_settings"][channel_key] = (
+                    pylibCZIrw.czi.ChannelDisplaySettingsDataClass(
+                        is_enabled=channel_display_setting.get("is_enabled", True),
+                        tinting_mode=pylibCZIrw.czi.TintingMode.Color,
+                        tinting_color=channel_color_czi,
+                        black_point=channel_display_setting.get("black_point", 0.0),
+                        white_point=channel_display_setting.get("white_point", 1.0),
+                    )
                 )
         if document_name is not None:
             metadata_kwargs["document_name"] = document_name
@@ -519,7 +571,13 @@ def save_tmp(image):
     str
         The file path of the saved temporary image.
     """
-    filename = os.path.join(tempfile.gettempdir(), "dito.save_tmp", "{}__{}.png".format(dito.utils.now_str(mode="readable"), str(uuid.uuid4()).split("-")[0]))
+    filename = os.path.join(
+        tempfile.gettempdir(),
+        "dito.save_tmp",
+        "{}__{}.png".format(
+            dito.utils.now_str(mode="readable"), str(uuid.uuid4()).split("-")[0]
+        ),
+    )
     save(filename=filename, image=image, mkdir=True)
     return filename
 
@@ -595,7 +653,9 @@ def decode(b, color=None):
     if color is None:
         flags = cv2.IMREAD_UNCHANGED
     else:
-        flags = cv2.IMREAD_ANYDEPTH | (cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE)
+        flags = cv2.IMREAD_ANYDEPTH | (
+            cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE
+        )
 
     # read image
     image = cv2.imdecode(buf=buf, flags=flags)
@@ -805,7 +865,9 @@ class VideoSaver:
 
         # check if the image size is consistent with the previous frames
         if image_size != self.image_size:
-            raise ValueError(f"Image size '{image_size}' differs from previous image size '{self.image_size}'")
+            raise ValueError(
+                f"Image size '{image_size}' differs from previous image size '{self.image_size}'"
+            )
 
         # apply correct color mode
         if self.color:
@@ -876,8 +938,25 @@ class VideoSaver:
             ["..Codec", self.codec],
             ["..Filename", self.filename],
             ["..Exists", file_exists],
-            ["..Size", dito.utils.human_bytes(byte_count=self.get_file_size()) if file_exists else "n/a"],
-            ["..Modified", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(filename=self.filename))) if file_exists else "n/a"],
+            [
+                "..Size",
+                (
+                    dito.utils.human_bytes(byte_count=self.get_file_size())
+                    if file_exists
+                    else "n/a"
+                ),
+            ],
+            [
+                "..Modified",
+                (
+                    time.strftime(
+                        "%Y-%m-%d %H:%M:%S",
+                        time.localtime(os.path.getmtime(filename=self.filename)),
+                    )
+                    if file_exists
+                    else "n/a"
+                ),
+            ],
             ["Frames", ""],
             ["..Size", self.image_size],
             ["..Color", self.color],

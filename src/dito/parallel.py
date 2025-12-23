@@ -17,7 +17,9 @@ def _star_wrapper(arg):
     return func(*args)
 
 
-def mp_starmap(func, argss, process_count=None, chunksize=1, pbar_func=None, pbar_kwargs=None):
+def mp_starmap(
+    func, argss, process_count=None, chunksize=1, pbar_func=None, pbar_kwargs=None
+):
     """
     Run `func(*argss[0])`, `func(*argss[1])`, ... in parallel and return the
     results as list in the same order.
@@ -68,18 +70,24 @@ def mp_starmap(func, argss, process_count=None, chunksize=1, pbar_func=None, pba
     """
 
     argss_for_star_wrapper = tuple((func, args) for args in argss)
-    
+
     with mp.Pool(processes=process_count) as pool:
         if pbar_func is None:
             # case 1: no progress bar
-            return pool.map(func=_star_wrapper, iterable=argss_for_star_wrapper, chunksize=chunksize)
+            return pool.map(
+                func=_star_wrapper, iterable=argss_for_star_wrapper, chunksize=chunksize
+            )
         else:
             # case 2: tqdm-compatible progress bar
             results = []
             if pbar_kwargs is None:
                 pbar_kwargs = {}
             with pbar_func(total=len(argss), **pbar_kwargs) as pbar:
-                for result in pool.imap(func=_star_wrapper, iterable=argss_for_star_wrapper, chunksize=chunksize):
+                for result in pool.imap(
+                    func=_star_wrapper,
+                    iterable=argss_for_star_wrapper,
+                    chunksize=chunksize,
+                ):
                     pbar.update()
                     results.append(result)
             return results

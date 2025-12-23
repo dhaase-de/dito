@@ -70,10 +70,11 @@ Repository = "https://github.com/dhaase-de/dito.git"
 #
 
 [tool.black]
-line-length = 120
+line-length = 88
+target-version = ["py310", "py311", "py312", "py313", "py314"]
 
 [tool.ruff]
-line-length = 120
+line-length = 88
 
 [tool.ruff.lint]
 extend-select = [

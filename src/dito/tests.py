@@ -16,7 +16,7 @@ except ImportError:
 
 
 ####
-#%%% base classes
+# %%% base classes
 ####
 
 
@@ -24,21 +24,21 @@ class TestCase(unittest.TestCase):
     """
     Base class for test cases.
     """
-    
+
     def assertNumpyShape(self, image, shape):
         self.assertIsInstance(image, np.ndarray)
         self.assertEqual(image.shape, shape)
-    
+
     def assertIsImage(self, x):
         self.assertTrue(dito.is_image(image=x))
-    
+
     def assertEqualImageContainers(self, x, y, enforce_is_image=True):
         if enforce_is_image:
             self.assertIsImage(x)
             self.assertIsImage(y)
         self.assertEqual(x.dtype, y.dtype)
         self.assertEqual(x.shape, y.shape)
-    
+
     def assertEqualImages(self, x, y, enforce_is_image=True):
         self.assertEqualImageContainers(x, y, enforce_is_image=enforce_is_image)
         if np.issubdtype(x.dtype, np.floating):
@@ -78,7 +78,7 @@ class DiffTestCase(TestCase):
 
 
 ####
-#%%% test cases
+# %%% test cases
 ####
 
 
@@ -187,25 +187,51 @@ class adaptive_round_Tests(TestCase):
 
     def test_adaptive_round_numpy_float32_scalar(self):
         number = np.float32(123.456789)
-        self.assertIsInstance(dito.adaptive_round(number=number, digit_count=4), np.float32)
-        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=1)), 100.0)
-        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=2)), 120.0)
-        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=3)), 123.0)
-        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=4)), 123.5)
+        self.assertIsInstance(
+            dito.adaptive_round(number=number, digit_count=4), np.float32
+        )
+        self.assertAlmostEqual(
+            float(dito.adaptive_round(number=number, digit_count=1)), 100.0
+        )
+        self.assertAlmostEqual(
+            float(dito.adaptive_round(number=number, digit_count=2)), 120.0
+        )
+        self.assertAlmostEqual(
+            float(dito.adaptive_round(number=number, digit_count=3)), 123.0
+        )
+        self.assertAlmostEqual(
+            float(dito.adaptive_round(number=number, digit_count=4)), 123.5
+        )
 
     def test_adaptive_round_numpy_float64_scalar(self):
         number = np.float64(123.456789)
-        self.assertIsInstance(dito.adaptive_round(number=number, digit_count=4), np.float64)
-        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=1)), 100.0)
-        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=2)), 120.0)
-        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=3)), 123.0)
-        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=4)), 123.5)
-        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=5)), 123.46)
-        self.assertAlmostEqual(float(dito.adaptive_round(number=number, digit_count=6)), 123.457)
+        self.assertIsInstance(
+            dito.adaptive_round(number=number, digit_count=4), np.float64
+        )
+        self.assertAlmostEqual(
+            float(dito.adaptive_round(number=number, digit_count=1)), 100.0
+        )
+        self.assertAlmostEqual(
+            float(dito.adaptive_round(number=number, digit_count=2)), 120.0
+        )
+        self.assertAlmostEqual(
+            float(dito.adaptive_round(number=number, digit_count=3)), 123.0
+        )
+        self.assertAlmostEqual(
+            float(dito.adaptive_round(number=number, digit_count=4)), 123.5
+        )
+        self.assertAlmostEqual(
+            float(dito.adaptive_round(number=number, digit_count=5)), 123.46
+        )
+        self.assertAlmostEqual(
+            float(dito.adaptive_round(number=number, digit_count=6)), 123.457
+        )
 
     def test_adaptive_round_numpy_uint8_scalar(self):
         number = np.uint8(123)
-        self.assertIsInstance(dito.adaptive_round(number=number, digit_count=4), np.uint8)
+        self.assertIsInstance(
+            dito.adaptive_round(number=number, digit_count=4), np.uint8
+        )
         self.assertEqual(int(dito.adaptive_round(number=number, digit_count=1)), 100)
         self.assertEqual(int(dito.adaptive_round(number=number, digit_count=2)), 120)
         self.assertEqual(int(dito.adaptive_round(number=number, digit_count=3)), 123)
@@ -318,12 +344,16 @@ class clipped_diff_Tests(DiffTestCase):
         self.assertEqualImages(result, expected_result)
 
     def test_clipped_diff_float32(self):
-        result = dito.clipped_diff(image1=self.image1_float32, image2=self.image2_float32)
+        result = dito.clipped_diff(
+            image1=self.image1_float32, image2=self.image2_float32
+        )
         expected_result = np.array([[0.0, 1.0]], dtype=np.float32)
         self.assertEqualImages(result, expected_result)
 
     def test_clipped_diff_float64(self):
-        result = dito.clipped_diff(image1=self.image1_float64, image2=self.image2_float64)
+        result = dito.clipped_diff(
+            image1=self.image1_float64, image2=self.image2_float64
+        )
         expected_result = np.array([[0.0, 1.0]], dtype=np.float64)
         self.assertEqualImages(result, expected_result)
 
@@ -332,7 +362,9 @@ class colorize_Tests(TestCase):
     def test_colorize_colormap(self):
         image = dito.xslope(height=32, width=256)
         self.assertTrue(dito.is_gray(image=image))
-        image_colorized = dito.colorize(image=image, colormap=dito.get_colormap(name="jet"))
+        image_colorized = dito.colorize(
+            image=image, colormap=dito.get_colormap(name="jet")
+        )
         self.assertTrue(dito.is_color(image=image_colorized))
 
     def test_colorize_name(self):
@@ -349,7 +381,9 @@ class colorize_Tests(TestCase):
         ]
         for image in images:
             image_colorized_dito = dito.colorize(image=image, colormap="jet")
-            image_colorized_applyColormap = cv2.applyColorMap(src=image, colormap=cv2.COLORMAP_JET)
+            image_colorized_applyColormap = cv2.applyColorMap(
+                src=image, colormap=cv2.COLORMAP_JET
+            )
             self.assertEqualImages(image_colorized_dito, image_colorized_applyColormap)
 
     def test_colorize_float_image_raises_error(self):
@@ -378,7 +412,9 @@ class constant_image_Tests(TestCase):
     def test_constant_image_values(self):
         channel_count = len(self.color)
         for n_channel in range(channel_count):
-            self.assertTrue(np.all(self.result_image[:, :, n_channel] == self.color[n_channel]))
+            self.assertTrue(
+                np.all(self.result_image[:, :, n_channel] == self.color[n_channel])
+            )
 
 
 class ContourFinder_Tests(TestCase):
@@ -455,7 +491,9 @@ class convert_Tests(TestCase):
         image_color = dito.as_color(image=image_gray.copy())
         image_gray_converted = dito.convert(image=image_gray, dtype=np.float32)
         image_color_converted = dito.convert(image=image_color, dtype=np.float32)
-        self.assertEqualImages(image_gray_converted, dito.as_gray(image=image_color_converted))
+        self.assertEqualImages(
+            image_gray_converted, dito.as_gray(image=image_color_converted)
+        )
 
     def test_convert_input_unchanged(self):
         image = np.array([[-2.0, -1.0, 0.0, 1.0, 2.0]], dtype=np.float32)
@@ -486,7 +524,6 @@ class convert_color_Tests(TestCase):
         image_hsv_1 = dito.convert_color(image_or_color=image, code=cv2.COLOR_BGR2HSV)
         image_hsv_2 = dito.bgr_to_hsv(image_or_color=image)
         self.assertEqualImages(image_hsv_1, image_hsv_2)
-
 
     def test_convert_color_alias_hsv_to_bgr(self):
         image = dito.pm5544()
@@ -525,46 +562,48 @@ class dtype_common_Test(TestCase):
             self.assertEqual(result, case["expected_result"])
 
     def test_dtype_common_raise(self):
-        self.assertRaises(ValueError, lambda: dito.dtype_common(dtypes=["__non-existing-dtype__"]))
+        self.assertRaises(
+            ValueError, lambda: dito.dtype_common(dtypes=["__non-existing-dtype__"])
+        )
 
 
 class dtype_range_Tests(TestCase):
     def test_dtype_range_uint8(self):
         range_ = dito.dtype_range(dtype=np.uint8)
         self.assertEqual(range_, (0, 2**8 - 1))
-        
+
     def test_dtype_range_uint16(self):
         range_ = dito.dtype_range(dtype=np.uint16)
         self.assertEqual(range_, (0, 2**16 - 1))
-    
+
     def test_dtype_range_uint32(self):
         range_ = dito.dtype_range(dtype=np.uint32)
         self.assertEqual(range_, (0, 2**32 - 1))
-    
+
     def test_dtype_range_int8(self):
         range_ = dito.dtype_range(dtype=np.int8)
-        self.assertEqual(range_, (-2**7, 2**7 - 1))
-    
+        self.assertEqual(range_, (-(2**7), 2**7 - 1))
+
     def test_dtype_range_int16(self):
         range_ = dito.dtype_range(dtype=np.int16)
-        self.assertEqual(range_, (-2**15, 2**15 - 1))
-    
+        self.assertEqual(range_, (-(2**15), 2**15 - 1))
+
     def test_dtype_range_int32(self):
         range_ = dito.dtype_range(dtype=np.int32)
-        self.assertEqual(range_, (-2**31, 2**31 - 1))
-    
+        self.assertEqual(range_, (-(2**31), 2**31 - 1))
+
     def test_dtype_range_float(self):
         range_ = dito.dtype_range(dtype=float)
         self.assertEqual(range_, (0, 1.0))
-    
+
     def test_dtype_range_float32(self):
         range_ = dito.dtype_range(dtype=np.float32)
         self.assertEqual(range_, (0, 1.0))
-        
+
     def test_dtype_range_float64(self):
         range_ = dito.dtype_range(dtype=np.float64)
         self.assertEqual(range_, (0, 1.0))
-        
+
     def test_dtype_range_bool(self):
         range_ = dito.dtype_range(dtype=np.bool_)
         self.assertEqual(range_, (False, True))
@@ -595,11 +634,15 @@ class fig_to_image_Tests(TestCase):
 
     def test_fig_to_image_white_background(self):
         image = dito.fig_to_image(fig=self.fig, size=(800, 600))
-        self.assertTrue(np.all(image[0, 0, :] == np.array([255, 255, 255], dtype=np.uint8)))
+        self.assertTrue(
+            np.all(image[0, 0, :] == np.array([255, 255, 255], dtype=np.uint8))
+        )
 
     def test_fig_to_image_savefig_kwargs(self):
         image_default = dito.fig_to_image(fig=self.fig, size=(300, 200))
-        image_custom = dito.fig_to_image(fig=self.fig, size=(300, 200), savefig_kwargs=dict(facecolor="black"))
+        image_custom = dito.fig_to_image(
+            fig=self.fig, size=(300, 200), savefig_kwargs=dict(facecolor="black")
+        )
         self.assertEqualImageContainers(image_default, image_custom)
         self.assertDifferingImages(image_default, image_custom)
 
@@ -673,16 +716,25 @@ class get_colormap_Tests(TestCase):
         self.assertTrue(dito.is_colormap(result))
 
     def test_get_colormap_raise(self):
-        self.assertRaises(ValueError, lambda: dito.get_colormap("__!?-non-existing_colormap-name-!?__"))
+        self.assertRaises(
+            ValueError,
+            lambda: dito.get_colormap("__!?-non-existing_colormap-name-!?__"),
+        )
 
 
 class hash_bytes_Tests(TestCase):
     def test_hash_bytes_sha512_test_vectors(self):
         digest = dito.hash_bytes(bytes_=b"", cutoff_position=None, return_hex=True)
-        self.assertEqual(digest, "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e")
+        self.assertEqual(
+            digest,
+            "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+        )
 
         digest = dito.hash_bytes(bytes_=b"abc", cutoff_position=None, return_hex=True)
-        self.assertEqual(digest, "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f")
+        self.assertEqual(
+            digest,
+            "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f",
+        )
 
     def test_hash_bytes_cutoff_positions(self):
         expected_digest = "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f"
@@ -726,7 +778,10 @@ class hash_image_Tests(TestCase):
 
     def test_hash_image_reference(self):
         hash_ = dito.hash_image(image=self.image, cutoff_position=None, return_hex=True)
-        self.assertEqual(hash_, "265ea0683876d4b042854f1c129a12b1601aab1376ba8c55b97dd20020d1ee54e2da55a3bd78a53a838b4eadfe6898d069c9862a4185a135923c855ba0944aed")
+        self.assertEqual(
+            hash_,
+            "265ea0683876d4b042854f1c129a12b1601aab1376ba8c55b97dd20020d1ee54e2da55a3bd78a53a838b4eadfe6898d069c9862a4185a135923c855ba0944aed",
+        )
 
     def test_hash_image_shape_dependence(self):
         image = self.image.copy()
@@ -753,10 +808,16 @@ class hash_image_any_row_order_Tests(TestCase):
         image_flip_ud = image[::-1, ...].copy()
 
         digest = dito.hash_image(image=image, cutoff_position=None, return_hex=True)
-        digest_flip_ud = dito.hash_image(image=image_flip_ud, cutoff_position=None, return_hex=True)
+        digest_flip_ud = dito.hash_image(
+            image=image_flip_ud, cutoff_position=None, return_hex=True
+        )
 
-        digest_any_row_order = dito.hash_image_any_row_order(image=image, cutoff_position=None, return_hex=True)
-        digest_any_row_order_flip_ud = dito.hash_image_any_row_order(image=image_flip_ud, cutoff_position=None, return_hex=True)
+        digest_any_row_order = dito.hash_image_any_row_order(
+            image=image, cutoff_position=None, return_hex=True
+        )
+        digest_any_row_order_flip_ud = dito.hash_image_any_row_order(
+            image=image_flip_ud, cutoff_position=None, return_hex=True
+        )
 
         self.assertNotEqual(digest, digest_flip_ud)
         self.assertEqual(digest_any_row_order, digest_any_row_order_flip_ud)
@@ -768,10 +829,16 @@ class hash_image_any_col_order_Tests(TestCase):
         image_flip_lr = image[:, ::-1, ...].copy()
 
         digest = dito.hash_image(image=image, cutoff_position=None, return_hex=True)
-        digest_flip_lr = dito.hash_image(image=image_flip_lr, cutoff_position=None, return_hex=True)
+        digest_flip_lr = dito.hash_image(
+            image=image_flip_lr, cutoff_position=None, return_hex=True
+        )
 
-        digest_any_col_order = dito.hash_image_any_col_order(image=image, cutoff_position=None, return_hex=True)
-        digest_any_col_order_flip_lr = dito.hash_image_any_col_order(image=image_flip_lr, cutoff_position=None, return_hex=True)
+        digest_any_col_order = dito.hash_image_any_col_order(
+            image=image, cutoff_position=None, return_hex=True
+        )
+        digest_any_col_order_flip_lr = dito.hash_image_any_col_order(
+            image=image_flip_lr, cutoff_position=None, return_hex=True
+        )
 
         self.assertNotEqual(digest, digest_flip_lr)
         self.assertEqual(digest_any_col_order, digest_any_col_order_flip_lr)
@@ -785,10 +852,16 @@ class hash_image_any_pixel_order_Tests(TestCase):
         np.random.default_rng(seed=456).shuffle(x=image_shuffled, axis=1)
 
         digest = dito.hash_image(image=image, cutoff_position=None, return_hex=True)
-        digest_shuffled = dito.hash_image(image=image_shuffled, cutoff_position=None, return_hex=True)
+        digest_shuffled = dito.hash_image(
+            image=image_shuffled, cutoff_position=None, return_hex=True
+        )
 
-        digest_any_pixel_order = dito.hash_image_any_pixel_order(image=image, cutoff_position=None, return_hex=True)
-        digest_any_pixel_order_shuffled = dito.hash_image_any_pixel_order(image=image_shuffled, cutoff_position=None, return_hex=True)
+        digest_any_pixel_order = dito.hash_image_any_pixel_order(
+            image=image, cutoff_position=None, return_hex=True
+        )
+        digest_any_pixel_order_shuffled = dito.hash_image_any_pixel_order(
+            image=image_shuffled, cutoff_position=None, return_hex=True
+        )
 
         self.assertNotEqual(digest, digest_shuffled)
         self.assertEqual(digest_any_pixel_order, digest_any_pixel_order_shuffled)
@@ -810,7 +883,7 @@ class human_bytes_Tests(TestCase):
             [123456789, "117.74 MiB"],
             [12345678900, "11.50 GiB"],
         ]
-        for (byte_count, expected_result) in cases:
+        for byte_count, expected_result in cases:
             result = dito.human_bytes(byte_count=byte_count)
             self.assertEqual(result, expected_result)
 
@@ -846,7 +919,9 @@ class info_Tests(TestCase):
         self.assertEqual(info["dtype"], np.uint8)
 
     def test_info__raise_on_extended_and_minimal(self):
-        self.assertRaises(ValueError, lambda: dito.info(self.image, extended=True, minimal=True))
+        self.assertRaises(
+            ValueError, lambda: dito.info(self.image, extended=True, minimal=True)
+        )
 
     def test_info__raise_on_non_image(self):
         self.assertRaises(ValueError, lambda: dito.info(image=1))
@@ -859,7 +934,7 @@ class info_Tests(TestCase):
         self.assertEqual(info["shape"], image.shape)
         self.assertEqual(info["dtype"], image.dtype)
 
-        for (key, value) in info.items():
+        for key, value in info.items():
             if key not in ("size", "shape", "dtype", "hash"):
                 self.assertTrue(np.isnan(value))
 
@@ -868,7 +943,12 @@ class insert_Tests(TestCase):
     def setUp(self):
         self.target_image = dito.pm5544()
         self.source_image = dito.random_image(size=dito.size(image=self.target_image))
-        self.source_mask = dito.convert(image=dito.random_image(size=dito.size(image=self.target_image), color=False), dtype=np.float32)
+        self.source_mask = dito.convert(
+            image=dito.random_image(
+                size=dito.size(image=self.target_image), color=False
+            ),
+            dtype=np.float32,
+        )
 
     def test_insert_raise_on_int(self):
         self.assertRaises(
@@ -1006,10 +1086,18 @@ class insert_Tests(TestCase):
             source_mask=None,
         )
 
-        self.assertEqualImages(result_image[:source_size[1], :source_size[0], ...], source_image_1)
-        self.assertEqualImages(result_image[:source_size[1], source_size[0]:, ...], source_image_2)
-        self.assertEqualImages(result_image[source_size[1]:, :source_size[0]:, ...], source_image_3)
-        self.assertEqualImages(result_image[source_size[1]:, source_size[0]:, ...], source_image_4)
+        self.assertEqualImages(
+            result_image[: source_size[1], : source_size[0], ...], source_image_1
+        )
+        self.assertEqualImages(
+            result_image[: source_size[1], source_size[0] :, ...], source_image_2
+        )
+        self.assertEqualImages(
+            result_image[source_size[1] :, : source_size[0] :, ...], source_image_3
+        )
+        self.assertEqualImages(
+            result_image[source_size[1] :, source_size[0] :, ...], source_image_4
+        )
 
     def test_insert_inputs_unchanged(self):
         target_image_copy = self.target_image.copy()
@@ -1056,7 +1144,7 @@ class invert_Tests(TestCase):
         self.assertEqualImages(image_float_inverted, 1.0 - image_float)
 
     def test_invert_bool(self):
-        image_bool = (self.image > 127)
+        image_bool = self.image > 127
         image_bool_inverted = dito.invert(image=image_bool)
         self.assertEqualImages(image_bool_inverted, np.logical_not(image_bool))
 
@@ -1126,27 +1214,54 @@ class load_Tests(TempDirTestCase):
     def test_load_czi_no_keep_singleton_dimensions(self):
         image = dito.pm5544()
         image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
-        dito.save(image_path, image[np.newaxis, np.newaxis, ...], czi_kwargs={"extra_dim_names": "TZ"})
+        dito.save(
+            image_path,
+            image[np.newaxis, np.newaxis, ...],
+            czi_kwargs={"extra_dim_names": "TZ"},
+        )
 
-        image_loaded = dito.load(image_path, czi_kwargs={"keep_singleton_dimensions": False, "keep_all_dimensions": False})
+        image_loaded = dito.load(
+            image_path,
+            czi_kwargs={
+                "keep_singleton_dimensions": False,
+                "keep_all_dimensions": False,
+            },
+        )
         self.assertEqual(image_loaded.shape, (576, 768, 3))
 
     def test_load_czi_keep_singleton_dimensions(self):
         image = dito.pm5544()
         image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
-        dito.save(image_path, image[np.newaxis, np.newaxis, ...], czi_kwargs={"extra_dim_names": "TZ"})
+        dito.save(
+            image_path,
+            image[np.newaxis, np.newaxis, ...],
+            czi_kwargs={"extra_dim_names": "TZ"},
+        )
 
         # according to pylibCZIrw, the dimensions T, Z, and C are always present, even if not available in the .czi file
         # so instead of the expected (1, 1, 576, 768, 3), we actually get (1, 1, 1, 576, 768, 3)
-        image_loaded = dito.load(image_path, czi_kwargs={"keep_singleton_dimensions": True, "keep_all_dimensions": False})
+        image_loaded = dito.load(
+            image_path,
+            czi_kwargs={
+                "keep_singleton_dimensions": True,
+                "keep_all_dimensions": False,
+            },
+        )
         self.assertEqual(image_loaded.shape, (1, 1, 1, 576, 768, 3))
 
     def test_load_czi_keep_all_dimensions(self):
         image = dito.pm5544()
         image_path = pathlib.Path(self.temp_dir.name).joinpath("image.czi")
-        dito.save(image_path, image[np.newaxis, np.newaxis, ...], czi_kwargs={"extra_dim_names": "TZ"})
+        dito.save(
+            image_path,
+            image[np.newaxis, np.newaxis, ...],
+            czi_kwargs={"extra_dim_names": "TZ"},
+        )
 
-        image_loaded = dito.load(image_path, czi_kwargs={"keep_singleton_dimensions": True, "keep_all_dimensions": True})
+        image_loaded = dito.load(
+            image_path,
+            czi_kwargs={"keep_singleton_dimensions": True, "keep_all_dimensions": True},
+        )
         self.assertEqual(image_loaded.shape, (1, 1, 1, 1, 1, 1, 1, 1, 576, 768, 3))
 
 
@@ -1212,7 +1327,9 @@ class MultiShow_Tests(TempDirTestCase):
 
         image = dito.as_gray(self.get_random_image())
         mshow.show(image=image, scale=2.0, colormap="jet", hide=True)
-        self.assertEqual((image.shape[0] * 2, image.shape[1] * 2, 3), mshow.images[0].shape)
+        self.assertEqual(
+            (image.shape[0] * 2, image.shape[1] * 2, 3), mshow.images[0].shape
+        )
 
     def test_MultiShow_save(self):
         mshow = dito.MultiShow(save_dir=self.temp_dir.name)
@@ -1244,7 +1361,7 @@ class nms_Tests(TestCase):
             [199, 99],
         ]
 
-        for (n_peak, (peak_x, peak_y)) in enumerate(peak_xys):
+        for n_peak, (peak_x, peak_y) in enumerate(peak_xys):
             image[peak_y, peak_x] = 1.0 - min(0.9, n_peak * 0.1)
 
         image = dito.gaussian_blur(image, sigma=1.0)
@@ -1265,7 +1382,12 @@ class nms_Tests(TestCase):
 
         for dtype in (np.float32, np.uint8, np.uint16):
             image_converted = dito.convert(image, dtype=dtype)
-            peaks_nms = dito.nms(image=image_converted, peak_radius=2, max_peak_count=1000, rel_max_value=0.1)
+            peaks_nms = dito.nms(
+                image=image_converted,
+                peak_radius=2,
+                max_peak_count=1000,
+                rel_max_value=0.1,
+            )
             self.assertEqual(len(peak_xys), len(peaks_nms))
 
             for n_peak in range(len(peak_xys)):
@@ -1276,7 +1398,12 @@ class nms_Tests(TestCase):
 
         for dtype in (np.float32, np.uint8, np.uint16):
             image_converted = dito.convert(image, dtype=dtype)
-            peaks_nms = dito.nms(image=image_converted, peak_radius=2, max_peak_count=1000, rel_max_value=0.1)
+            peaks_nms = dito.nms(
+                image=image_converted,
+                peak_radius=2,
+                max_peak_count=1000,
+                rel_max_value=0.1,
+            )
             self.assertEqual(len(peaks_nms), 0)
 
     def test_invalid_image_shape(self):
@@ -1296,87 +1423,154 @@ class nms_Tests(TestCase):
 
     def test_invalid_max_peak_count(self):
         (image, _) = self.get_example_data()
-        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2, max_peak_count=0))
-        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2, max_peak_count=-1))
-        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2, max_peak_count=2.0))
+        self.assertRaises(
+            ValueError, lambda: dito.nms(image=image, peak_radius=2, max_peak_count=0)
+        )
+        self.assertRaises(
+            ValueError, lambda: dito.nms(image=image, peak_radius=2, max_peak_count=-1)
+        )
+        self.assertRaises(
+            ValueError, lambda: dito.nms(image=image, peak_radius=2, max_peak_count=2.0)
+        )
 
     def test_invalid_rel_max_value(self):
         (image, _) = self.get_example_data()
-        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2, rel_max_value=1))
-        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2, rel_max_value=-1.0))
-        self.assertRaises(ValueError, lambda: dito.nms(image=image, peak_radius=2, rel_max_value=2.0))
+        self.assertRaises(
+            ValueError, lambda: dito.nms(image=image, peak_radius=2, rel_max_value=1)
+        )
+        self.assertRaises(
+            ValueError, lambda: dito.nms(image=image, peak_radius=2, rel_max_value=-1.0)
+        )
+        self.assertRaises(
+            ValueError, lambda: dito.nms(image=image, peak_radius=2, rel_max_value=2.0)
+        )
 
 
 class normalize_Tests(TestCase):
     def run_in_out_test(self, image_in, image_out, **kwargs):
         image_normalized = dito.normalize(image=image_in, **kwargs)
         self.assertEqualImages(image_normalized, image_out)
-    
+
     def test_normalize_none_uint8(self):
         self.run_in_out_test(
             image_in=np.array([[0, 1, 2]], dtype=np.uint8),
             image_out=np.array([[0, 1, 2]], dtype=np.uint8),
             mode="none",
         )
-    
+
     def test_normalize_minmax_uint8(self):
         self.run_in_out_test(
             image_in=np.array([[0, 1, 2]], dtype=np.uint8),
             image_out=np.array([[0, 127, 255]], dtype=np.uint8),
             mode="minmax",
         )
-    
+
     def test_normalize_minmax_int8(self):
         self.run_in_out_test(
             image_in=np.array([[0, 1, 2]], dtype=np.int8),
             image_out=np.array([[-128, 0, 127]], dtype=np.int8),
             mode="minmax",
         )
-    
+
     def test_normalize_minmax_float32(self):
         self.run_in_out_test(
             image_in=np.array([[-1.0, 0.0, 1.0]], dtype=np.float32),
             image_out=np.array([[0.0, 0.5, 1.0]], dtype=np.float32),
             mode="minmax",
         )
-    
+
     def test_normalize_zminmax_float32(self):
         self.run_in_out_test(
             image_in=np.array([[-1.0, 0.0, 1.0, 2.0]], dtype=np.float32),
             image_out=np.array([[0.25, 0.5, 0.75, 1.0]], dtype=np.float32),
             mode="zminmax",
         )
-    
+
     def test_normalize_percentile_uint8_q(self):
         self.run_in_out_test(
             image_in=np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]], dtype=np.uint8),
-            image_out=np.array([[0, 0, 31, 63, 95, 127, 159, 191, 223, 255, 255]], dtype=np.uint8),
+            image_out=np.array(
+                [[0, 0, 31, 63, 95, 127, 159, 191, 223, 255, 255]], dtype=np.uint8
+            ),
             mode="percentile",
             q=10.0,
         )
-    
+
     def test_normalize_percentile_uint8_p(self):
         self.run_in_out_test(
             image_in=np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]], dtype=np.uint8),
-            image_out=np.array([[0, 0, 31, 63, 95, 127, 159, 191, 223, 255, 255]], dtype=np.uint8),
+            image_out=np.array(
+                [[0, 0, 31, 63, 95, 127, 159, 191, 223, 255, 255]], dtype=np.uint8
+            ),
             mode="percentile",
             p=10.0,
         )
-    
+
     def test_normalize_raise_invalid_mode(self):
         image = np.array([[0, 1, 2]], dtype=np.uint8)
-        self.assertRaises(ValueError, lambda: dito.normalize(image=image, mode="__NON-EXISTING-MODE__"))
+        self.assertRaises(
+            ValueError,
+            lambda: dito.normalize(image=image, mode="__NON-EXISTING-MODE__"),
+        )
 
 
 class now_str_Tests(TestCase):
     def test_now_str_length(self):
         cases = [
-            {"kwargs": {"mode": "compact",  "date": True, "time": False, "microtime": False}, "expected_length": 8},
-            {"kwargs": {"mode": "readable", "date": True, "time": False, "microtime": False}, "expected_length": 10},
-            {"kwargs": {"mode": "print",    "date": True, "time": False, "microtime": False}, "expected_length": 10},
-            {"kwargs": {"mode": "compact",  "date": True, "time": True,  "microtime": False}, "expected_length": 15},
-            {"kwargs": {"mode": "readable", "date": True, "time": True,  "microtime": False}, "expected_length": 20},
-            {"kwargs": {"mode": "print",    "date": True, "time": True,  "microtime": False}, "expected_length": 19},
+            {
+                "kwargs": {
+                    "mode": "compact",
+                    "date": True,
+                    "time": False,
+                    "microtime": False,
+                },
+                "expected_length": 8,
+            },
+            {
+                "kwargs": {
+                    "mode": "readable",
+                    "date": True,
+                    "time": False,
+                    "microtime": False,
+                },
+                "expected_length": 10,
+            },
+            {
+                "kwargs": {
+                    "mode": "print",
+                    "date": True,
+                    "time": False,
+                    "microtime": False,
+                },
+                "expected_length": 10,
+            },
+            {
+                "kwargs": {
+                    "mode": "compact",
+                    "date": True,
+                    "time": True,
+                    "microtime": False,
+                },
+                "expected_length": 15,
+            },
+            {
+                "kwargs": {
+                    "mode": "readable",
+                    "date": True,
+                    "time": True,
+                    "microtime": False,
+                },
+                "expected_length": 20,
+            },
+            {
+                "kwargs": {
+                    "mode": "print",
+                    "date": True,
+                    "time": True,
+                    "microtime": False,
+                },
+                "expected_length": 19,
+            },
         ]
         for case in cases:
             # assert equal length
@@ -1405,7 +1599,7 @@ class parse_shape_Tests(TestCase):
             (123, "b h w c"),
             ([], "b h w c"),
         ]
-        for (shape, shape_def) in cases:
+        for shape, shape_def in cases:
             with self.assertRaises(TypeError):
                 dito.parse_shape(shape, shape_def)
 
@@ -1428,7 +1622,7 @@ class parse_shape_Tests(TestCase):
             (image[:, :, 0], "h w", {"h": 576, "w": 768}),
             (image.shape[:2], "h w", {"h": 576, "w": 768}),
         ]
-        for (image_or_shape, shape_def, expected_result) in cases:
+        for image_or_shape, shape_def, expected_result in cases:
             result = dito.parse_shape(image_or_shape, shape_def)
             self.assertEqual(result, expected_result)
 
@@ -1447,9 +1641,12 @@ class parse_shape_Tests(TestCase):
             ("b h w c", {"b": 8, "h": 100, "w": 200, "c": 3}),
             ("b  h  w  c", {"b": 8, "h": 100, "w": 200, "c": 3}),
             ("  b  h  w  c  ", {"b": 8, "h": 100, "w": 200, "c": 3}),
-            ("batch height width channel", {"batch": 8, "height": 100, "width": 200, "channel": 3}),
+            (
+                "batch height width channel",
+                {"batch": 8, "height": 100, "width": 200, "channel": 3},
+            ),
         ]
-        for (shape_def, expected_result) in cases:
+        for shape_def, expected_result in cases:
             result = dito.parse_shape(self.shape4, shape_def)
             self.assertEqual(result, expected_result)
 
@@ -1480,7 +1677,7 @@ class parse_shape_Tests(TestCase):
             ("8 _ 200 3", {}),
             ("8 100 _ 3", {}),
         ]
-        for (shape_def, expected_result) in cases:
+        for shape_def, expected_result in cases:
             result = dito.parse_shape(self.shape4, shape_def)
             self.assertEqual(result, expected_result)
 
@@ -1496,7 +1693,7 @@ class parse_shape_Tests(TestCase):
             ("b h ... c", {"b": 8, "h": 100, "c": 3}),
             ("_ ... c", {"c": 3}),
         ]
-        for (shape_def, expected_result) in cases:
+        for shape_def, expected_result in cases:
             result = dito.parse_shape(shape, shape_def)
             self.assertEqual(result, expected_result)
 
@@ -1529,19 +1726,19 @@ class parse_shape_Tests(TestCase):
 
     def test_parse_shape_raise_definition_error(self):
         cases = [
-            "b h w .",          # invalid character in name
-            "b h w *",          # invalid character in name
-            "b h w #",          # invalid character in name
-            "b h h c",          # duplicate names
-            "b ... h ... c",    # multiple ellipses
-            "b h w =",          # neither name nor value
-            "b h w c=",         # missing value
-            "b h w c=|",        # missing value
-            "b h w c=1|",       # missing value
-            "b h w c=1||3",     # missing value
-            "b h w c=1.0",      # invalid value
-            "b h w c=a",        # invalid value
-            "b h w c=0xff",     # invalid value
+            "b h w .",  # invalid character in name
+            "b h w *",  # invalid character in name
+            "b h w #",  # invalid character in name
+            "b h h c",  # duplicate names
+            "b ... h ... c",  # multiple ellipses
+            "b h w =",  # neither name nor value
+            "b h w c=",  # missing value
+            "b h w c=|",  # missing value
+            "b h w c=1|",  # missing value
+            "b h w c=1||3",  # missing value
+            "b h w c=1.0",  # invalid value
+            "b h w c=a",  # invalid value
+            "b h w c=0xff",  # invalid value
         ]
         for shape_def in cases:
             with self.assertRaises(dito.ParseShapeDefinitionError):
@@ -1613,20 +1810,26 @@ class PaddedImageIndexer_Tests(TestCase):
     def test_PaddedImageIndexer_full_out_of_bounds_black_image(self):
         result = self.indexer[-100:-50, :, :]
         self.assertNumpyShape(result, (50,) + self.image.shape[1:])
-        self.assertEqualImages(result, np.zeros(shape=(50,) + self.image.shape[1:], dtype=self.image.dtype))
+        self.assertEqualImages(
+            result, np.zeros(shape=(50,) + self.image.shape[1:], dtype=self.image.dtype)
+        )
 
     def test_PaddedImageIndexer_resulting_axis_size(self):
         for start in (-100, -10, -1, 0, 1, 10, 100):
             for delta in (0, 1, 10, self.image.shape[0]):
                 stop = start + delta
                 result = self.indexer[start:stop, :, :]
-                self.assertNumpyShape(result, (max(0, stop - start),) + self.image.shape[1:])
+                self.assertNumpyShape(
+                    result, (max(0, stop - start),) + self.image.shape[1:]
+                )
 
     def test_PaddedImageIndexer_large_step(self):
         for start in (None, 0, 1, 100):
             for step in (1, 10, 1000):
                 result = self.indexer[slice(start, None, step), :, :]
-                self.assertEqualImages(result, self.image[slice(start, None, step), :, :])
+                self.assertEqualImages(
+                    result, self.image[slice(start, None, step), :, :]
+                )
 
     def test_PaddedImageIndexer_mirror_pad(self):
         mirror_indexer = dito.core.PaddedImageIndexer(
@@ -1638,9 +1841,8 @@ class PaddedImageIndexer_Tests(TestCase):
         result = mirror_indexer[-288:288, :, :]
         self.assertEqualImages(
             result,
-            dito.visual.stack([
-                [self.image[:289, :, :][::-1, :, :]],
-                [self.image[1:288, :, :]]],
+            dito.visual.stack(
+                [[self.image[:289, :, :][::-1, :, :]], [self.image[1:288, :, :]]],
             ),
         )
 
@@ -1720,7 +1922,9 @@ class rotate_Tests(TestCase):
     def test_rotate_90_dtype_shape(self):
         image_rotated = dito.rotate_90(image=self.image)
         self.assertEqual(self.image.dtype, image_rotated.dtype)
-        self.assertNumpyShape(image_rotated, self.image.shape[1::-1] + self.image.shape[2:])
+        self.assertNumpyShape(
+            image_rotated, self.image.shape[1::-1] + self.image.shape[2:]
+        )
 
     def test_rotate_180_gray(self):
         image_rotated = dito.rotate_180(image=self.image)
@@ -1757,11 +1961,17 @@ class save_Tests(TempDirTestCase):
         if save_kwargs is None:
             save_kwargs = {}
 
-        filename_str = str(os.path.join(self.temp_dir.name, "dir_str", f"{basename}_str.{extension}"))
+        filename_str = str(
+            os.path.join(self.temp_dir.name, "dir_str", f"{basename}_str.{extension}")
+        )
         dito.save(filename=filename_str, image=image, **save_kwargs)
         image_str_loaded = dito.load(filename=filename_str)
 
-        filename_pathlib = pathlib.Path(os.path.join(self.temp_dir.name, "dir_pathlib", f"{basename}_pathlib.{extension}"))
+        filename_pathlib = pathlib.Path(
+            os.path.join(
+                self.temp_dir.name, "dir_pathlib", f"{basename}_pathlib.{extension}"
+            )
+        )
         dito.save(filename=filename_pathlib, image=image)
         image_pathlib_loaded = dito.load(filename=filename_pathlib)
 
@@ -1783,8 +1993,21 @@ class save_Tests(TempDirTestCase):
     def test_save_imwrite_params(self):
         self._test_save_load(extension="png", save_kwargs=dict(imwrite_params=None))
         self._test_save_load(extension="png", save_kwargs=dict(imwrite_params=tuple()))
-        self._test_save_load(extension="png", save_kwargs=dict(imwrite_params=(cv2.IMWRITE_PNG_STRATEGY, cv2.IMWRITE_PNG_STRATEGY_RLE)))
-        self._test_save_load(extension="png", save_kwargs=dict(imwrite_params=(cv2.IMWRITE_PNG_STRATEGY, cv2.IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY)))
+        self._test_save_load(
+            extension="png",
+            save_kwargs=dict(
+                imwrite_params=(cv2.IMWRITE_PNG_STRATEGY, cv2.IMWRITE_PNG_STRATEGY_RLE)
+            ),
+        )
+        self._test_save_load(
+            extension="png",
+            save_kwargs=dict(
+                imwrite_params=(
+                    cv2.IMWRITE_PNG_STRATEGY,
+                    cv2.IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY,
+                )
+            ),
+        )
 
     def test_save_imwrite_params_jpg_size(self):
         image = dito.pm5544()
@@ -1792,8 +2015,16 @@ class save_Tests(TempDirTestCase):
         filename_q90 = str(os.path.join(self.temp_dir.name, "jpg_size_q90.jpg"))
         filename_q50 = str(os.path.join(self.temp_dir.name, "jpg_size_q50.jpg"))
 
-        dito.save(filename=filename_q90, image=image, imwrite_params=(cv2.IMWRITE_JPEG_QUALITY, 90))
-        dito.save(filename=filename_q50, image=image, imwrite_params=(cv2.IMWRITE_JPEG_QUALITY, 50))
+        dito.save(
+            filename=filename_q90,
+            image=image,
+            imwrite_params=(cv2.IMWRITE_JPEG_QUALITY, 90),
+        )
+        dito.save(
+            filename=filename_q50,
+            image=image,
+            imwrite_params=(cv2.IMWRITE_JPEG_QUALITY, 50),
+        )
 
         self.assertGreater(os.stat(filename_q90).st_size, os.stat(filename_q50).st_size)
 
@@ -1913,12 +2144,16 @@ class shifted_diff_Tests(DiffTestCase):
         self.assertEqualImages(result, expected_result)
 
     def test_shifted_diff_float32(self):
-        result = dito.shifted_diff(image1=self.image1_float32, image2=self.image2_float32)
+        result = dito.shifted_diff(
+            image1=self.image1_float32, image2=self.image2_float32
+        )
         expected_result = np.array([[0.0, 1.0]], dtype=np.float32)
         self.assertEqualImages(result, expected_result)
 
     def test_shifted_diff_float64(self):
-        result = dito.shifted_diff(image1=self.image1_float64, image2=self.image2_float64)
+        result = dito.shifted_diff(
+            image1=self.image1_float64, image2=self.image2_float64
+        )
         expected_result = np.array([[0.0, 1.0]], dtype=np.float64)
         self.assertEqualImages(result, expected_result)
 
@@ -1940,7 +2175,9 @@ class split_channels_Tests(TestCase):
     def test_split_channels_raise_on_invalid_shape(self):
         image = dito.pm5544()
         image.shape += (1,)
-        self.assertRaises(dito.InvalidImageShapeError, lambda: dito.split_channels(image=image))
+        self.assertRaises(
+            dito.InvalidImageShapeError, lambda: dito.split_channels(image=image)
+        )
 
 
 class stack_Tests(TestCase):
@@ -1989,20 +2226,30 @@ class stack_channels_Tests(TestCase):
         self.assertEqual(len(stacked_image.shape), 2)
         self.assertEqual(stacked_image.shape[0], self.image.shape[0])
         self.assertEqual(stacked_image.shape[1], 3 * self.image.shape[1])
-        self.assertEqualImages(stacked_image[:, :self.image.shape[1]], self.image[:, :, 0])
+        self.assertEqualImages(
+            stacked_image[:, : self.image.shape[1]], self.image[:, :, 0]
+        )
 
     def test_row_mode(self):
         stacked_image = dito.stack_channels(image=self.image, mode="col")
         self.assertEqual(len(stacked_image.shape), 2)
         self.assertEqual(stacked_image.shape[0], 3 * self.image.shape[0])
         self.assertEqual(stacked_image.shape[1], self.image.shape[1])
-        self.assertEqualImages(stacked_image[:self.image.shape[0], :], self.image[:, :, 0])
+        self.assertEqualImages(
+            stacked_image[: self.image.shape[0], :], self.image[:, :, 0]
+        )
 
     def test_auto_mode(self):
         stacked_image = dito.stack_channels(image=self.image, mode="auto")
         self.assertEqual(len(stacked_image.shape), 2)
-        self.assertTrue((stacked_image.shape[0] > self.image.shape[0]) or (stacked_image.shape[1] > self.image.shape[1]))
-        self.assertEqualImages(stacked_image[:self.image.shape[0], :self.image.shape[1]], self.image[:, :, 0])
+        self.assertTrue(
+            (stacked_image.shape[0] > self.image.shape[0])
+            or (stacked_image.shape[1] > self.image.shape[1])
+        )
+        self.assertEqualImages(
+            stacked_image[: self.image.shape[0], : self.image.shape[1]],
+            self.image[:, :, 0],
+        )
 
     def test_kwargs(self):
         padding = 8
@@ -2012,7 +2259,12 @@ class stack_channels_Tests(TestCase):
         self.assertEqual(len(stacked_image.shape), 2)
         self.assertEqual(stacked_image.shape[0], self.image.shape[0] + 2 * padding)
         self.assertEqual(stacked_image.shape[1], 3 * self.image.shape[1] + 4 * padding)
-        self.assertEqualImages(stacked_image[padding:(-padding), padding:(self.image.shape[1] + padding)], self.image[:, :, 0])
+        self.assertEqualImages(
+            stacked_image[
+                padding:(-padding), padding : (self.image.shape[1] + padding)
+            ],
+            self.image[:, :, 0],
+        )
 
     def test_gray_image(self):
         image_gray = dito.as_gray(image=self.image)
@@ -2023,11 +2275,7 @@ class stack_channels_Tests(TestCase):
 class text_Tests(TestCase):
     def setUp(self):
         self.image = dito.pm5544()
-        self.text_kwargs = {
-            "font": "source-25",
-            "position": (0.5, 0.5),
-            "anchor": "cc"
-        }
+        self.text_kwargs = {"font": "source-25", "position": (0.5, 0.5), "anchor": "cc"}
 
     def test_text_input_unchanged(self):
         image_copy = self.image.copy()
@@ -2035,101 +2283,230 @@ class text_Tests(TestCase):
         self.assertEqualImages(self.image, image_copy)
 
     def test_text_output_different(self):
-        text_image = dito.text(image=self.image, message="Hello World", **self.text_kwargs)
+        text_image = dito.text(
+            image=self.image, message="Hello World", **self.text_kwargs
+        )
         self.assertDifferingImages(self.image, text_image)
 
     def test_text_background(self):
-        text_image = dito.text(image=self.image, message=" ", background_color=(40, 40, 40), **self.text_kwargs)
+        text_image = dito.text(
+            image=self.image,
+            message=" ",
+            background_color=(40, 40, 40),
+            **self.text_kwargs,
+        )
         self.assertDifferingImages(self.image, text_image)
 
     def test_text_no_background(self):
-        text_image = dito.text(image=self.image, message=" ", background_color=None, **self.text_kwargs)
+        text_image = dito.text(
+            image=self.image, message=" ", background_color=None, **self.text_kwargs
+        )
         self.assertEqualImages(self.image, text_image)
 
     def test_text_outline(self):
-        text_image_background_none = dito.text(image=self.image, message="Hello World", background_color=None, **self.text_kwargs)
-        text_image_background_outline = dito.text(image=self.image, message="Hello World", background_color=(40, 40, 40), background_as_outline=True, **self.text_kwargs)
-        text_image_background_full = dito.text(image=self.image, message="Hello World", background_color=(40, 40, 40), **self.text_kwargs)
-        self.assertDifferingImages(text_image_background_outline, text_image_background_none)
-        self.assertDifferingImages(text_image_background_outline, text_image_background_full)
+        text_image_background_none = dito.text(
+            image=self.image,
+            message="Hello World",
+            background_color=None,
+            **self.text_kwargs,
+        )
+        text_image_background_outline = dito.text(
+            image=self.image,
+            message="Hello World",
+            background_color=(40, 40, 40),
+            background_as_outline=True,
+            **self.text_kwargs,
+        )
+        text_image_background_full = dito.text(
+            image=self.image,
+            message="Hello World",
+            background_color=(40, 40, 40),
+            **self.text_kwargs,
+        )
+        self.assertDifferingImages(
+            text_image_background_outline, text_image_background_none
+        )
+        self.assertDifferingImages(
+            text_image_background_outline, text_image_background_full
+        )
 
     def test_text_escape_bold(self):
-        text_image_regular = dito.text(image=self.image, message="Hello World", **self.text_kwargs)
-        text_image_bold = dito.text(image=self.image, message="Hello " + dito.Font.STYLE_BOLD + "World", **self.text_kwargs)
+        text_image_regular = dito.text(
+            image=self.image, message="Hello World", **self.text_kwargs
+        )
+        text_image_bold = dito.text(
+            image=self.image,
+            message="Hello " + dito.Font.STYLE_BOLD + "World",
+            **self.text_kwargs,
+        )
         self.assertDifferingImages(text_image_regular, text_image_bold)
 
     def test_text_escape_regular(self):
-        text_image_regular = dito.text(image=self.image, message="Hello World", **self.text_kwargs)
-        text_image_bold_regular = dito.text(image=self.image, message="Hello " + dito.Font.STYLE_BOLD + dito.Font.STYLE_REGULAR + "World", **self.text_kwargs)
+        text_image_regular = dito.text(
+            image=self.image, message="Hello World", **self.text_kwargs
+        )
+        text_image_bold_regular = dito.text(
+            image=self.image,
+            message="Hello " + dito.Font.STYLE_BOLD + dito.Font.STYLE_REGULAR + "World",
+            **self.text_kwargs,
+        )
         self.assertEqualImages(text_image_regular, text_image_bold_regular)
 
     def test_text_escape_reset(self):
-        text_image_regular = dito.text(image=self.image, message="Hello World", color=(255, 255, 255), background_color=(40, 40, 40), **self.text_kwargs)
-        text_image_reset = dito.text(image=self.image, message="Hello " + dito.Font.STYLE_BOLD + dito.Font.FOREGROUND_BGR(0, 255, 0) + dito.Font.BACKGROUND_BGR(127, 127, 0) + dito.Font.RESET + "World", color=(255, 255, 255), background_color=(40, 40, 40), **self.text_kwargs)
+        text_image_regular = dito.text(
+            image=self.image,
+            message="Hello World",
+            color=(255, 255, 255),
+            background_color=(40, 40, 40),
+            **self.text_kwargs,
+        )
+        text_image_reset = dito.text(
+            image=self.image,
+            message="Hello "
+            + dito.Font.STYLE_BOLD
+            + dito.Font.FOREGROUND_BGR(0, 255, 0)
+            + dito.Font.BACKGROUND_BGR(127, 127, 0)
+            + dito.Font.RESET
+            + "World",
+            color=(255, 255, 255),
+            background_color=(40, 40, 40),
+            **self.text_kwargs,
+        )
         self.assertEqualImages(text_image_regular, text_image_reset)
 
     def test_text_escape_foregound_color(self):
-        text_image = dito.text(image=self.image, message="Hello World", color=(0, 127, 255), **self.text_kwargs)
-        text_image_foreground = dito.text(image=self.image, message="Hello " + dito.Font.FOREGROUND_BGR(200, 100, 50) + "World", color=(0, 127, 255), **self.text_kwargs)
+        text_image = dito.text(
+            image=self.image,
+            message="Hello World",
+            color=(0, 127, 255),
+            **self.text_kwargs,
+        )
+        text_image_foreground = dito.text(
+            image=self.image,
+            message="Hello " + dito.Font.FOREGROUND_BGR(200, 100, 50) + "World",
+            color=(0, 127, 255),
+            **self.text_kwargs,
+        )
         self.assertDifferingImages(text_image, text_image_foreground)
 
     def test_text_escape_backgound_color(self):
-        text_image = dito.text(image=self.image, message="Hello World", background_color=(0, 127, 255), **self.text_kwargs)
-        text_image_background = dito.text(image=self.image, message="Hello " + dito.Font.BACKGROUND_BGR(200, 100, 50) + "World", background_color=(0, 127, 255), **self.text_kwargs)
+        text_image = dito.text(
+            image=self.image,
+            message="Hello World",
+            background_color=(0, 127, 255),
+            **self.text_kwargs,
+        )
+        text_image_background = dito.text(
+            image=self.image,
+            message="Hello " + dito.Font.BACKGROUND_BGR(200, 100, 50) + "World",
+            background_color=(0, 127, 255),
+            **self.text_kwargs,
+        )
         self.assertDifferingImages(text_image, text_image_background)
 
     def test_text_border_different(self):
-        text_image_no_border = dito.text(image=self.image, message="Hello World", border=0, **self.text_kwargs)
-        text_image_border = dito.text(image=self.image, message="Hello World", border=1, **self.text_kwargs)
+        text_image_no_border = dito.text(
+            image=self.image, message="Hello World", border=0, **self.text_kwargs
+        )
+        text_image_border = dito.text(
+            image=self.image, message="Hello World", border=1, **self.text_kwargs
+        )
         self.assertDifferingImages(text_image_no_border, text_image_border)
 
     def test_text_margin_different(self):
-        text_image_no_margin = dito.text(image=self.image, message="Hello World", margin=0, **self.text_kwargs)
-        text_image_margin = dito.text(image=self.image, message="Hello World", margin=1, **self.text_kwargs)
+        text_image_no_margin = dito.text(
+            image=self.image, message="Hello World", margin=0, **self.text_kwargs
+        )
+        text_image_margin = dito.text(
+            image=self.image, message="Hello World", margin=1, **self.text_kwargs
+        )
         self.assertDifferingImages(text_image_no_margin, text_image_margin)
 
     def test_text_padding_different(self):
-        text_image_no_padding = dito.text(image=self.image, message="Hello World", padding=0, **self.text_kwargs)
-        text_image_padding = dito.text(image=self.image, message="Hello World", padding=1, **self.text_kwargs)
+        text_image_no_padding = dito.text(
+            image=self.image, message="Hello World", padding=0, **self.text_kwargs
+        )
+        text_image_padding = dito.text(
+            image=self.image, message="Hello World", padding=1, **self.text_kwargs
+        )
         self.assertDifferingImages(text_image_no_padding, text_image_padding)
 
     def test_text_transparent(self):
-        text_image = dito.text(image=self.image, message="Hello World", opacity=0.0, **self.text_kwargs)
+        text_image = dito.text(
+            image=self.image, message="Hello World", opacity=0.0, **self.text_kwargs
+        )
         self.assertEqualImages(self.image, text_image)
 
     def test_text_opaque(self):
-        text_image_opacity_1 = dito.text(image=self.image, message="Hello World", opacity=1.0, **self.text_kwargs)
-        text_image_opacity_none = dito.text(image=self.image, message="Hello World", opacity=None, **self.text_kwargs)
+        text_image_opacity_1 = dito.text(
+            image=self.image, message="Hello World", opacity=1.0, **self.text_kwargs
+        )
+        text_image_opacity_none = dito.text(
+            image=self.image, message="Hello World", opacity=None, **self.text_kwargs
+        )
         self.assertEqualImages(text_image_opacity_1, text_image_opacity_none)
 
     def test_text_alignment(self):
-        text_image_left = dito.text(image=self.image, message="Hellooo\nWorld", alignment="left", **self.text_kwargs)
-        text_image_center = dito.text(image=self.image, message="Hellooo\nWorld", alignment="center", **self.text_kwargs)
-        text_image_right = dito.text(image=self.image, message="Hellooo\nWorld", alignment="right", **self.text_kwargs)
+        text_image_left = dito.text(
+            image=self.image,
+            message="Hellooo\nWorld",
+            alignment="left",
+            **self.text_kwargs,
+        )
+        text_image_center = dito.text(
+            image=self.image,
+            message="Hellooo\nWorld",
+            alignment="center",
+            **self.text_kwargs,
+        )
+        text_image_right = dito.text(
+            image=self.image,
+            message="Hellooo\nWorld",
+            alignment="right",
+            **self.text_kwargs,
+        )
         self.assertDifferingImages(text_image_left, text_image_center)
         self.assertDifferingImages(text_image_left, text_image_right)
         self.assertDifferingImages(text_image_center, text_image_right)
 
     def test_text_scale_none(self):
-        text_image_scale_none = dito.text(image=self.image, message="Hello World", scale=None, **self.text_kwargs)
-        text_image_scale_0 = dito.text(image=self.image, message="Hello World", scale=1.0, **self.text_kwargs)
+        text_image_scale_none = dito.text(
+            image=self.image, message="Hello World", scale=None, **self.text_kwargs
+        )
+        text_image_scale_0 = dito.text(
+            image=self.image, message="Hello World", scale=1.0, **self.text_kwargs
+        )
         self.assertEqualImages(text_image_scale_none, text_image_scale_0)
 
     def test_text_scale_different(self):
-        text_image_scale_none = dito.text(image=self.image, message="Hello World", scale=None, **self.text_kwargs)
-        text_image_scale_0 = dito.text(image=self.image, message="Hello World", scale=2.0, **self.text_kwargs)
+        text_image_scale_none = dito.text(
+            image=self.image, message="Hello World", scale=None, **self.text_kwargs
+        )
+        text_image_scale_0 = dito.text(
+            image=self.image, message="Hello World", scale=2.0, **self.text_kwargs
+        )
         self.assertDifferingImages(text_image_scale_none, text_image_scale_0)
 
     def test_text_rotation_none(self):
-        text_image_rotation_none = dito.text(image=self.image, message="Hello World", rotation=None, **self.text_kwargs)
-        text_image_rotation_0 = dito.text(image=self.image, message="Hello World", rotation=0, **self.text_kwargs)
-        text_image_rotation_0_0 = dito.text(image=self.image, message="Hello World", rotation=0.0, **self.text_kwargs)
+        text_image_rotation_none = dito.text(
+            image=self.image, message="Hello World", rotation=None, **self.text_kwargs
+        )
+        text_image_rotation_0 = dito.text(
+            image=self.image, message="Hello World", rotation=0, **self.text_kwargs
+        )
+        text_image_rotation_0_0 = dito.text(
+            image=self.image, message="Hello World", rotation=0.0, **self.text_kwargs
+        )
         self.assertEqualImages(text_image_rotation_none, text_image_rotation_0)
         self.assertEqualImages(text_image_rotation_none, text_image_rotation_0_0)
 
     def test_text_rotation_different(self):
-        text_image_no_rotation = dito.text(image=self.image, message="Hello World", rotation=None, **self.text_kwargs)
-        text_image_rotation = dito.text(image=self.image, message="Hello World", rotation=90, **self.text_kwargs)
+        text_image_no_rotation = dito.text(
+            image=self.image, message="Hello World", rotation=None, **self.text_kwargs
+        )
+        text_image_rotation = dito.text(
+            image=self.image, message="Hello World", rotation=90, **self.text_kwargs
+        )
         self.assertDifferingImages(text_image_no_rotation, text_image_rotation)
 
 
@@ -2150,7 +2527,9 @@ class VideoSaver_Tests(TempDirTestCase):
                 saver.append(image=image)
 
             # save summary
-            summary_filename = os.path.join(self.temp_dir.name, "VideoSaver_summary.txt")
+            summary_filename = os.path.join(
+                self.temp_dir.name, "VideoSaver_summary.txt"
+            )
             with open(summary_filename, "w") as f:
                 saver.print_summary(file=f)
 
@@ -2176,12 +2555,14 @@ class VideoSaver_Tests(TempDirTestCase):
                     image = dito.random_image(size=image_size)
                     saver.append(image=image)
                 else:
-                    image = dito.random_image(size=tuple(value + 1 for value in image_size))
+                    image = dito.random_image(
+                        size=tuple(value + 1 for value in image_size)
+                    )
                     self.assertRaises(ValueError, lambda: saver.append(image=image))
 
 
 ####
-#%%% test cases (old)
+# %%% test cases (old)
 ####
 
 
@@ -2190,8 +2571,10 @@ class core_Tests(TestCase):
         image = dito.pm5544()
         image_flipped = dito.flip_channels(image=image)
         for n_channel in range(3):
-            self.assertEqualImages(image[:, :, n_channel], image_flipped[:, :, 2 - n_channel])
-        
+            self.assertEqualImages(
+                image[:, :, n_channel], image_flipped[:, :, 2 - n_channel]
+            )
+
     def test_flip_channels_once_neq(self):
         image = dito.pm5544()
         image_flipped = dito.flip_channels(image=image)
@@ -2207,16 +2590,18 @@ class core_Tests(TestCase):
 class data_Tests(TestCase):
     def test_data_dir_exists(self):
         self.assertTrue(os.path.exists(dito.RESOURCES_DIR))
-    
+
     def test_data_files_exists(self):
         for filename in dito.RESOURCES_FILENAMES.values():
-            self.assertTrue(os.path.exists(filename), f"Data file '{filename}' does not exist")
+            self.assertTrue(
+                os.path.exists(filename), f"Data file '{filename}' does not exist"
+            )
 
     def test_pm5544_load(self):
         image = dito.pm5544()
         self.assertIsImage(image)
         self.assertEqual(image.shape, (576, 768, 3))
-    
+
     def test_xslope_width256(self):
         for height in (1, 32):
             slope = dito.xslope(height=height, width=256)
@@ -2226,7 +2611,7 @@ class data_Tests(TestCase):
             for x in range(256):
                 for y in range(height):
                     self.assertEqual(slope[y, x], x)
-    
+
     def test_xslope_widthNot256(self):
         height = 1
         for width in (2, 32, 256, 1000):
@@ -2268,7 +2653,7 @@ class infos_Tests(TestCase):
         self.assertAlmostEqual(h[191], 112044.0)
         self.assertAlmostEqual(h[195], 3.0)
         self.assertAlmostEqual(h[255], 212526.0)
-        
+
     def test_hist_gray(self):
         image = dito.pm5544()
         image_b = image[:, :, 0]
@@ -2277,33 +2662,37 @@ class infos_Tests(TestCase):
         self.assertAlmostEqual(h[73], 88.0)
         self.assertAlmostEqual(h[170], 2528.0)
         self.assertAlmostEqual(h[255], 70842.0)
-    
+
     def test_hist_gray_2dim_vs_3dim(self):
         image = dito.pm5544()
-        
+
         image_2dim = image[:, :, 0]
         h_2dim = dito.hist(image_2dim, bin_count=256)
-        
+
         image_3dim = image_2dim.copy()
         image_3dim.shape = image_3dim.shape + (1,)
         h_3dim = dito.hist(image_3dim, bin_count=256)
-        
+
         self.assertEqual(len(h_2dim), len(h_3dim))
-        for (value_2dim, value_3dim) in zip(h_2dim, h_3dim):
+        for value_2dim, value_3dim in zip(h_2dim, h_3dim):
             self.assertAlmostEqual(value_2dim, value_3dim)
-            
+
     def test_hist_gray_vs_color(self):
         image = dito.pm5544()
-        
+
         image_b = image[:, :, 0]
         image_g = image[:, :, 1]
         image_r = image[:, :, 2]
 
-        h_sum = dito.hist(image_b, bin_count=256) + dito.hist(image_g, bin_count=256) + dito.hist(image_r, bin_count=256)
+        h_sum = (
+            dito.hist(image_b, bin_count=256)
+            + dito.hist(image_g, bin_count=256)
+            + dito.hist(image_r, bin_count=256)
+        )
         h_color = dito.hist(image, bin_count=256)
-        
+
         self.assertEqual(len(h_sum), len(h_color))
-        for (value_sum, value_color) in zip(h_sum, h_color):
+        for value_sum, value_color in zip(h_sum, h_color):
             self.assertAlmostEqual(value_sum, value_color)
 
 
@@ -2312,25 +2701,23 @@ class io_Tests(TestCase):
         super().__init__(*args, **kwargs)
         self.image_filename = os.path.join(dito.RESOURCES_FILENAMES["image:PM5544"])
         self.shape = (576, 768, 3)
-    
+
     def test_decode_default(self):
         with open(self.image_filename, "rb") as f:
             image = dito.decode(b=f.read())
         self.assertNumpyShape(image, self.shape)
         self.assertAlmostEqual(np.mean(image), 121.3680261682581)
-        
+
     def test_decode_grayscale(self):
         with open(self.image_filename, "rb") as f:
             image = dito.decode(b=f.read(), color=False)
         self.assertNumpyShape(image, self.shape[:2])
-        
-
 
 
 class transforms_Tests(TestCase):
     pass
 
-        
+
 class utils_Tests(TestCase):
     def test_tir_args(self):
         items = (1.24, -1.87)
@@ -2338,6 +2725,6 @@ class utils_Tests(TestCase):
         self.assertEqual(dito.tir(items), (1, -2))
         self.assertEqual(dito.tir(list(items)), (1, -2))
 
-        
+
 if __name__ == "__main__":
     unittest.main()

@@ -42,10 +42,10 @@ Submodule         | Description                                                 
 `dito.visual`     | functions for visualizing images                                  | `dito.visual.text`
 """
 
-
 # as of dito>=2.14.0, the version number is stored in pyproject.toml
 # see https://stackoverflow.com/a/71126828
 import importlib.metadata
+
 __version__ = importlib.metadata.version("dito")
 
 

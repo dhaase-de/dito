@@ -58,10 +58,14 @@ def info(image, extended=False, minimal=False):
     """
 
     if not isinstance(image, np.ndarray):
-        raise ValueError(f"Argument 'image' must be of type 'numpy.ndimage', but is '{type(image)}'")
+        raise ValueError(
+            f"Argument 'image' must be of type 'numpy.ndimage', but is '{type(image)}'"
+        )
 
     if extended and minimal:
-        raise ValueError("Both arguments 'extended' and 'minimal' must not be true at the same time")
+        raise ValueError(
+            "Both arguments 'extended' and 'minimal' must not be true at the same time"
+        )
 
     result = collections.OrderedDict()
     if extended:
@@ -76,9 +80,13 @@ def info(image, extended=False, minimal=False):
         result["std"] = np.std(image) if image.size > 0 else np.nan
         result["min"] = np.min(image) if image.size > 0 else np.nan
     if extended:
-        result["1st quartile"] = np.percentile(image, 25.0) if image.size > 0 else np.nan
+        result["1st quartile"] = (
+            np.percentile(image, 25.0) if image.size > 0 else np.nan
+        )
         result["median"] = np.median(image) if image.size > 0 else np.nan
-        result["3rd quartile"] = np.percentile(image, 75.0) if image.size > 0 else np.nan
+        result["3rd quartile"] = (
+            np.percentile(image, 75.0) if image.size > 0 else np.nan
+        )
     if not minimal:
         result["max"] = np.max(image) if image.size > 0 else np.nan
         result["hash"] = hash_image(image=image, cutoff_position=8, return_hex=True)
@@ -110,7 +118,7 @@ def pinfo(*args, extended_=False, minimal_=False, file_=None, **kwargs):
 
     # merge args and kwargs into one dictionary
     all_kwargs = collections.OrderedDict()
-    for (n_image, image) in enumerate(args):
+    for n_image, image in enumerate(args):
         if isinstance(image, str) or isinstance(image, pathlib.Path):
             # if `image` is a filename (str or pathlib.Path), use the filename as key
             all_kwargs[str(image)] = image
@@ -121,7 +129,7 @@ def pinfo(*args, extended_=False, minimal_=False, file_=None, **kwargs):
 
     header = None
     rows = []
-    for (image_name, image) in all_kwargs.items():
+    for image_name, image in all_kwargs.items():
         if isinstance(image, str):
             # `image` is a filename -> load it first
             image = dito.io.load(filename=image)
@@ -132,13 +140,17 @@ def pinfo(*args, extended_=False, minimal_=False, file_=None, **kwargs):
         row = [image_name] + list(image_info.values())
 
         # round float values to keep the table columns from exploding
-        for (n_col, col) in enumerate(row):
+        for n_col, col in enumerate(row):
             if isinstance(col, float):
                 row[n_col] = dito.utils.adaptive_round(number=col, digit_count=8)
 
         rows.append(row)
 
-    dito.utils.ptable(rows=rows, ftable_kwargs={"first_row_is_header": True}, print_kwargs={"file": file_})
+    dito.utils.ptable(
+        rows=rows,
+        ftable_kwargs={"first_row_is_header": True},
+        print_kwargs={"file": file_},
+    )
 
 
 def hist(image, bin_count=256):
@@ -170,7 +182,7 @@ def hist(image, bin_count=256):
     >>> hist(np.array([[0, 0, 0, 1, 1, 2, 3, 4, 5]], dtype=np.uint8))[:8]
     array([3., 2., 1., 1., 1., 1., 0., 0.], dtype=float32)
     """
-    
+
     # determine which channels to use
     if dito.core.is_gray(image):
         channels = [0]
@@ -178,15 +190,22 @@ def hist(image, bin_count=256):
         channels = [0, 1, 2]
     else:
         raise ValueError("The given image must be a valid gray scale or color image")
-    
-    # accumulate histogram over all channels
-    hist_ = sum(cv2.calcHist([image], [channel], mask=None, histSize=[bin_count], ranges=(0, 256)) for channel in channels)
-    hist_ = np.squeeze(hist_)
-    
-    return hist_
-    
 
-def phist(image, bin_count=25, height=8, bar_symbol="#", background_symbol=" ", col_sep="."):
+    # accumulate histogram over all channels
+    hist_ = sum(
+        cv2.calcHist(
+            [image], [channel], mask=None, histSize=[bin_count], ranges=(0, 256)
+        )
+        for channel in channels
+    )
+    hist_ = np.squeeze(hist_)
+
+    return hist_
+
+
+def phist(
+    image, bin_count=25, height=8, bar_symbol="#", background_symbol=" ", col_sep="."
+):
     """
     Print the histogram of the given image.
 
@@ -205,10 +224,10 @@ def phist(image, bin_count=25, height=8, bar_symbol="#", background_symbol=" ", 
     col_sep : str, optional
         The separator to use between columns of the histogram. Default is ".".
     """
-    
+
     h = hist(image=image, bin_count=bin_count)
     h = h / np.max(h)
-    
+
     print("^")
     for n_row in range(height):
         col_strs = []
@@ -286,7 +305,11 @@ def hash_bytes(bytes_, cutoff_position=None, return_hex=True):
     str or bytes
         The hash value of the `bytes` object.
     """
-    return hash_readable(readable=io.BytesIO(initial_bytes=bytes_), cutoff_position=cutoff_position, return_hex=return_hex)
+    return hash_readable(
+        readable=io.BytesIO(initial_bytes=bytes_),
+        cutoff_position=cutoff_position,
+        return_hex=return_hex,
+    )
 
 
 def hash_file(path, cutoff_position=None, return_hex=True):
@@ -309,7 +332,9 @@ def hash_file(path, cutoff_position=None, return_hex=True):
         The hash value of the file.
     """
     with open(path, "rb") as file:
-        return hash_readable(readable=file, cutoff_position=cutoff_position, return_hex=return_hex)
+        return hash_readable(
+            readable=file, cutoff_position=cutoff_position, return_hex=return_hex
+        )
 
 
 def hash_image(image, cutoff_position=None, return_hex=True):
@@ -362,9 +387,16 @@ def hash_image_any_row_order(image, cutoff_position=None, return_hex=True):
     str or bytes
         The row-order-invariant hash value of the image.
     """
-    row_hashes = [hash_image(image=image[n_row, ...], cutoff_position=None, return_hex=False) for n_row in range(image.shape[0])]
+    row_hashes = [
+        hash_image(image=image[n_row, ...], cutoff_position=None, return_hex=False)
+        for n_row in range(image.shape[0])
+    ]
     row_hashes = sorted(row_hashes)
-    return hash_bytes(bytes_=b"".join(row_hashes), cutoff_position=cutoff_position, return_hex=return_hex)
+    return hash_bytes(
+        bytes_=b"".join(row_hashes),
+        cutoff_position=cutoff_position,
+        return_hex=return_hex,
+    )
 
 
 def hash_image_any_col_order(image, cutoff_position=None, return_hex=True):
@@ -389,9 +421,16 @@ def hash_image_any_col_order(image, cutoff_position=None, return_hex=True):
     str or bytes
         The column-order-invariant hash value of the image.
     """
-    col_hashes = [hash_image(image=image[:, n_col, ...], cutoff_position=None, return_hex=False) for n_col in range(image.shape[1])]
+    col_hashes = [
+        hash_image(image=image[:, n_col, ...], cutoff_position=None, return_hex=False)
+        for n_col in range(image.shape[1])
+    ]
     col_hashes = sorted(col_hashes)
-    return hash_bytes(bytes_=b"".join(col_hashes), cutoff_position=cutoff_position, return_hex=return_hex)
+    return hash_bytes(
+        bytes_=b"".join(col_hashes),
+        cutoff_position=cutoff_position,
+        return_hex=return_hex,
+    )
 
 
 def hash_image_any_pixel_order(image, cutoff_position=None, return_hex=True):
@@ -420,4 +459,6 @@ def hash_image_any_pixel_order(image, cutoff_position=None, return_hex=True):
     image_sorted.shape = (-1,)
     image_sorted = np.sort(image_sorted)
     image_sorted.shape = image.shape
-    return hash_image(image=image_sorted, cutoff_position=cutoff_position, return_hex=return_hex)
+    return hash_image(
+        image=image_sorted, cutoff_position=cutoff_position, return_hex=return_hex
+    )

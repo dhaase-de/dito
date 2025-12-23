@@ -12,6 +12,7 @@ import dito
 
 try:
     import sklearn.decomposition
+
     SKLEARN_IMPORT_ERROR = None
 except ImportError as e:
     SKLEARN_IMPORT_ERROR = e
@@ -391,7 +392,11 @@ class DecompositionTextureModel(abc.ABC):
                     p = np.zeros(shape=(self.component_count,), dtype=np.float32)
                 self.set_sliders_from_p(sliders, p)
 
-            if any(slider.changed for (slider_name, slider) in sliders.items() if slider.name != "sample"):
+            if any(
+                slider.changed
+                for (slider_name, slider) in sliders.items()
+                if slider.name != "sample"
+            ):
                 image = self.get_image_from_sliders(sliders)
 
             key = dito.visual.show(image, wait=10, window_name=self.image_window_name)
@@ -400,10 +405,14 @@ class DecompositionTextureModel(abc.ABC):
                 break
             elif key == ord("+"):
                 # go to the next image
-                sliders["sample"].set_value((sliders["sample"].get_value() + 1) % self.image_count)
+                sliders["sample"].set_value(
+                    (sliders["sample"].get_value() + 1) % self.image_count
+                )
             elif key == ord("-"):
                 # go to the previous image
-                sliders["sample"].set_value((sliders["sample"].get_value() - 1) % self.image_count)
+                sliders["sample"].set_value(
+                    (sliders["sample"].get_value() - 1) % self.image_count
+                )
             elif key == ord("n"):
                 # set all parameter sliders to zero
                 self.reset_sliders(sliders)

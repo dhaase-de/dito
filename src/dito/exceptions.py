@@ -21,6 +21,7 @@ class QkeyInterrupt(DitoException):
 
 class ParseShapeError(DitoException):
     """Base exception for `parse_shape`-related errors."""
+
     pass
 
 
@@ -30,4 +31,5 @@ class ParseShapeDefinitionError(ParseShapeError):
 
 class ParseShapeMismatchError(ParseShapeError):
     """Raised when the shape does not match the shape definition."""
+
     pass

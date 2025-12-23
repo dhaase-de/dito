@@ -26,7 +26,14 @@ DEFAULT_WINDOW_NAME = "dito.show"
 #
 
 
-def random_color(min_hue=0, max_hue=180, min_saturation=128, max_saturation=255, min_value=128, max_value=255):
+def random_color(
+    min_hue=0,
+    max_hue=180,
+    min_saturation=128,
+    max_saturation=255,
+    min_value=128,
+    max_value=255,
+):
     """
     Generate a random BGR color with HSV values within given ranges.
 
@@ -57,7 +64,9 @@ def random_color(min_hue=0, max_hue=180, min_saturation=128, max_saturation=255,
     """
     # check arguments
     if not (0 <= min_hue <= 180):
-        raise ValueError(f"Argument 'min_hue' must be a value between 0 and 180 (inclusive), but is '{min_hue}'")
+        raise ValueError(
+            f"Argument 'min_hue' must be a value between 0 and 180 (inclusive), but is '{min_hue}'"
+        )
 
     # wrap-around hue
     while max_hue < min_hue:
@@ -126,17 +135,19 @@ def get_colormap(name):
     ValueError
         If `name` is not a recognized colormap name.
     """
-    
+
     # source 1: non-OpenCV colormaps
     data_key = f"colormap:{name.lower()}"
     if data_key in dito.data.RESOURCES_FILENAMES.keys():
         return dito.io.load(filename=dito.data.RESOURCES_FILENAMES[data_key])
-    
+
     # source 2: OpenCV colormaps
     full_cv2_name = f"COLORMAP_{name.upper()}"
     if hasattr(cv2, full_cv2_name):
-        return cv2.applyColorMap(src=dito.data.yslope(width=1), colormap=getattr(cv2, full_cv2_name))
-    
+        return cv2.applyColorMap(
+            src=dito.data.yslope(width=1), colormap=getattr(cv2, full_cv2_name)
+        )
+
     # no match
     raise ValueError(f"Unknown colormap '{name}'")
 
@@ -194,17 +205,33 @@ def create_colormap(colors):
     # transform color list into color dict
     if isinstance(colors, collections.abc.Sequence):
         color_count = len(colors)
-        colors = {math.floor(255.0 * n_color / (color_count - 1)): color for (n_color, color) in enumerate(colors)}
+        colors = {
+            math.floor(255.0 * n_color / (color_count - 1)): color
+            for (n_color, color) in enumerate(colors)
+        }
 
     # check argument 'colors'
     if not isinstance(colors, collections.abc.Mapping):
-        raise TypeError(f"Argument 'colors' must be a dictionary, but is of type '{type(colors)}'")
+        raise TypeError(
+            f"Argument 'colors' must be a dictionary, but is of type '{type(colors)}'"
+        )
     if len(colors) == 0:
-        raise ValueError("Argument 'colors' must be a non-empty dictionary, but is empty")
+        raise ValueError(
+            "Argument 'colors' must be a non-empty dictionary, but is empty"
+        )
     if not all(isinstance(key, int) and 0 <= key <= 255 for key in colors.keys()):
-        raise ValueError("Argument 'colors' must have integer keys, all between 0 and 255")
-    if not all(isinstance(value, collections.abc.Sequence) and (len(value) == 3) and (isinstance(item, int) and 0 <= item <= 255 for item in value) for value in colors.values()):
-        raise ValueError("Argument 'colors' must have 3-tuple values with integer items between 0 and 255")
+        raise ValueError(
+            "Argument 'colors' must have integer keys, all between 0 and 255"
+        )
+    if not all(
+        isinstance(value, collections.abc.Sequence)
+        and (len(value) == 3)
+        and (isinstance(item, int) and 0 <= item <= 255 for item in value)
+        for value in colors.values()
+    ):
+        raise ValueError(
+            "Argument 'colors' must have 3-tuple values with integer items between 0 and 255"
+        )
 
     # create colormap
     sorted_keys = sorted(colors.keys())
@@ -213,7 +240,9 @@ def create_colormap(colors):
     for n_channel in range(3):
         sorted_channel_values = tuple(value[n_channel] for value in sorted_values)
         for n_color in range(256):
-            colormap[n_color, 0, n_channel] = np.interp(x=n_color, xp=sorted_keys, fp=sorted_channel_values)
+            colormap[n_color, 0, n_channel] = np.interp(
+                x=n_color, xp=sorted_keys, fp=sorted_channel_values
+            )
 
     return colormap
 
@@ -255,7 +284,9 @@ def colorize(image, colormap):
         # argument is already a colormap
         pass
     else:
-        raise TypeError("Argument `colormap` must either be a string (the colormap name) or a valid colormap.")
+        raise TypeError(
+            "Argument `colormap` must either be a string (the colormap name) or a valid colormap."
+        )
 
     # cv2.applyColorMap(src=image, userColor=colormap) only works for OpenCV>=3.3.0
     # (below that version, only internal OpenCV colormaps are supported)
@@ -281,7 +312,9 @@ def gamma(image, exponent):
         The transformed image. Has the same shape and dtype as the input `image`.
     """
     if image.dtype == np.uint8:
-        lut = np.round(255.0 * np.linspace(start=0.0, stop=1.0, num=256)**exponent).astype(np.uint8)
+        lut = np.round(
+            255.0 * np.linspace(start=0.0, stop=1.0, num=256) ** exponent
+        ).astype(np.uint8)
         lut.shape = (256, 1, 1)
         result = cv2.LUT(src=image, lut=lut)
     else:
@@ -334,14 +367,26 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
     """
 
     # check argument `images`
-    if isinstance(images, (tuple, list)) and (len(images) > 0) and isinstance(images[0], np.ndarray):
+    if (
+        isinstance(images, (tuple, list))
+        and (len(images) > 0)
+        and isinstance(images[0], np.ndarray)
+    ):
         # `images` is a vector of images
         rows = [images]
-    elif isinstance(images, (tuple, list)) and (len(images) > 0) and isinstance(images[0], (tuple, list)) and (len(images[0]) > 0) and isinstance(images[0][0], np.ndarray):
+    elif (
+        isinstance(images, (tuple, list))
+        and (len(images) > 0)
+        and isinstance(images[0], (tuple, list))
+        and (len(images[0]) > 0)
+        and isinstance(images[0][0], np.ndarray)
+    ):
         # `images` is a vector of vectors of images
         rows = images
     else:
-        raise ValueError("Invalid argument 'images' - must be vector of images or vector of vectors of images")
+        raise ValueError(
+            "Invalid argument 'images' - must be vector of images or vector of vectors of images"
+        )
 
     # find common data type and color mode
     if dtype is None:
@@ -356,7 +401,7 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
     # step 1/2: construct stacked image for each row
     row_images = []
     width = 0
-    for (n_row, row) in enumerate(rows):
+    for n_row, row in enumerate(rows):
         # determine row height
         row_height = 0
         for image in row:
@@ -368,7 +413,7 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
 
         # construct image
         row_image = None
-        for (n_col, image) in enumerate(row):
+        for n_col, image in enumerate(row):
             # convert individual image to target data type and color mode
             image = dito.core.convert(image=image, dtype=dtype)
             if gray:
@@ -377,18 +422,32 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
                 image = dito.core.as_color(image=image)
 
             # add padding
-            pad_width = [[padding if n_row == 0 else 0, padding], [padding if n_col == 0 else 0, padding]]
+            pad_width = [
+                [padding if n_row == 0 else 0, padding],
+                [padding if n_col == 0 else 0, padding],
+            ]
             if not gray:
                 pad_width.append([0, 0])
-            image = np.pad(array=image, pad_width=pad_width, mode="constant", constant_values=background_color)
+            image = np.pad(
+                array=image,
+                pad_width=pad_width,
+                mode="constant",
+                constant_values=background_color,
+            )
 
             # ensure that image has the height of the row
             gap = row_height - image.shape[0]
             if gap > 0:
                 if gray:
-                    image_fill = np.zeros(shape=(gap, image.shape[1]), dtype=dtype) + background_color
+                    image_fill = (
+                        np.zeros(shape=(gap, image.shape[1]), dtype=dtype)
+                        + background_color
+                    )
                 else:
-                    image_fill = np.zeros(shape=(gap, image.shape[1], 3), dtype=dtype) + background_color
+                    image_fill = (
+                        np.zeros(shape=(gap, image.shape[1], 3), dtype=dtype)
+                        + background_color
+                    )
                 image = np.vstack(tup=(image, image_fill))
 
             # add to current row image
@@ -408,9 +467,15 @@ def stack(images, padding=0, background_color=0, dtype=None, gray=None):
         gap = width - row_image.shape[1]
         if gap > 0:
             if gray:
-                image_fill = np.zeros(shape=(row_image.shape[0], gap), dtype=dtype) + background_color
+                image_fill = (
+                    np.zeros(shape=(row_image.shape[0], gap), dtype=dtype)
+                    + background_color
+                )
             else:
-                image_fill = np.zeros(shape=(row_image.shape[0], gap, 3), dtype=dtype) + background_color
+                image_fill = (
+                    np.zeros(shape=(row_image.shape[0], gap, 3), dtype=dtype)
+                    + background_color
+                )
             row_image = np.hstack(tup=(row_image, image_fill))
 
         # add to final image
@@ -453,10 +518,12 @@ def astack(images, aspect=1.77, padding=0, **stack_kwargs):
         n_image_row = 0
         row_height = 0
         row_width = 0
-        for (n_image, image) in enumerate(images):
+        for n_image, image in enumerate(images):
             row_height = max(row_height, image.shape[0] + padding)
             row_width += image.shape[1] + padding
-            if ((n_image_row + 1) == image_count_per_row) or ((n_image + 1) == image_count):
+            if ((n_image_row + 1) == image_count_per_row) or (
+                (n_image + 1) == image_count
+            ):
                 total_height += row_height
                 total_width = max(total_width, row_width)
                 n_image_row = 0
@@ -475,7 +542,7 @@ def astack(images, aspect=1.77, padding=0, **stack_kwargs):
     # construct 2d list of images
     rows = []
     row = []
-    for (n_image, image) in enumerate(images):
+    for n_image, image in enumerate(images):
         row.append(image)
         if (len(row) == best_image_count_per_row) or ((n_image + 1) == image_count):
             rows.append(row)
@@ -524,7 +591,9 @@ def stack_channels(image, mode="row", **kwargs):
         return stack(images=[channel_images], **kwargs)
     elif mode == "col":
         # col-wise stacking
-        return stack(images=[[channel_image] for channel_image in channel_images], **kwargs)
+        return stack(
+            images=[[channel_image] for channel_image in channel_images], **kwargs
+        )
     elif mode == "auto":
         return astack(images=channel_images)
     else:
@@ -584,8 +653,15 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
     """
 
     # check argument 'position'
-    if not (isinstance(position, (tuple, list)) and (len(position) == 2) and isinstance(position[0], (int, float)) and isinstance(position[1], (int, float))):
-        raise ValueError("Argument 'position' must be a 2-tuple (or list) of int (absolute) or float (relative) values")
+    if not (
+        isinstance(position, (tuple, list))
+        and (len(position) == 2)
+        and isinstance(position[0], (int, float))
+        and isinstance(position[1], (int, float))
+    ):
+        raise ValueError(
+            "Argument 'position' must be a 2-tuple (or list) of int (absolute) or float (relative) values"
+        )
 
     # check if source and target are images
     if not dito.core.is_image(image=target_image):
@@ -595,17 +671,23 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
 
     # check if source and target have the same dtype
     if target_image.dtype != source_image.dtype:
-        raise ValueError(f"Arguments 'target_image' and 'source_image' must have the same dtypes (but have dtypes '{target_image.dtype}' and '{source_image.dtype}')")
+        raise ValueError(
+            f"Arguments 'target_image' and 'source_image' must have the same dtypes (but have dtypes '{target_image.dtype}' and '{source_image.dtype}')"
+        )
 
     # make sure that source_mask is either None or a NumPy array
     if source_mask is None:
         pass
     elif isinstance(source_mask, float):
-        source_mask = np.zeros(shape=source_image.shape[:2], dtype=np.float32) + source_mask
+        source_mask = (
+            np.zeros(shape=source_image.shape[:2], dtype=np.float32) + source_mask
+        )
     elif isinstance(source_mask, np.ndarray):
         source_mask = source_mask.copy()
     else:
-        raise ValueError("Argument 'source_mask' must be (i) `None` (meaning full opacity), (ii) a float (same opacity for all pixels), or (iii) a float image (individual opacity for each pixel)")
+        raise ValueError(
+            "Argument 'source_mask' must be (i) `None` (meaning full opacity), (ii) a float (same opacity for all pixels), or (iii) a float image (individual opacity for each pixel)"
+        )
 
     # check source mask
     if source_mask is not None:
@@ -619,7 +701,9 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
     source_image = source_image.copy()
     if dito.core.is_gray(image=target_image):
         if not dito.core.is_gray(image=source_image):
-            raise ValueError("Target image is a grayscale image, but source image is a color image")
+            raise ValueError(
+                "Target image is a grayscale image, but source image is a color image"
+            )
         target_image.shape += (1,)
         source_image.shape += (1,)
     else:
@@ -629,7 +713,7 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
 
     # determine base offset based on argument 'position'
     offset = np.zeros(shape=(2,), dtype=np.float32)
-    for (n_dim, dim_position) in enumerate(position):
+    for n_dim, dim_position in enumerate(position):
         if isinstance(dim_position, int):
             # int -> absolute position
             offset[n_dim] = float(dim_position)
@@ -638,8 +722,15 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
             offset[n_dim] = dim_position * target_image.shape[1 - n_dim]
 
     # adjust offset based on the specified anchor type
-    if not (isinstance(anchor, str) and (len(anchor) == 2) and (anchor[0] in ("l", "c", "r")) and (anchor[1] in ("t", "c", "b"))):
-        raise ValueError(f"Argument 'anchor' must be a string of length two (pattern: '[lcr][tcb]') , but is '{anchor}'")
+    if not (
+        isinstance(anchor, str)
+        and (len(anchor) == 2)
+        and (anchor[0] in ("l", "c", "r"))
+        and (anchor[1] in ("t", "c", "b"))
+    ):
+        raise ValueError(
+            f"Argument 'anchor' must be a string of length two (pattern: '[lcr][tcb]') , but is '{anchor}'"
+        )
     (anchor_h, anchor_v) = anchor
     if anchor_h == "l":
         pass
@@ -659,8 +750,14 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
 
     # extract target region
     target_indices = (
-        slice(max(0, offset[1]), max(0, min(target_image.shape[0], offset[1] + source_image.shape[0]))),
-        slice(max(0, offset[0]), max(0, min(target_image.shape[1], offset[0] + source_image.shape[1]))),
+        slice(
+            max(0, offset[1]),
+            max(0, min(target_image.shape[0], offset[1] + source_image.shape[0])),
+        ),
+        slice(
+            max(0, offset[0]),
+            max(0, min(target_image.shape[1], offset[0] + source_image.shape[1])),
+        ),
     )
     target_region = target_image[target_indices + (Ellipsis,)]
 
@@ -677,7 +774,10 @@ def insert(target_image, source_image, position=(0, 0), anchor="lt", source_mask
         target_image[target_indices + (Ellipsis,)] = source_region
     else:
         for n_channel in range(channel_count):
-            target_image[target_indices + (n_channel,)] = (source_mask[source_indices] * source_region[:, :, n_channel] + (1.0 - source_mask[source_indices]) * target_region[:, :, n_channel]).astype(target_image.dtype)
+            target_image[target_indices + (n_channel,)] = (
+                source_mask[source_indices] * source_region[:, :, n_channel]
+                + (1.0 - source_mask[source_indices]) * target_region[:, :, n_channel]
+            ).astype(target_image.dtype)
 
     # remove channel axis for gray scale images
     if (len(target_image.shape) == 3) and (target_image.shape[2] == 1):
@@ -710,7 +810,9 @@ def overlay(target_image, source_image, source_mask=None):
     numpy.ndarray
         A copy of `target_image` with `source_image` inserted.
     """
-    return insert(target_image=target_image, source_image=source_image, source_mask=source_mask)
+    return insert(
+        target_image=target_image, source_image=source_image, source_mask=source_mask
+    )
 
 
 def overlay_constant(target_image, source_color, source_mask):
@@ -741,7 +843,11 @@ def overlay_constant(target_image, source_color, source_mask):
     """
     return insert(
         target_image=target_image,
-        source_image=dito.data.constant_image(size=dito.core.size(target_image), color=source_color, dtype=target_image.dtype),
+        source_image=dito.data.constant_image(
+            size=dito.core.size(target_image),
+            color=source_color,
+            dtype=target_image.dtype,
+        ),
         source_mask=source_mask,
     )
 
@@ -765,22 +871,22 @@ class Font:
     ----------
     RESET : str
         ANSI escape code that resets all styles and colors.
-    
+
     STYLE_REGULAR : str
         ANSI escape code that sets the text style to regular (non-bold).
     STYLE_BOLD : str
         ANSI escape code that sets the text style to bold.
-    
+
     REVERSE_ON : str
         ANSI escape code that turns on reverse mode (switching foreground and background colors).
     REVERSE_OFF : str
         ANSI escape code that turns off reverse mode (switching foreground and background colors).
-    
+
     FOREGROUND_DEFAULT : str
         ANSI escape code that sets the foreground color to the default color.
     BACKGROUND_DEFAULT : str
         ANSI escape code that sets the background color to the default color.
-    
+
     FOREGROUND_BLACK : str
         ANSI escape code that sets the foreground color to black.
     FOREGROUND_RED : str
@@ -797,7 +903,7 @@ class Font:
         ANSI escape code that sets the foreground color to cyan.
     FOREGROUND_WHITE : str
         ANSI escape code that sets the foreground color to white.
-    
+
     BACKGROUND_BLACK : str
         ANSI escape code that sets the background color to black.
     BACKGROUND_RED : str
@@ -814,7 +920,7 @@ class Font:
         ANSI escape code that sets the background color to cyan.
     BACKGROUND_WHITE : str
         ANSI escape code that sets the background color to white.
-    
+
     FOREGROUND_BRIGHT_BLACK : str
         ANSI escape code that sets the foreground color to bright black.
     FOREGROUND_BRIGHT_RED : str
@@ -831,7 +937,7 @@ class Font:
         ANSI escape code that sets the foreground color to bright cyan.
     FOREGROUND_BRIGHT_WHITE : str
         ANSI escape code that sets the foreground color to bright white.
-    
+
     BACKGROUND_BRIGHT_BLACK : str
         ANSI escape code that sets the background color to bright black.
     BACKGROUND_BRIGHT_RED : str
@@ -861,41 +967,41 @@ class Font:
     FOREGROUND_DEFAULT = "\033[39m"
     BACKGROUND_DEFAULT = "\033[49m"
 
-    FOREGROUND_BLACK   = "\033[30m"
-    FOREGROUND_RED     = "\033[31m"
-    FOREGROUND_GREEN   = "\033[32m"
-    FOREGROUND_YELLOW  = "\033[33m"
-    FOREGROUND_BLUE    = "\033[34m"
+    FOREGROUND_BLACK = "\033[30m"
+    FOREGROUND_RED = "\033[31m"
+    FOREGROUND_GREEN = "\033[32m"
+    FOREGROUND_YELLOW = "\033[33m"
+    FOREGROUND_BLUE = "\033[34m"
     FOREGROUND_MAGENTA = "\033[35m"
-    FOREGROUND_CYAN    = "\033[36m"
-    FOREGROUND_WHITE   = "\033[37m"
+    FOREGROUND_CYAN = "\033[36m"
+    FOREGROUND_WHITE = "\033[37m"
 
-    BACKGROUND_BLACK   = "\033[40m"
-    BACKGROUND_RED     = "\033[41m"
-    BACKGROUND_GREEN   = "\033[42m"
-    BACKGROUND_YELLOW  = "\033[43m"
-    BACKGROUND_BLUE    = "\033[44m"
+    BACKGROUND_BLACK = "\033[40m"
+    BACKGROUND_RED = "\033[41m"
+    BACKGROUND_GREEN = "\033[42m"
+    BACKGROUND_YELLOW = "\033[43m"
+    BACKGROUND_BLUE = "\033[44m"
     BACKGROUND_MAGENTA = "\033[45m"
-    BACKGROUND_CYAN    = "\033[46m"
-    BACKGROUND_WHITE   = "\033[47m"
+    BACKGROUND_CYAN = "\033[46m"
+    BACKGROUND_WHITE = "\033[47m"
 
-    FOREGROUND_BRIGHT_BLACK   = "\033[90m"
-    FOREGROUND_BRIGHT_RED     = "\033[91m"
-    FOREGROUND_BRIGHT_GREEN   = "\033[92m"
-    FOREGROUND_BRIGHT_YELLOW  = "\033[93m"
-    FOREGROUND_BRIGHT_BLUE    = "\033[94m"
+    FOREGROUND_BRIGHT_BLACK = "\033[90m"
+    FOREGROUND_BRIGHT_RED = "\033[91m"
+    FOREGROUND_BRIGHT_GREEN = "\033[92m"
+    FOREGROUND_BRIGHT_YELLOW = "\033[93m"
+    FOREGROUND_BRIGHT_BLUE = "\033[94m"
     FOREGROUND_BRIGHT_MAGENTA = "\033[95m"
-    FOREGROUND_BRIGHT_CYAN    = "\033[96m"
-    FOREGROUND_BRIGHT_WHITE   = "\033[97m"
+    FOREGROUND_BRIGHT_CYAN = "\033[96m"
+    FOREGROUND_BRIGHT_WHITE = "\033[97m"
 
-    BACKGROUND_BRIGHT_BLACK   = "\033[100m"
-    BACKGROUND_BRIGHT_RED     = "\033[101m"
-    BACKGROUND_BRIGHT_GREEN   = "\033[102m"
-    BACKGROUND_BRIGHT_YELLOW  = "\033[103m"
-    BACKGROUND_BRIGHT_BLUE    = "\033[104m"
+    BACKGROUND_BRIGHT_BLACK = "\033[100m"
+    BACKGROUND_BRIGHT_RED = "\033[101m"
+    BACKGROUND_BRIGHT_GREEN = "\033[102m"
+    BACKGROUND_BRIGHT_YELLOW = "\033[103m"
+    BACKGROUND_BRIGHT_BLUE = "\033[104m"
     BACKGROUND_BRIGHT_MAGENTA = "\033[105m"
-    BACKGROUND_BRIGHT_CYAN    = "\033[106m"
-    BACKGROUND_BRIGHT_WHITE   = "\033[107m"
+    BACKGROUND_BRIGHT_CYAN = "\033[106m"
+    BACKGROUND_BRIGHT_WHITE = "\033[107m"
 
     @staticmethod
     def _COLOR_BGR(b, g, r, foreground=True):
@@ -998,7 +1104,9 @@ class MonospaceBitmapFont(Font):
         self.filename = filename
         if isinstance(self.filename, pathlib.Path):
             self.filename = str(self.filename)
-        (self.char_width, self.char_height, self.char_images) = self.load_df2(filename=self.filename)
+        (self.char_width, self.char_height, self.char_images) = self.load_df2(
+            filename=self.filename
+        )
 
     @classmethod
     def init_from_name(cls, name):
@@ -1056,7 +1164,14 @@ class MonospaceBitmapFont(Font):
         chars = cls.get_supported_chars()
         position_images = []
         for char in chars:
-            position_image = (np.round(char_images_regular[char].astype(np.float32) / 17.0).astype(np.uint8) << 4) + np.round(char_images_bold[char].astype(np.float32) / 17.0).astype(np.uint8)
+            position_image = (
+                np.round(char_images_regular[char].astype(np.float32) / 17.0).astype(
+                    np.uint8
+                )
+                << 4
+            ) + np.round(char_images_bold[char].astype(np.float32) / 17.0).astype(
+                np.uint8
+            )
             position_images.append(position_image)
         out_image = stack([position_images])
         dito.io.save(filename=filename, image=out_image)
@@ -1091,9 +1206,11 @@ class MonospaceBitmapFont(Font):
         char_width = (image.shape[1] * chars_per_position) // char_count
 
         char_images = collections.OrderedDict()
-        for (n_char, char) in enumerate(chars):
+        for n_char, char in enumerate(chars):
             n_position = n_char
-            position_image = image[:, (n_position * char_width):((n_position + 1) * char_width)]
+            position_image = image[
+                :, (n_position * char_width) : ((n_position + 1) * char_width)
+            ]
             char_images[char] = collections.OrderedDict()
             char_images[char]["regular"] = ((0xF0 & position_image) >> 4) * 17
             char_images[char]["bold"] = (0x0F & position_image) * 17
@@ -1162,7 +1279,9 @@ class MonospaceBitmapFont(Font):
         return self.char_images.get(char, self.char_images["?"]).get(style, "regular")
 
     @staticmethod
-    def parse_message(raw_message, initial_style, initial_foreground_color, initial_background_color):
+    def parse_message(
+        raw_message, initial_style, initial_foreground_color, initial_background_color
+    ):
         """
         Parses a raw message with escape sequences and returns a dictionary containing the message contents.
 
@@ -1212,13 +1331,18 @@ class MonospaceBitmapFont(Font):
                     escape_begin_index = len(raw_line)
                     escape_end_index = escape_begin_index
                 else:
-                    escape_end_index = escape_begin_index + raw_line[escape_begin_index:].find("m") + 1
+                    escape_end_index = (
+                        escape_begin_index + raw_line[escape_begin_index:].find("m") + 1
+                    )
 
                 # split line into part before the next escape sequence, the escape sequence, the "argument" part of the escape sequence, and the part after the escape sequence
                 pre_escape = raw_line[:escape_begin_index]
                 escape_sequence = raw_line[escape_begin_index:escape_end_index]
                 if escape_sequence != "":
-                    escape_codes = tuple(int(code) if code != "" else 0 for code in escape_sequence[2:-1].split(";"))
+                    escape_codes = tuple(
+                        int(code) if code != "" else 0
+                        for code in escape_sequence[2:-1].split(";")
+                    )
                 else:
                     escape_codes = tuple()
                 post_escape = raw_line[escape_end_index:]
@@ -1226,8 +1350,20 @@ class MonospaceBitmapFont(Font):
                 # append text before the escape sequence to the line and update the remaining raw line
                 chars += pre_escape
                 styles += [current_style] * escape_begin_index
-                foreground_colors += [current_foreground_color if (current_reverse_state is False) else current_background_color] * escape_begin_index
-                background_colors += [current_background_color if (current_reverse_state is False) else current_foreground_color] * escape_begin_index
+                foreground_colors += [
+                    (
+                        current_foreground_color
+                        if (current_reverse_state is False)
+                        else current_background_color
+                    )
+                ] * escape_begin_index
+                background_colors += [
+                    (
+                        current_background_color
+                        if (current_reverse_state is False)
+                        else current_foreground_color
+                    )
+                ] * escape_begin_index
                 raw_line = post_escape
 
                 # handle escape codes (see https://en.wikipedia.org/wiki/ANSI_escape_code)
@@ -1258,7 +1394,12 @@ class MonospaceBitmapFont(Font):
                         # turn on reverse mode (foreground and background colors are switched)
                         current_reverse_state = False
 
-                    elif (30 <= escape_code <= 37) or (40 <= escape_code <= 47) or (90 <= escape_code <= 97) or (100 <= escape_code <= 107):
+                    elif (
+                        (30 <= escape_code <= 37)
+                        or (40 <= escape_code <= 47)
+                        or (90 <= escape_code <= 97)
+                        or (100 <= escape_code <= 107)
+                    ):
                         # set foreground/background color via index
 
                         first_digits = escape_code // 10
@@ -1268,25 +1409,25 @@ class MonospaceBitmapFont(Font):
                         if first_digits in (3, 4):
                             # normal colors
                             color_lut = {
-                                0: (  0,   0,   0), # black
-                                1: (  0,   0, 205), # red
-                                2: (  0, 205,   0), # green
-                                3: (  0, 205, 205), # yellow
-                                4: (238,   0,   0), # blue
-                                5: (205,   0, 205), # magenta
-                                6: (205, 205,   0), # cyan
-                                7: (229, 229, 229), # white
+                                0: (0, 0, 0),  # black
+                                1: (0, 0, 205),  # red
+                                2: (0, 205, 0),  # green
+                                3: (0, 205, 205),  # yellow
+                                4: (238, 0, 0),  # blue
+                                5: (205, 0, 205),  # magenta
+                                6: (205, 205, 0),  # cyan
+                                7: (229, 229, 229),  # white
                             }
                         else:
                             # bright colors
                             color_lut = {
                                 0: (127, 127, 127),  # gray
-                                1: (  0,   0, 255),  # bright red
-                                2: (  0, 255,   0),  # bright green
-                                3: (  0, 255, 255),  # bright yellow
-                                4: (255,  92,  92),  # bright blue
-                                5: (255,   0, 255),  # bright magenta
-                                6: (255, 255,   0),  # bright cyan
+                                1: (0, 0, 255),  # bright red
+                                2: (0, 255, 0),  # bright green
+                                3: (0, 255, 255),  # bright yellow
+                                4: (255, 92, 92),  # bright blue
+                                5: (255, 0, 255),  # bright magenta
+                                6: (255, 255, 0),  # bright cyan
                                 7: (255, 255, 255),  # bright white
                             }
 
@@ -1297,7 +1438,11 @@ class MonospaceBitmapFont(Font):
                         else:
                             current_background_color = color
 
-                    elif (escape_code in (38, 48)) and (len(escape_codes) >= 4) and (escape_codes[0] == 2):
+                    elif (
+                        (escape_code in (38, 48))
+                        and (len(escape_codes) >= 4)
+                        and (escape_codes[0] == 2)
+                    ):
                         # set foreground/background color via BGR
                         bgr_values = escape_codes[1:4][::-1]
                         escape_codes = escape_codes[4:]
@@ -1318,16 +1463,44 @@ class MonospaceBitmapFont(Font):
                         current_background_color = initial_background_color
 
                     else:
-                        warnings.warn("Escape code '{}' (full escape sequence: {}) is not supported".format(escape_code, bytes(escape_sequence, "utf-8")))
+                        warnings.warn(
+                            "Escape code '{}' (full escape sequence: {}) is not supported".format(
+                                escape_code, bytes(escape_sequence, "utf-8")
+                            )
+                        )
 
             charss.append(chars)
             styless.append(styles)
             foreground_colorss.append(foreground_colors)
             background_colorss.append(background_colors)
 
-        return {"lines": charss, "styles": styless, "foreground_colors": foreground_colorss, "background_colors": background_colorss}
+        return {
+            "lines": charss,
+            "styles": styless,
+            "foreground_colors": foreground_colorss,
+            "background_colors": background_colorss,
+        }
 
-    def render_into_image(self, target_image, message, position, anchor, style, foreground_color, background_color, background_as_outline, border_color, border, margin, padding, opacity, alignment, scale, rotation, shrink_to_width):
+    def render_into_image(
+        self,
+        target_image,
+        message,
+        position,
+        anchor,
+        style,
+        foreground_color,
+        background_color,
+        background_as_outline,
+        border_color,
+        border,
+        margin,
+        padding,
+        opacity,
+        alignment,
+        scale,
+        rotation,
+        shrink_to_width,
+    ):
         """
         Render a text message with a specific style and color into an image.
 
@@ -1375,7 +1548,12 @@ class MonospaceBitmapFont(Font):
         """
 
         # parse message (to get the raw text plus style and color information)
-        parse_result = self.parse_message(raw_message=message, initial_style=style, initial_foreground_color=foreground_color, initial_background_color=background_color)
+        parse_result = self.parse_message(
+            raw_message=message,
+            initial_style=style,
+            initial_foreground_color=foreground_color,
+            initial_background_color=background_color,
+        )
         lines = parse_result["lines"]
         styles = parse_result["styles"]
         foreground_colors = parse_result["foreground_colors"]
@@ -1387,61 +1565,114 @@ class MonospaceBitmapFont(Font):
         max_character_count = max(character_counts)
 
         # check colors
-        for (color, none_allowed) in ((foreground_color, False), (background_color, True), (border_color, False)):
-            if (not none_allowed) and (not (isinstance(color, (tuple, list)) and (len(color) == 3) and all(isinstance(value, int) for value in color) and all(0 <= value <= 255 for value in color))):
-                raise ValueError("Arguments 'color', 'background_color', and 'border_color' must be 3-tuples (8 bit BGR).")
+        for color, none_allowed in (
+            (foreground_color, False),
+            (background_color, True),
+            (border_color, False),
+        ):
+            if (not none_allowed) and (
+                not (
+                    isinstance(color, (tuple, list))
+                    and (len(color) == 3)
+                    and all(isinstance(value, int) for value in color)
+                    and all(0 <= value <= 255 for value in color)
+                )
+            ):
+                raise ValueError(
+                    "Arguments 'color', 'background_color', and 'border_color' must be 3-tuples (8 bit BGR)."
+                )
 
         # check border
         try:
-            (border_top, border_right, border_bottom, border_left) = dito.utils.get_validated_tuple(x=border, type_=int, count=4, min_value=0, max_value=None)
+            (border_top, border_right, border_bottom, border_left) = (
+                dito.utils.get_validated_tuple(
+                    x=border, type_=int, count=4, min_value=0, max_value=None
+                )
+            )
         except ValueError:
-            raise ValueError("Argument 'border' must be a single non-negative integer (same border for all four sides) or a 4-tuple of non-negative integers (specifying the top, right, bottom, and left border).")
+            raise ValueError(
+                "Argument 'border' must be a single non-negative integer (same border for all four sides) or a 4-tuple of non-negative integers (specifying the top, right, bottom, and left border)."
+            )
 
         # check margin
         try:
-            (margin_top, margin_right, margin_bottom, margin_left) = dito.utils.get_validated_tuple(x=margin, type_=int, count=4, min_value=0, max_value=None)
+            (margin_top, margin_right, margin_bottom, margin_left) = (
+                dito.utils.get_validated_tuple(
+                    x=margin, type_=int, count=4, min_value=0, max_value=None
+                )
+            )
         except ValueError:
             raise ValueError(
-                "Argument 'margin' must be a single non-negative integer (same margin for all four sides) or a 4-tuple of non-negative integers (specifying the top, right, bottom, and left margin).")
+                "Argument 'margin' must be a single non-negative integer (same margin for all four sides) or a 4-tuple of non-negative integers (specifying the top, right, bottom, and left margin)."
+            )
 
         # check padding
         try:
-            (padding_vertical, padding_horizontal) = dito.utils.get_validated_tuple(x=padding, type_=int, count=2, min_value=0, max_value=None)
+            (padding_vertical, padding_horizontal) = dito.utils.get_validated_tuple(
+                x=padding, type_=int, count=2, min_value=0, max_value=None
+            )
         except ValueError:
-            raise ValueError("Argument 'padding' must be a single non-negative integer (same padding for both sides) or a 2-tuple of non-negative integers (specifying the vertical and horizontal padding).")
+            raise ValueError(
+                "Argument 'padding' must be a single non-negative integer (same padding for both sides) or a 2-tuple of non-negative integers (specifying the vertical and horizontal padding)."
+            )
 
         # create foreground and background masks and images
         out_size = (
-            (max_character_count * self.char_width) + (border_left + border_right) + (margin_left + margin_right) + max(0, max_character_count - 1) * padding_horizontal,
-            (line_count * self.char_height) + (border_top + border_bottom) + (margin_top + margin_bottom) + max(0, line_count - 1) * padding_vertical,
+            (max_character_count * self.char_width)
+            + (border_left + border_right)
+            + (margin_left + margin_right)
+            + max(0, max_character_count - 1) * padding_horizontal,
+            (line_count * self.char_height)
+            + (border_top + border_bottom)
+            + (margin_top + margin_bottom)
+            + max(0, line_count - 1) * padding_vertical,
         )
         foreground_mask = np.zeros(shape=out_size[::-1], dtype=np.uint8)
-        foreground_image = dito.data.constant_image(size=out_size, color=foreground_color)
+        foreground_image = dito.data.constant_image(
+            size=out_size, color=foreground_color
+        )
         if background_color is None:
             background_mask = np.zeros(shape=out_size[::-1], dtype=np.uint8)
             background_image = dito.data.constant_image(size=out_size, color=(0, 0, 0))
         else:
             background_mask = np.zeros(shape=out_size[::-1], dtype=np.uint8) + 255
-            background_image = dito.data.constant_image(size=out_size, color=background_color)
+            background_image = dito.data.constant_image(
+                size=out_size, color=background_color
+            )
 
         # fill mask, foregound, and background image
-        for (n_row, line) in enumerate(lines):
-            row_offset = n_row * self.char_height + border_top + margin_top + n_row * padding_vertical
+        for n_row, line in enumerate(lines):
+            row_offset = (
+                n_row * self.char_height
+                + border_top
+                + margin_top
+                + n_row * padding_vertical
+            )
 
             # determine column offset due to alignment
             if alignment == "left":
                 alignment_col_offset = 0
             elif alignment == "center":
-                alignment_col_offset = (max_character_count - character_counts[n_row]) // 2
+                alignment_col_offset = (
+                    max_character_count - character_counts[n_row]
+                ) // 2
             elif alignment == "right":
                 alignment_col_offset = max_character_count - character_counts[n_row]
             else:
                 raise ValueError(f"Invalid alignment '{alignment}'")
 
-            for (n_col, char) in enumerate(line):
+            for n_col, char in enumerate(line):
                 # determine mask indices for current character
-                col_offset = (n_col + alignment_col_offset) * self.char_width + border_left + margin_left + n_col * padding_horizontal
-                indices = (slice(row_offset, row_offset + self.char_height), slice(col_offset, col_offset + self.char_width))
+                col_offset = (
+                    (n_col + alignment_col_offset) * self.char_width
+                    + border_left
+                    + margin_left
+                    + n_col * padding_horizontal
+                )
+                indices = (
+                    slice(row_offset, row_offset + self.char_height),
+                    slice(col_offset, col_offset + self.char_width),
+                )
 
                 # get current character image
                 char_image = self.get_char_image(char=char, style=styles[n_row][n_col])
@@ -1453,7 +1684,10 @@ class MonospaceBitmapFont(Font):
                         background_mask[indices] = 0
                     else:
                         background_mask[indices] = 255
-                        background_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=current_background_color)
+                        background_image[indices] = dito.data.constant_image(
+                            size=dito.core.size(image=char_image),
+                            color=current_background_color,
+                        )
 
                 # update foreground mask
                 foreground_mask[indices] = char_image
@@ -1462,40 +1696,92 @@ class MonospaceBitmapFont(Font):
                 current_foreground_color = foreground_colors[n_row][n_col]
                 if current_foreground_color != foreground_color:
                     if current_foreground_color is not None:
-                        foreground_image[indices] = dito.data.constant_image(size=dito.core.size(image=char_image), color=current_foreground_color)
+                        foreground_image[indices] = dito.data.constant_image(
+                            size=dito.core.size(image=char_image),
+                            color=current_foreground_color,
+                        )
                     else:
-                        background_mask[indices] = np.minimum(background_mask[indices], 255 - foreground_mask[indices])
+                        background_mask[indices] = np.minimum(
+                            background_mask[indices], 255 - foreground_mask[indices]
+                        )
                         foreground_mask[indices] = 0
 
         # if using outline background mode, dilate text mask to get background mask
         if background_as_outline:
-            background_mask = np.minimum(background_mask, dito.processing.dilate(image=foreground_mask, shape=cv2.MORPH_ELLIPSE, size=max(3, char_image.shape[0] // 5)))
+            background_mask = np.minimum(
+                background_mask,
+                dito.processing.dilate(
+                    image=foreground_mask,
+                    shape=cv2.MORPH_ELLIPSE,
+                    size=max(3, char_image.shape[0] // 5),
+                ),
+            )
 
         # draw border
         foreground_mask[:border_top, :] = 255
-        foreground_mask[(out_size[1] - border_bottom):, :] = 255
+        foreground_mask[(out_size[1] - border_bottom) :, :] = 255
         foreground_mask[:, :border_left] = 255
-        foreground_mask[:, (out_size[0] - border_right):] = 255
-        for (n_channel, value) in enumerate(border_color):
+        foreground_mask[:, (out_size[0] - border_right) :] = 255
+        for n_channel, value in enumerate(border_color):
             foreground_image[:border_top, :, n_channel] = value
-            foreground_image[(out_size[1] - border_bottom):, :, n_channel] = value
+            foreground_image[(out_size[1] - border_bottom) :, :, n_channel] = value
             foreground_image[:, :border_left, n_channel] = value
-            foreground_image[:, (out_size[0] - border_right):, n_channel] = value
+            foreground_image[:, (out_size[0] - border_right) :, n_channel] = value
 
         # rescale image if requested
         if scale is not None:
-            foreground_mask = dito.core.resize(image=foreground_mask, scale_or_size=scale, interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_AREA)
-            foreground_image = dito.core.resize(image=foreground_image, scale_or_size=scale, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
-            background_mask = dito.core.resize(image=background_mask, scale_or_size=scale, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
-            background_image = dito.core.resize(image=background_image, scale_or_size=scale, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
+            foreground_mask = dito.core.resize(
+                image=foreground_mask,
+                scale_or_size=scale,
+                interpolation_down=cv2.INTER_AREA,
+                interpolation_up=cv2.INTER_AREA,
+            )
+            foreground_image = dito.core.resize(
+                image=foreground_image,
+                scale_or_size=scale,
+                interpolation_down=cv2.INTER_NEAREST,
+                interpolation_up=cv2.INTER_NEAREST,
+            )
+            background_mask = dito.core.resize(
+                image=background_mask,
+                scale_or_size=scale,
+                interpolation_down=cv2.INTER_NEAREST,
+                interpolation_up=cv2.INTER_NEAREST,
+            )
+            background_image = dito.core.resize(
+                image=background_image,
+                scale_or_size=scale,
+                interpolation_down=cv2.INTER_NEAREST,
+                interpolation_up=cv2.INTER_NEAREST,
+            )
 
         # shrink to specified width if requested
         if (shrink_to_width is not None) and (out_size[0] > shrink_to_width):
             target_size = (shrink_to_width, out_size[1])
-            foreground_mask = dito.core.resize(image=foreground_mask, scale_or_size=target_size, interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_AREA)
-            foreground_image = dito.core.resize(image=foreground_image, scale_or_size=target_size, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
-            background_mask = dito.core.resize(image=background_mask, scale_or_size=target_size, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
-            background_image = dito.core.resize(image=background_image, scale_or_size=target_size, interpolation_down=cv2.INTER_NEAREST, interpolation_up=cv2.INTER_NEAREST)
+            foreground_mask = dito.core.resize(
+                image=foreground_mask,
+                scale_or_size=target_size,
+                interpolation_down=cv2.INTER_AREA,
+                interpolation_up=cv2.INTER_AREA,
+            )
+            foreground_image = dito.core.resize(
+                image=foreground_image,
+                scale_or_size=target_size,
+                interpolation_down=cv2.INTER_NEAREST,
+                interpolation_up=cv2.INTER_NEAREST,
+            )
+            background_mask = dito.core.resize(
+                image=background_mask,
+                scale_or_size=target_size,
+                interpolation_down=cv2.INTER_NEAREST,
+                interpolation_up=cv2.INTER_NEAREST,
+            )
+            background_image = dito.core.resize(
+                image=background_image,
+                scale_or_size=target_size,
+                interpolation_down=cv2.INTER_NEAREST,
+                interpolation_up=cv2.INTER_NEAREST,
+            )
 
         # convert uint8 masks to [0, 1]-float mask
         foreground_mask = dito.core.convert(image=foreground_mask, dtype=np.float32)
@@ -1518,8 +1804,11 @@ class MonospaceBitmapFont(Font):
                 elif angle_normed == 270:
                     rotation_func = dito.core.rotate_270
             else:
+
                 def rotation_func(image: np.ndarray) -> np.ndarray:
-                    return dito.core.rotate(image=image, angle_deg=rotation, padding_mode="tight")
+                    return dito.core.rotate(
+                        image=image, angle_deg=rotation, padding_mode="tight"
+                    )
 
             if rotation_func is not None:
                 foreground_mask = rotation_func(image=foreground_mask)
@@ -1550,7 +1839,26 @@ class MonospaceBitmapFont(Font):
         return result_image
 
 
-def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", style="regular", color=(235, 235, 235), background_color=(45, 45, 45), background_as_outline=False, border_color=(255, 255, 255), border=(0, 0, 0, 0), margin=(0, 0, 0, 0), padding=(0, 0), opacity=1.0, alignment="left", scale=None, rotation=None, shrink_to_width=None):
+def text(
+    image,
+    message,
+    position=(0.0, 0.0),
+    anchor="lt",
+    font="source-25",
+    style="regular",
+    color=(235, 235, 235),
+    background_color=(45, 45, 45),
+    background_as_outline=False,
+    border_color=(255, 255, 255),
+    border=(0, 0, 0, 0),
+    margin=(0, 0, 0, 0),
+    padding=(0, 0),
+    opacity=1.0,
+    alignment="left",
+    scale=None,
+    rotation=None,
+    shrink_to_width=None,
+):
     """
     Render a text `message` into `image`.
 
@@ -1609,7 +1917,9 @@ def text(image, message, position=(0.0, 0.0), anchor="lt", font="source-25", sty
         # font is given as name -> resolve
         font = MonospaceBitmapFont.init_from_name(name=font)
     elif not isinstance(font, MonospaceBitmapFont):
-        raise TypeError("Argument 'font' must be either an instance of 'MonospaceBitmapFont' or a string (the name of the font)")
+        raise TypeError(
+            "Argument 'font' must be either an instance of 'MonospaceBitmapFont' or a string (the name of the font)"
+        )
 
     # render message into image
     return font.render_into_image(
@@ -1693,7 +2003,9 @@ def qkeys():
     return (27, ord("q"))
 
 
-def prepare_for_display(image, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None):
+def prepare_for_display(
+    image, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None
+):
     """
     Prepare `image` (or a list or a list of lists of images) for being
     displayed on the screen (or similar purposes).
@@ -1721,14 +2033,26 @@ def prepare_for_display(image, scale=None, normalize_mode=None, normalize_kwargs
     if isinstance(image, np.ndarray):
         # use image as is
         pass
-    elif isinstance(image, (list, tuple)) and (len(image) > 0) and isinstance(image[0], np.ndarray):
+    elif (
+        isinstance(image, (list, tuple))
+        and (len(image) > 0)
+        and isinstance(image[0], np.ndarray)
+    ):
         # list of images: stack them into one image
         image = stack(images=[image])
-    elif isinstance(image, (list, tuple)) and (len(image) > 0) and isinstance(image[0], (list, tuple)) and (len(image[0]) > 0) and isinstance(image[0][0], np.ndarray):
+    elif (
+        isinstance(image, (list, tuple))
+        and (len(image) > 0)
+        and isinstance(image[0], (list, tuple))
+        and (len(image[0]) > 0)
+        and isinstance(image[0][0], np.ndarray)
+    ):
         # list of lists of images: stack them into one image
         image = stack(images=image)
     else:
-        raise ValueError(f"Invalid value for parameter `image` ({image}) - it must either be (i) an image, (ii) a non-empty list of images or a non-empty list of non-empty lists of images")
+        raise ValueError(
+            f"Invalid value for parameter `image` ({image}) - it must either be (i) an image, (ii) a non-empty list of images or a non-empty list of non-empty lists of images"
+        )
 
     # OpenCV does not support the display of bool images - convert them to uint8
     if image.dtype == bool:
@@ -1736,7 +2060,9 @@ def prepare_for_display(image, scale=None, normalize_mode=None, normalize_kwargs
 
     # normalize intensity values
     if normalize_mode is not None:
-        image = dito.core.normalize(image=image, mode=normalize_mode, **normalize_kwargs)
+        image = dito.core.normalize(
+            image=image, mode=normalize_mode, **normalize_kwargs
+        )
 
     # resize image
     if scale is None:
@@ -1770,7 +2096,18 @@ def showr(*args, **kwargs):
     return show(*args, raise_on_qkey=True, **kwargs)
 
 
-def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name=DEFAULT_WINDOW_NAME, close_window=False, engine=None, raise_on_qkey=False):
+def show(
+    image,
+    wait=0,
+    scale=None,
+    normalize_mode=None,
+    normalize_kwargs=dict(),
+    colormap=None,
+    window_name=DEFAULT_WINDOW_NAME,
+    close_window=False,
+    engine=None,
+    raise_on_qkey=False,
+):
     """
     Display the image on the screen.
 
@@ -1817,7 +2154,13 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
         If `raise_on_qkey` is `True` and the user presses a "quit" key during the display.
     """
 
-    image_show = prepare_for_display(image=image, scale=scale, normalize_mode=normalize_mode, normalize_kwargs=normalize_kwargs, colormap=colormap)
+    image_show = prepare_for_display(
+        image=image,
+        scale=scale,
+        normalize_mode=normalize_mode,
+        normalize_kwargs=normalize_kwargs,
+        colormap=colormap,
+    )
 
     # determine how to display the image
     if engine is None:
@@ -1835,6 +2178,7 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
 
     elif engine in ("matplotlib", "plt"):
         import matplotlib.pyplot as plt
+
         plt.imshow(X=dito.core.flip_channels(image=image_show))
         plt.tight_layout()
         plt.show()
@@ -1842,6 +2186,7 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
 
     elif engine in ("napari",):
         import napari
+
         (viewer, _) = napari.imshow(image_show)
         napari.run()
         key = -1
@@ -1863,11 +2208,21 @@ def show(image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict()
 
         # convert NumPy array of image to pygame surface
         image_show = dito.core.as_color(image=image_show)
-        image_pygame = pygame.image.frombuffer(image_show.tobytes(), dito.core.size(image_show), "BGR")
+        image_pygame = pygame.image.frombuffer(
+            image_show.tobytes(), dito.core.size(image_show), "BGR"
+        )
 
         # set up pygame window
         pygame.display.set_caption(window_name)
-        image_icon = pygame.image.frombuffer(dito.core.resize(image=image_show, scale_or_size=(32, 32), interpolation_down=cv2.INTER_NEAREST).tobytes(), (32, 32), "BGR")
+        image_icon = pygame.image.frombuffer(
+            dito.core.resize(
+                image=image_show,
+                scale_or_size=(32, 32),
+                interpolation_down=cv2.INTER_NEAREST,
+            ).tobytes(),
+            (32, 32),
+            "BGR",
+        )
         pygame.display.set_icon(image_icon)
 
         # draw image
@@ -1912,7 +2267,13 @@ class MultiShow:
     It keeps all images that have been shown and can re-show them interactively.
     """
 
-    def __init__(self, window_name="dito.MultiShow", close_window=False, engine="cv2", save_dir=None):
+    def __init__(
+        self,
+        window_name="dito.MultiShow",
+        close_window=False,
+        engine="cv2",
+        save_dir=None,
+    ):
         """
         Initializes a new MultiShow object.
 
@@ -1954,7 +2315,9 @@ class MultiShow:
         None
         """
         if self.save_dir is None:
-            self.save_dir = dito.utils.get_temp_dir(prefix=f"dito.MultiShow.{dito.utils.now_str()}.").name
+            self.save_dir = dito.utils.get_temp_dir(
+                prefix=f"dito.MultiShow.{dito.utils.now_str()}."
+            ).name
         filename = os.path.join(self.save_dir, f"{n_image + 1:>08d}.png")
         dito.io.save(filename=filename, image=self.images[n_image])
         if verbose:
@@ -1998,9 +2361,29 @@ class MultiShow:
         --------
         `show` : Function used to display the image.
         """
-        return show(image=image, wait=wait, scale=1.0, normalize_mode=None, normalize_kwargs=dict(), colormap=None, window_name=self.window_name, close_window=self.close_window, engine=engine)
+        return show(
+            image=image,
+            wait=wait,
+            scale=1.0,
+            normalize_mode=None,
+            normalize_kwargs=dict(),
+            colormap=None,
+            window_name=self.window_name,
+            close_window=self.close_window,
+            engine=engine,
+        )
 
-    def show(self, image, wait=0, scale=None, normalize_mode=None, normalize_kwargs=dict(), colormap=None, keep=True, hide=False):
+    def show(
+        self,
+        image,
+        wait=0,
+        scale=None,
+        normalize_mode=None,
+        normalize_kwargs=dict(),
+        colormap=None,
+        keep=True,
+        hide=False,
+    ):
         """
         Show `image` on the screen, just as `dito.visual.show` would.
 
@@ -2022,7 +2405,13 @@ class MultiShow:
         --------
         `dito.visual.show` : For a description of all other parameters.
         """
-        image_show = prepare_for_display(image=image, scale=scale, normalize_mode=normalize_mode, normalize_kwargs=normalize_kwargs, colormap=colormap)
+        image_show = prepare_for_display(
+            image=image,
+            scale=scale,
+            normalize_mode=normalize_mode,
+            normalize_kwargs=normalize_kwargs,
+            colormap=colormap,
+        )
         if keep:
             self.images.append(image_show)
         if not hide:
@@ -2074,7 +2463,9 @@ class MultiShow:
             # get image to show
             image = self.images[n_image]
             if show_overlay:
-                image = text(image=image, message=f"{n_image + 1}/{image_count}", scale=0.5)
+                image = text(
+                    image=image, message=f"{n_image + 1}/{image_count}", scale=0.5
+                )
 
             # show image (we need "cv2" as engine, to capture the keyboard inputs)
             key = self._show(image=image, wait=0, engine="cv2")

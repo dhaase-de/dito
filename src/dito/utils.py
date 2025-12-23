@@ -99,7 +99,9 @@ def get_validated_tuple(x, type_, count, min_value=None, max_value=None):
 
     # check value ranges
     for value in x:
-        if ((min_value is not None) and (value < min_value)) or ((max_value is not None) and (value > max_value)):
+        if ((min_value is not None) and (value < min_value)) or (
+            (max_value is not None) and (value > max_value)
+        ):
             raise ValueError(error_text)
 
     return x
@@ -225,7 +227,7 @@ def human_bytes(byte_count):
 
     count = byte_count
     unit = "bytes"
-    for (new_unit, new_scale) in prefixes.items():
+    for new_unit, new_scale in prefixes.items():
         new_count = byte_count / new_scale
         if new_count < 1.0:
             break
@@ -370,10 +372,10 @@ def ftable(rows, first_row_is_header=False):
     str
         A formatted table as a single string.
     """
-    
+
     col_sep = "  "
     sep_symbol = "-"
-    
+
     # count the max length for each column
     col_count = max(len(row) for row in rows)
     col_lengths = [0] * col_count
@@ -383,23 +385,23 @@ def ftable(rows, first_row_is_header=False):
 
     # the line at the top and bottom
     sep_line = col_sep.join(sep_symbol * col_length for col_length in col_lengths)
-    
+
     # transform rows into lines
     lines = []
     lines.append(sep_line)
-    for (n_row, row) in enumerate(rows):
+    for n_row, row in enumerate(rows):
         col_strs = []
-        for (col_length, col) in zip(col_lengths, row):
+        for col_length, col in zip(col_lengths, row):
             col_str = f"{{: <{col_length}}}".format(str(col))
             col_strs.append(col_str)
         lines.append(col_sep.join(col_strs))
         if first_row_is_header and (n_row == 0):
             lines.append(sep_line)
     lines.append(sep_line)
-    
+
     # return table as single string
     return "\n".join(lines)
-    
+
 
 def ptable(rows, ftable_kwargs=None, print_kwargs=None):
     """

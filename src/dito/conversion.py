@@ -1,6 +1,7 @@
 """
 This submodule provides functionality for the conversion of NumPy arrays to other formats and vice versa.
 """
+
 import io
 
 import cv2
@@ -110,16 +111,22 @@ def to_PySide6_QPixmap_format(image):
         elif dtype == np.uint16:
             return PySide6.QtGui.QImage.Format_Grayscale16
         else:
-            raise dito.exceptions.ConversionError(f"Conversion of grayscale image with dtype '{dtype}' to QPixmap is not supported")
+            raise dito.exceptions.ConversionError(
+                f"Conversion of grayscale image with dtype '{dtype}' to QPixmap is not supported"
+            )
 
     elif dito.core.is_color(image):
         if dtype == np.uint8:
             return PySide6.QtGui.QImage.Format_BGR888
         else:
-            raise dito.exceptions.ConversionError(f"Conversion of color image with dtype '{dtype}' to QPixmap is not supported")
+            raise dito.exceptions.ConversionError(
+                f"Conversion of color image with dtype '{dtype}' to QPixmap is not supported"
+            )
 
     else:
-        raise dito.exceptions.ConversionError(f"Conversion image with shape {image.shape} to QPixmap is not supported")
+        raise dito.exceptions.ConversionError(
+            f"Conversion image with shape {image.shape} to QPixmap is not supported"
+        )
 
 
 def to_PySide6_QImage(image):
@@ -142,6 +149,7 @@ def to_PySide6_QImage(image):
         If PySide6 is not installed.
     """
     import PySide6.QtGui
+
     return PySide6.QtGui.QImage(
         np.require(image, requirements="C"),
         image.shape[1],
@@ -170,5 +178,6 @@ def to_PySide6_QPixmap(image):
         If PySide6 is not installed.
     """
     import PySide6.QtGui
+
     q_image = to_PySide6_QImage(image)
     return PySide6.QtGui.QPixmap(q_image)
