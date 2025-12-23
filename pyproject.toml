@@ -50,6 +50,7 @@ extras = [
 dev = [
     "dito",
     "docstr-coverage",
+    "einops",
     "matplotlib",
     "napari",
     "pdoc",
