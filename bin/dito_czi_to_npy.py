@@ -9,11 +9,34 @@ import dito
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description="Convert CZI (Carl Zeiss Image) files to NumPy arrays.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-d", "--debug", action="store_true", help="If set, show full stack trace for errors.")
-    parser.add_argument("-s", "--keep-singleton-dimensions", action="store_true", help="If set, keep dimensions in the final NumPy array even if their size is 1.")
-    parser.add_argument("-a", "--keep-all-dimensions", action="store_true", help="If set, the final NumPy array will have all dimensions that are possible for CZI files.")
-    parser.add_argument("image_filenames", type=str, nargs="+", help="Input image filenames. Patterns are allowed.")
+    parser = argparse.ArgumentParser(
+        description="Convert CZI (Carl Zeiss Image) files to NumPy arrays.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        help="If set, show full stack trace for errors.",
+    )
+    parser.add_argument(
+        "-s",
+        "--keep-singleton-dimensions",
+        action="store_true",
+        help="If set, keep dimensions in the final NumPy array even if their size is 1.",
+    )
+    parser.add_argument(
+        "-a",
+        "--keep-all-dimensions",
+        action="store_true",
+        help="If set, the final NumPy array will have all dimensions that are possible for CZI files.",
+    )
+    parser.add_argument(
+        "image_filenames",
+        type=str,
+        nargs="+",
+        help="Input image filenames. Patterns are allowed.",
+    )
     args = parser.parse_args()
     return args
 
@@ -29,7 +52,9 @@ def main(args):
 
     file_count = len(filenames)
     if file_count == 0:
-        raise FileNotFoundError(f"Found no images with the filenames(s) {args.image_filenames}")
+        raise FileNotFoundError(
+            f"Found no images with the filenames(s) {args.image_filenames}"
+        )
 
     for filename_czi in filenames:
         # check if extension is '.czi'

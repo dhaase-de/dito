@@ -9,11 +9,34 @@ import dito
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description="Print basic information for the images with the given filenames.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-d", "--debug", action="store_true", help="If set, show full stack trace for errors.")
-    parser.add_argument("-e", "--extended", action="store_true", help="If set, show extended information (e.g., quartiles).")
-    parser.add_argument("-m", "--minimal", action="store_true", help="If set, show minimal information (shape and dtype only).")
-    parser.add_argument("image_filenames", type=str, nargs="+", help="Input image filenames. Patterns are allowed.")
+    parser = argparse.ArgumentParser(
+        description="Print basic information for the images with the given filenames.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        help="If set, show full stack trace for errors.",
+    )
+    parser.add_argument(
+        "-e",
+        "--extended",
+        action="store_true",
+        help="If set, show extended information (e.g., quartiles).",
+    )
+    parser.add_argument(
+        "-m",
+        "--minimal",
+        action="store_true",
+        help="If set, show minimal information (shape and dtype only).",
+    )
+    parser.add_argument(
+        "image_filenames",
+        type=str,
+        nargs="+",
+        help="Input image filenames. Patterns are allowed.",
+    )
     args = parser.parse_args()
     return args
 
@@ -30,7 +53,9 @@ def main():
     filenames = sorted(filenames)
     file_count = len(filenames)
     if file_count == 0:
-        raise FileNotFoundError(f"Found no images with the filenames(s) {args.image_filenames}")
+        raise FileNotFoundError(
+            f"Found no images with the filenames(s) {args.image_filenames}"
+        )
 
     dito.pinfo(*filenames, extended_=args.extended, minimal_=args.minimal)
 
