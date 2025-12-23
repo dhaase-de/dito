@@ -1508,18 +1508,18 @@ class MonospaceBitmapFont(Font):
 
         # rotate if requested
         if rotation is not None:
+            rotation_func = None
             if isinstance(rotation, int) and ((rotation % 90) == 0):
                 angle_normed = rotation % 360
-                if angle_normed == 0:
-                    rotation_func = None
-                elif angle_normed == 90:
+                if angle_normed == 90:
                     rotation_func = dito.core.rotate_90
                 elif angle_normed == 180:
                     rotation_func = dito.core.rotate_180
                 elif angle_normed == 270:
                     rotation_func = dito.core.rotate_270
             else:
-                rotation_func = lambda image: dito.core.rotate(image=image, angle_deg=rotation, padding_mode="tight")
+                def rotation_func(image: np.ndarray) -> np.ndarray:
+                    return dito.core.rotate(image=image, angle_deg=rotation, padding_mode="tight")
 
             if rotation_func is not None:
                 foreground_mask = rotation_func(image=foreground_mask)
