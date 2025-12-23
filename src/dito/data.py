@@ -426,7 +426,6 @@ class DitoTestImageGeneratorV1:
             self.draw_color_areas()
         if self.min_inner_count >= 8:
             self.draw_rotation_indicators()
-            #self.draw_checkerboard_patterns()
 
     def adapt_color_for_dtype(self, color):
         """
