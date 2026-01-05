@@ -32,9 +32,9 @@ class DecompositionTextureModel(abc.ABC):
     ----------
     image_count : int
         The number of input images in the model.
-    image_shape : tuple
+    image_shape : tuple of int
         The shape of the input images.
-    image_dtype : np.dtype
+    image_dtype : numpy.dtype
         The data type of the input images.
     component_count : int
         The number of texture components to extract from the input images.
@@ -55,11 +55,16 @@ class DecompositionTextureModel(abc.ABC):
     NmfTextureModel : An NMF-based implementation of the DecompositionTextureModel.
     """
 
-    def __init__(self, images, component_count, keep_images=True):
+    def __init__(
+        self,
+        images: list[np.ndarray] | tuple[np.ndarray, ...],
+        component_count: int,
+        keep_images: bool = True,
+    ) -> None:
         """
         Parameters
         ----------
-        images : sequence of np.ndarray
+        images : sequence of numpy.ndarray
             The input images to model.
         component_count : int
             The number of texture components to extract from the input images.
@@ -110,34 +115,34 @@ class DecompositionTextureModel(abc.ABC):
     #
 
     @staticmethod
-    def image_to_x(image):
+    def image_to_x(image: np.ndarray) -> np.ndarray:
         """
         Convert an image to a vector representation.
 
         Parameters
         ----------
-        image : np.ndarray
+        image : numpy.ndarray
             The input image.
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             The vector representation of the input image.
         """
         return image.reshape(1, -1)[0, :]
 
-    def x_to_image(self, x):
+    def x_to_image(self, x: np.ndarray) -> np.ndarray:
         """
         Convert a vector representation to an image.
 
         Parameters
         ----------
-        x : np.ndarray
+        x : numpy.ndarray
             The input vector.
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             The image representation of the input vector.
         """
         image = x.reshape(*self.image_shape)
@@ -146,81 +151,81 @@ class DecompositionTextureModel(abc.ABC):
         image = image.astype(self.image_dtype)
         return image
 
-    def x_to_p(self, x):
+    def x_to_p(self, x: np.ndarray) -> np.ndarray:
         """
         Project an image vector representation to a texture parameter vector.
 
         Parameters
         ----------
-        x : np.ndarray
+        x : numpy.ndarray
             The input image vector.
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             The corresponding texture parameter vector.
         """
         return self.decomposition.transform(x.reshape(1, -1))[0, :]
 
-    def p_to_x(self, p):
+    def p_to_x(self, p: np.ndarray) -> np.ndarray:
         """
         Convert a texture parameter vector to an image vector representation.
 
         Parameters
         ----------
-        p : np.ndarray
+        p : numpy.ndarray
             The input texture parameter vector.
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             The corresponding image vector representation.
         """
         return self.decomposition.inverse_transform(p.reshape(1, -1))[0, :]
 
-    def image_to_p(self, image):
+    def image_to_p(self, image: np.ndarray) -> np.ndarray:
         """
         Project an image to a texture parameter vector.
 
         Parameters
         ----------
-        image : np.ndarray
+        image : numpy.ndarray
             The input image.
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             The corresponding texture parameter vector.
         """
         x = self.image_to_x(image)
         p = self.x_to_p(x)
         return p
 
-    def p_to_image(self, p):
+    def p_to_image(self, p: np.ndarray) -> np.ndarray:
         """
         Convert a texture parameter vector to an image.
 
         Parameters
         ----------
-        p : np.ndarray
+        p : numpy.ndarray
             The input texture parameter vector.
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             The corresponding image.
         """
         x = self.p_to_x(p)
         image = self.x_to_image(x)
         return image
 
-    def get_random_p(self):
+    def get_random_p(self) -> np.ndarray:
         """
         Generate a random texture parameter vector.
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             The random texture parameter vector.
         """
         return np.random.normal(loc=0.0, scale=1.0, size=(self.component_count,))
@@ -229,7 +234,10 @@ class DecompositionTextureModel(abc.ABC):
     # visualization
     #
 
-    def create_sliders(self, slider_range):
+    def create_sliders(
+        self,
+        slider_range: tuple[float, float],
+    ) -> "collections.OrderedDict[str, dito.highgui.Slider]":
         """
         Create sliders for interactive visualization.
 
@@ -239,12 +247,12 @@ class DecompositionTextureModel(abc.ABC):
 
         Parameters
         ----------
-        slider_range : tuple of float
+        slider_range : 2-tuple of float
             The range of the sliders.
 
         Returns
         -------
-        collections.OrderedDict
+        collections.OrderedDict[str, dito.highgui.Slider]
             The created sliders.
         """
         sliders = collections.OrderedDict()
@@ -266,13 +274,16 @@ class DecompositionTextureModel(abc.ABC):
             )
         return sliders
 
-    def get_p_from_sliders(self, sliders):
+    def get_p_from_sliders(
+        self,
+        sliders: "collections.OrderedDict[str, dito.highgui.Slider]",
+    ) -> np.ndarray:
         """
         Get the parameter vector from the values of the given sliders.
 
         Parameters
         ----------
-        sliders : collections.OrderedDict
+        sliders : ordered dict
             The sliders to read the values from.
 
         Returns
@@ -286,95 +297,117 @@ class DecompositionTextureModel(abc.ABC):
             p[n_component] = sliders[slider_name].get_value()
         return p
 
-    def get_image_from_sliders(self, sliders):
+    def get_image_from_sliders(
+        self,
+        sliders: "collections.OrderedDict[str, dito.highgui.Slider]",
+    ) -> np.ndarray:
         """
         Get the image for the current slider values.
 
         Parameters
         ----------
-        sliders : collections.OrderedDict
+        sliders : ordered dict
             The sliders to read the values from.
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             The corresponding generated image.
         """
         p = self.get_p_from_sliders(sliders)
         image = self.p_to_image(p)
         return image
 
-    def set_sliders_from_p(self, sliders, p):
+    def set_sliders_from_p(
+        self,
+        sliders: "collections.OrderedDict[str, dito.highgui.Slider]",
+        p: np.ndarray,
+    ) -> None:
         """
         Set the slider values from a given parameter vector.
 
         Parameters
         ----------
-        sliders : collections.OrderedDict
+        sliders : ordered dict
             The sliders to set the values for.
-        p : np.ndarray
+        p : numpy.ndarray
             The parameter vector to use for setting the slider values.
         """
         for n_component in range(self.component_count):
             slider_name = f"C{n_component + 1}"
             sliders[slider_name].set_value(float(p[n_component]))
 
-    def reset_sliders(self, sliders):
+    def reset_sliders(
+        self,
+        sliders: "collections.OrderedDict[str, dito.highgui.Slider]",
+    ) -> None:
         """
         Reset all sliders to their initial value (usually zero).
 
         Parameters
         ----------
-        sliders : collections.OrderedDict
+        sliders : ordered dict
             The sliders to reset.
         """
         p = np.zeros(shape=(self.component_count,), dtype=np.float32)
         self.set_sliders_from_p(sliders=sliders, p=p)
 
-    def invert_sliders(self, sliders):
+    def invert_sliders(
+        self,
+        sliders: "collections.OrderedDict[str, dito.highgui.Slider]",
+    ) -> None:
         """
         Invert all slider values (multiply with -1).
 
         Parameters
         ----------
-        sliders : collections.OrderedDict
+        sliders : ordered dict
             The sliders to invert.
         """
         p = self.get_p_from_sliders(sliders)
         self.set_sliders_from_p(sliders=sliders, p=-p)
 
-    def randomize_sliders(self, sliders):
+    def randomize_sliders(
+        self,
+        sliders: "collections.OrderedDict[str, dito.highgui.Slider]",
+    ) -> None:
         """
         Set all slider values to random values.
 
         Parameters
         ----------
-        sliders : collections.OrderedDict
+        sliders : ordered dict
             The sliders to randomize.
         """
         p = self.get_random_p()
         self.set_sliders_from_p(sliders=sliders, p=p)
 
-    def perturb_sliders(self, sliders):
+    def perturb_sliders(
+        self,
+        sliders: "collections.OrderedDict[str, dito.highgui.Slider]",
+    ) -> None:
         """
         Perturb all slider values by a small random amount.
 
         Parameters
         ----------
-        sliders : collections.OrderedDict
+        sliders : ordered dict
             The sliders to perturb.
         """
         p = self.get_p_from_sliders(sliders)
         dp = self.get_random_p() * 0.1
         self.set_sliders_from_p(sliders=sliders, p=p + dp)
 
-    def run_interactive(self, slider_range=(-3.0, 3.0)):
+    def run_interactive(
+        self,
+        slider_range: tuple[float, float] = (-3.0, 3.0),
+    ):
         """
         Run an interactive visualization for the texture model.
 
         Parameters
         ----------
-        slider_range : tuple of float, optional
+        slider_range : 2-tuple of float, optional
             The range of the sliders. Default is (-3.0, 3.0).
         """
 
