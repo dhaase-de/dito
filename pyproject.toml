@@ -41,6 +41,7 @@ dependencies = [
 extras = [
     "matplotlib",
     "napari",
+    "pygame",
     "pylibczirw",
     "pyside6",
     "scikit-learn",
@@ -55,10 +56,12 @@ dev = [
     "matplotlib",
     "napari",
     "pdoc",
+    "pygame",
     "pylibczirw",
     "pyside6",
     "ruff>=0.11.13",
     "scikit-learn",
+    "ty",
 ]
 
 [project.urls]
