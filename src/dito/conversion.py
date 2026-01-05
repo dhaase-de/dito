@@ -16,7 +16,11 @@ import dito.exceptions
 #
 
 
-def fig_to_image(fig, size=(800, 600), savefig_kwargs=None):
+def fig_to_image(
+    fig: "matplotlib.figure.Figure",  # noqa: F821
+    size: tuple[int, int] = (800, 600),
+    savefig_kwargs: dict | None = None,
+) -> np.ndarray:
     """
     Convert a Matplotlib figure to a NumPy image array.
 
@@ -24,10 +28,10 @@ def fig_to_image(fig, size=(800, 600), savefig_kwargs=None):
     ----------
     fig : matplotlib.figure.Figure
         The Matplotlib figure to convert.
-    size : tuple of int, optional
+    size : 2-tuple of int, optional
         Desired output image size in pixels as (width, height). Default is (800, 600).
     savefig_kwargs : dict, optional
-        Additional keyword arguments passed to `fig.savefig`. Can override default options
+        Additional keyword arguments passed to `fig.savefig`. Can override default options.
         like facecolor or transparency.
 
     Returns
@@ -81,13 +85,15 @@ def fig_to_image(fig, size=(800, 600), savefig_kwargs=None):
 #
 
 
-def to_PySide6_QPixmap_format(image):
+def to_PySide6_QPixmap_format(
+    image: np.ndarray,
+) -> "PySide6.QtGui.QImage.Format":  # noqa: F821
     """
-    Determine the QImage.Format which is compatible with the given image.
+    Determine the PySide6.QImage.Format which is compatible with the given image.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The input image.
 
     Returns
@@ -100,7 +106,7 @@ def to_PySide6_QPixmap_format(image):
     ImportError
         If PySide6 is not installed.
     dito.exceptions.ConversionError
-        If the given image cannot be converted to a compatible QImage.Format.
+        If the given image cannot be converted to a compatible PySide6.QImage.Format.
     """
     import PySide6.QtGui
 
@@ -129,13 +135,15 @@ def to_PySide6_QPixmap_format(image):
         )
 
 
-def to_PySide6_QImage(image):
+def to_PySide6_QImage(
+    image: np.ndarray,
+) -> "PySide6.QtGui.QImage":  # noqa: F821
     """
-    Convert a numpy.ndimage to PySide6.QtGui.QImage.QImage.
+    Convert a numpy image to PySide6.QtGui.QImage.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The input image.
 
     Returns
@@ -158,13 +166,15 @@ def to_PySide6_QImage(image):
     )
 
 
-def to_PySide6_QPixmap(image):
+def to_PySide6_QPixmap(
+    image: np.ndarray,
+) -> "PySide6.QtGui.QPixmap":  # noqa: F821
     """
-    Convert a numpy.ndimage to PySide6.QtGui.QImage.QPixmap.
+    Convert a numpy.ndimage to PySide6.QtGui.QPixmap.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The input image.
 
     Returns
