@@ -16,7 +16,7 @@ import dito.utils
 #
 
 
-def is_image(image):
+def is_image(image: np.ndarray) -> bool:
     """
     Determine if given image is a valid grayscale or color image.
 
@@ -39,7 +39,7 @@ def is_image(image):
 #
 
 
-def is_integer_dtype(dtype):
+def is_integer_dtype(dtype: np.dtype) -> bool:
     """
     Check if the input data type is an integer type.
 
@@ -70,7 +70,7 @@ def is_integer_dtype(dtype):
     return np.issubdtype(dtype, np.integer)
 
 
-def is_integer_image(image):
+def is_integer_image(image: np.ndarray) -> bool:
     """
     Check if the data type of the input image is an integer type.
 
@@ -87,7 +87,7 @@ def is_integer_image(image):
     return is_integer_dtype(dtype=image.dtype)
 
 
-def is_float_dtype(dtype):
+def is_float_dtype(dtype: np.dtype) -> bool:
     """
     Check if the input data type is a floating-point type.
 
@@ -104,7 +104,7 @@ def is_float_dtype(dtype):
     return np.issubdtype(dtype, np.floating)
 
 
-def is_float_image(image):
+def is_float_image(image: np.ndarray) -> bool:
     """
     Check if the data type of the input image is a floating-point type.
 
@@ -121,7 +121,7 @@ def is_float_image(image):
     return is_float_dtype(dtype=image.dtype)
 
 
-def is_bool_dtype(dtype):
+def is_bool_dtype(dtype: np.dtype) -> bool:
     """
     Check if the input data type is a boolean type.
 
@@ -138,7 +138,7 @@ def is_bool_dtype(dtype):
     return np.issubdtype(dtype, np.bool_)
 
 
-def is_bool_image(image):
+def is_bool_image(image: np.ndarray) -> bool:
     """
     Check if the data type of the input image is a boolean type.
 
@@ -155,7 +155,9 @@ def is_bool_image(image):
     return is_bool_dtype(dtype=image.dtype)
 
 
-def dtype_range(dtype):
+def dtype_range(
+    dtype: np.dtype,
+) -> tuple[bool | int | float, bool | int | float]:
     """
     Returns the minimum and maximum intensity values of images for a given NumPy dtype.
 
@@ -167,7 +169,7 @@ def dtype_range(dtype):
     Returns
     -------
     tuple
-        A tuple containing the minimum and maximum intensity values of the input dtype.
+        A 2-tuple containing the minimum and maximum intensity values of the input dtype.
         For integer dtypes, this corresponds to their full range (`(0, 255)` for `numpy.uint8` or `(-128, 127)` for `numpy.int8`, etc.).
         For floating dtypes, this corresponds to the range `(0.0, 1.0)`.
         For boolean dtypes, this corresponds to the range `(False, True)`.
@@ -206,14 +208,16 @@ def dtype_range(dtype):
         raise TypeError(f"Unsupported dtype '{dtype}'")
 
 
-def dtype_common(dtypes):
+def dtype_common(
+    dtypes: tuple[np.dtype, ...] | list[np.dtype],
+) -> np.dtype:
     """
     Find the common data type that can represent all the given NumPy dtypes.
 
     Parameters
     ----------
-    dtypes : list or tuple
-        List of NumPy data types to be considered.
+    dtypes : sequence of numpy.dtype
+        Sequence of NumPy data types to be considered.
 
     Returns
     -------
@@ -262,7 +266,10 @@ def dtype_common(dtypes):
     return hierarchy[max_index]
 
 
-def convert(image, dtype):
+def convert(
+    image: np.ndarray,
+    dtype: np.dtype,
+) -> np.ndarray:
     """
     Convert input `image` to the NumPy `dtype` and scale the intensity values accordingly.
 
@@ -312,15 +319,20 @@ def convert(image, dtype):
 #
 
 
-def tir(*args):
+def tir(
+    *args: tuple[int | float, int | float] | list[int | float] | int | float,
+) -> tuple[int, int]:
     """
-    Round the input arguments to the nearest integer, and combine them into a tuple.
+    Combine two given input numbers into a 2-tuple of (rounded) integers.
 
-    This function is primarily used to pass point coordinates to certain OpenCV functions.
+    This function is primarily used to pass point coordinates to certain OpenCV
+    functions, which requires them to be a 2-tuple of integers.
+
+    The function name `tir` stands for "tuple(int(round(...)))".
 
     Parameters
     ----------
-    *args : float or tuple
+    *args : A 2-tuple or two individual values of int or float
         Input arguments that will be rounded and combined into a tuple.
         If a single tuple of length 2 is provided, its elements will be used.
         If two separate arguments are provided, they will be used.
@@ -328,7 +340,7 @@ def tir(*args):
     Returns
     -------
     tuple
-        A tuple containing the rounded integers of the input arguments.
+        A 2-tuple containing the rounded integers of the input arguments.
 
     Raises
     ------
@@ -352,7 +364,10 @@ def tir(*args):
         raise ValueError(
             "The two required arguments must either be (i) given separately or (ii) via a sequence of length two, but got neither"
         )
-    return tuple(int(round(item)) for item in items)
+    return (
+        int(round(items[items[0]])),
+        int(round(items[items[1]])),
+    )
 
 
 #
@@ -360,13 +375,16 @@ def tir(*args):
 #
 
 
-def check_shape(image_or_shape, shape_def):
+def check_shape(
+    image_or_shape: np.ndarray | tuple[int, ...],
+    shape_def: str,
+) -> None:
     """
     Validate that a given shape matches the specified shape definition.
 
     Parameters
     ----------
-    image_or_shape : numpy.ndarray or tuple
+    image_or_shape : numpy.ndarray or tuple of int
         The input image or shape tuple to validate.
     shape_def : str
         The shape definition string, describing expected dimensions, names, and/or values. See `parse_shape()` for
@@ -389,14 +407,17 @@ def check_shape(image_or_shape, shape_def):
     parse_shape(image_or_shape=image_or_shape, shape_def=shape_def)
 
 
-def parse_shape(image_or_shape, shape_def):
+def parse_shape(
+    image_or_shape: np.ndarray | tuple[int, ...],
+    shape_def: str,
+) -> dict[str, int]:
     """
     Parse and validate a shape against a textual shape definition, and collect axis sizes into a dictionary using the
     axis names of the shape definition as keys.
 
     Parameters
     ----------
-    image_or_shape : numpy.ndarray or tuple
+    image_or_shape : numpy.ndarray or tuple of int
         The shape to validate. Can be a NumPy image (uses `.shape`) or a shape tuple.
     shape_def : str
         A space-separated shape definition string. Each part describes one axis, and may be:
@@ -604,9 +625,9 @@ def parse_shape(image_or_shape, shape_def):
     return axis_names_to_sizes
 
 
-def size(image):
+def size(image: np.ndarray) -> tuple[int, int]:
     """
-    Return the size (width x height) of the input image as a tuple.
+    Return the size (width x height) of the input image as a 2-tuple.
 
     Parameters
     ----------
@@ -616,7 +637,7 @@ def size(image):
     Returns
     -------
     tuple
-        A tuple containing the size `(width, height)` of the input image.
+        A 2-tuple containing the size `(width, height)` of the input image.
 
     Examples
     --------
@@ -632,11 +653,11 @@ def size(image):
 
 
 def resize(
-    image,
-    scale_or_size,
-    interpolation_down=cv2.INTER_CUBIC,
-    interpolation_up=cv2.INTER_NEAREST,
-):
+    image: np.ndarray,
+    scale_or_size: float | tuple[int, int],
+    interpolation_down: int = cv2.INTER_CUBIC,
+    interpolation_up: int = cv2.INTER_NEAREST,
+) -> np.ndarray:
     """
     Resize the input image to a new size or by a scaling factor.
 
@@ -644,7 +665,7 @@ def resize(
     ----------
     image : numpy.ndarray
         Input image to be resized.
-    scale_or_size : float or tuple
+    scale_or_size : float or 2-tuple of int
         If `scale_or_size` is a float, it represents the scaling factor by which to resize the image.
         If `scale_or_size` is a tuple, it represents the target size `(width, height)` of the output image.
     interpolation_down : int, optional
@@ -723,11 +744,15 @@ def resize(
 
 class PaddedImageIndexer:
     """
-    Wrapper for an `np.ndarray` which allows indexing out-of-bounds and returns
-    a padded image.
+    Wrapper for an `numpy.ndarray` which allows indexing out-of-bounds and
+    returns a padded image.
     """
 
-    def __init__(self, image, pad_kwargs=None):
+    def __init__(
+        self,
+        image: np.ndarray,
+        pad_kwargs: dict | None = None,
+    ) -> None:
         """
         Parameters
         ----------
@@ -748,7 +773,10 @@ class PaddedImageIndexer:
 
         assert isinstance(self.image, np.ndarray)
 
-    def __getitem__(self, item):
+    def __getitem__(
+        self,
+        item: tuple[slice | ellipsis, ...] | slice | ellipsis,
+    ) -> np.ndarray:
         """
         Return a cropped and padded version of the input image according to the given indices.
 
@@ -854,15 +882,15 @@ class PaddedImageIndexer:
 
 
 def pad(
-    image,
-    count=None,
-    count_top=None,
-    count_right=None,
-    count_bottom=None,
-    count_left=None,
-    mode=cv2.BORDER_CONSTANT,
-    constant_value=0,
-):
+    image: np.ndarray,
+    count: int | None = None,
+    count_top: int | None = None,
+    count_right: int | None = None,
+    count_bottom: int | None = None,
+    count_left: int | None = None,
+    mode: str | int = cv2.BORDER_CONSTANT,
+    constant_value: int | float | tuple[int | float, ...] = 0,
+) -> np.ndarray:
     """
     Pads an image with a border.
 
@@ -888,7 +916,7 @@ def pad(
             - 'reflect': Reflect the image, so that the border pixels are the mirror images of the interior pixels.
             - 'reflect_101': Same as 'reflect', but with the edge pixels not being replicated.
             - 'wrap': Wrap the image around itself.
-    constant_value : scalar or sequence, optional
+    constant_value : scalar or sequence of int or float, optional
         Border color for the border mode `cv2.BORDER_CONSTANT`. Default is 0.
 
     Returns
@@ -963,7 +991,11 @@ def pad(
     )
 
 
-def center_pad_to(image, target_size, **kwargs):
+def center_pad_to(
+    image: np.ndarray,
+    target_size: tuple[int, int],
+    **kwargs,
+) -> np.ndarray:
     """
     Pad `image` to the `target_size` by adding borders on all sides such that the image is centered.
 
@@ -972,16 +1004,16 @@ def center_pad_to(image, target_size, **kwargs):
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         Input image to be padded.
-    target_size : tuple of int
-        The size that the output image should have.
+    target_size : 2-tuple of int
+        The size (width x height) that the output image should have.
     **kwargs
         Additional keyword arguments to be passed to the `pad` function.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Padded image with the specified size.
 
     See Also
@@ -1008,7 +1040,10 @@ def center_pad_to(image, target_size, **kwargs):
     )
 
 
-def center_crop_to(image, target_size):
+def center_crop_to(
+    image: np.ndarray,
+    target_size: tuple[int, int],
+) -> np.ndarray:
     """
     Extract a center crop from the input `image`.
 
@@ -1017,14 +1052,14 @@ def center_crop_to(image, target_size):
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         Input image to be cropped.
-    target_size : tuple of int
-        The size of the output crop.
+    target_size : 2-tuple of int
+        The size (width x height) of the output crop.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Center crop of the specified size.
 
     """
@@ -1039,22 +1074,26 @@ def center_crop_to(image, target_size):
     return image[tuple(indices)]
 
 
-def center_pad_crop_to(image, target_size, **kwargs):
+def center_pad_crop_to(
+    image: np.ndarray,
+    target_size: tuple[int, int],
+    **kwargs,
+) -> np.ndarray:
     """
     Center pad and crop the `image` so that the result is exactly of size `target_size`.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         Input image to be padded and cropped.
-    target_size : tuple of int
+    target_size : 2-tuple of int
         The size of the output image.
     **kwargs
         Additional keyword arguments to be passed to the `center_pad_to` function.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Center crop of the specified size from the padded image.
 
     See Also
@@ -1068,15 +1107,20 @@ def center_pad_crop_to(image, target_size, **kwargs):
     return image_cropped
 
 
-def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
+def rotate(
+    image: np.ndarray,
+    angle_deg: int | float,
+    padding_mode: str | None = None,
+    interpolation: int = cv2.INTER_CUBIC,
+) -> np.ndarray:
     """
     Rotate the given `image` by an arbitrary angle given in degrees.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         Input image to be rotated.
-    angle_deg : float
+    angle_deg : int or float
         Rotation angle in degrees.
     padding_mode : {'tight', 'full', None}, optional
         The padding mode to use when rotating the image. If 'tight', the image is padded to exactly fit the rotated image.
@@ -1087,7 +1131,7 @@ def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Rotated image.
 
     Raises
@@ -1135,18 +1179,18 @@ def rotate(image, angle_deg, padding_mode=None, interpolation=cv2.INTER_CUBIC):
     )
 
 
-def rotate_90(image):
+def rotate_90(image: np.ndarray) -> np.ndarray:
     """
     Rotate the given `image` by 90 degrees counterclockwise.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         Input image to be rotated.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Rotated image.
 
     See Also
@@ -1156,18 +1200,18 @@ def rotate_90(image):
     return cv2.rotate(src=image, rotateCode=cv2.ROTATE_90_COUNTERCLOCKWISE)
 
 
-def rotate_180(image):
+def rotate_180(image: np.ndarray) -> np.ndarray:
     """
     Rotate the given `image` by 180 degrees.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         Input image to be rotated.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Rotated image.
 
     See Also
@@ -1177,18 +1221,18 @@ def rotate_180(image):
     return cv2.rotate(src=image, rotateCode=cv2.ROTATE_180)
 
 
-def rotate_270(image):
+def rotate_270(image: np.ndarray) -> np.ndarray:
     """
     Rotate the given `image` by 270 degrees counterclockwise (= 90 degrees clockwise).
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         Input image to be rotated.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Rotated image.
 
     See Also
@@ -1199,21 +1243,21 @@ def rotate_270(image):
 
 
 def warp_affine(
-    image,
-    angle_deg=0.0,
-    scale=1.0,
-    tx=0.0,
-    ty=0.0,
-    interpolation=cv2.INTER_LINEAR,
-    border_mode=cv2.BORDER_REFLECT_101,
-    border_value=0,
+    image: np.ndarray,
+    angle_deg: float = 0.0,
+    scale: float = 1.0,
+    tx: float = 0.0,
+    ty: float = 0.0,
+    interpolation: int = cv2.INTER_LINEAR,
+    border_mode: int = cv2.BORDER_REFLECT_101,
+    border_value: int = 0,
 ):
     """
     Apply an affine transformation to the given `image`, including rotation, scaling, and translation.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         Input image to be transformed.
     angle_deg : float, optional
         Rotation angle in degrees. Default is 0.0.
@@ -1238,7 +1282,7 @@ def warp_affine(
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Transformed image.
 
     See Also
@@ -1250,7 +1294,9 @@ def warp_affine(
     image_size = size(image=image)
 
     rotation_matrix = cv2.getRotationMatrix2D(
-        center=(image.shape[1] // 2, image.shape[0] // 2), angle=angle_deg, scale=scale
+        center=(image.shape[1] // 2, image.shape[0] // 2),
+        angle=angle_deg,
+        scale=scale,
     )
     rotation_matrix[0, 2] += tx
     rotation_matrix[1, 2] += ty
@@ -1270,7 +1316,7 @@ def warp_affine(
 #
 
 
-def is_gray(image):
+def is_gray(image: np.ndarray) -> bool:
     """
     Check if the given `image` is a valid grayscale image.
 
@@ -1279,7 +1325,7 @@ def is_gray(image):
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The image to check.
 
     Returns
@@ -1293,7 +1339,7 @@ def is_gray(image):
     )
 
 
-def is_color(image):
+def is_color(image: np.ndarray) -> bool:
     """
     Check if the given `image` is a valid color image.
 
@@ -1302,7 +1348,7 @@ def is_color(image):
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The image to check.
 
     Returns
@@ -1314,7 +1360,7 @@ def is_color(image):
     return (len(image.shape) == 3) and (image.shape[2] == 3)
 
 
-def as_gray(image, keep_color_dimension=False):
+def as_gray(image: np.ndarray, keep_color_dimension=False) -> np.ndarray:
     """
     Convert the given `image` from BGR to grayscale.
 
@@ -1322,7 +1368,7 @@ def as_gray(image, keep_color_dimension=False):
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The input image to be converted to grayscale.
     keep_color_dimension : bool, optional
         If True, the output grayscale image will have a shape of `(height, width, 1)`. If False (default), the output
@@ -1330,7 +1376,7 @@ def as_gray(image, keep_color_dimension=False):
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Grayscale image.
 
     See Also
@@ -1350,7 +1396,7 @@ def as_gray(image, keep_color_dimension=False):
     return image_gray
 
 
-def as_color(image):
+def as_color(image: np.ndarray) -> np.ndarray:
     """
     Convert the given `image` from grayscale to BGR.
 
@@ -1358,12 +1404,12 @@ def as_color(image):
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The input image to be converted to BGR.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         BGR color image.
 
     See Also
@@ -1378,7 +1424,10 @@ def as_color(image):
         return cv2.cvtColor(src=image, code=cv2.COLOR_GRAY2BGR)
 
 
-def convert_color(image_or_color, code):
+def convert_color(
+    image_or_color: np.ndarray | tuple[int, int, int],
+    code: int,
+) -> np.ndarray | tuple[int, int, int]:
     """
     Convert the given `image_or_color` from one color space to another.
 
@@ -1386,14 +1435,14 @@ def convert_color(image_or_color, code):
 
     Parameters
     ----------
-    image_or_color : np.ndarray or tuple
+    image_or_color : numpy.ndarray or 3-tuple of int
         The image or color to be converted.
     code : int
         The conversion code that specifies the target color space as required by `cv2.cvtColor`.
 
     Returns
     -------
-    np.ndarray or tuple
+    numpy.ndarray or 3-tuple of int
         The converted image or color.
 
     Raises
@@ -1406,7 +1455,7 @@ def convert_color(image_or_color, code):
     cv2.cvtColor : OpenCV function that performs the color conversion.
     """
 
-    if isinstance(image_or_color, tuple) and (1 <= len(image_or_color) <= 3):
+    if isinstance(image_or_color, tuple) and (len(image_or_color) == 3):
         # color mode
         color_array = np.array(image_or_color, dtype=np.uint8)
         color_array.shape = (1, 1, 3)
@@ -1420,18 +1469,20 @@ def convert_color(image_or_color, code):
         )
 
 
-def bgr_to_hsv(image_or_color):
+def bgr_to_hsv(
+    image_or_color: np.ndarray | tuple[int, int, int],
+) -> np.ndarray | tuple[int, int, int]:
     """
     Convert the given `image_or_color` from BGR to HSV color space.
 
     Parameters
     ----------
-    image_or_color : np.ndarray or tuple
+    image_or_color : numpy.ndarray or 3-tuple of int
         The image or color to be converted.
 
     Returns
     -------
-    np.ndarray or tuple
+    numpy.ndarray or 3-tuple of int
         The converted image or color in HSV color space.
 
     See Also
@@ -1441,18 +1492,20 @@ def bgr_to_hsv(image_or_color):
     return convert_color(image_or_color=image_or_color, code=cv2.COLOR_BGR2HSV)
 
 
-def hsv_to_bgr(image_or_color):
+def hsv_to_bgr(
+    image_or_color: np.ndarray | tuple[int, int, int],
+) -> np.ndarray | tuple[int, int, int]:
     """
     Convert the given `image_or_color` from HSV to BGR color space.
 
     Parameters
     ----------
-    image_or_color : np.ndarray or tuple
+    image_or_color : numpy.ndarray or 3-tuple of int
         The image or color to be converted.
 
     Returns
     -------
-    np.ndarray or tuple
+    numpy.ndarray or 3-tuple of int
         The converted image or color in BGR color space.
 
     See Also
@@ -1462,7 +1515,7 @@ def hsv_to_bgr(image_or_color):
     return convert_color(image_or_color=image_or_color, code=cv2.COLOR_HSV2BGR)
 
 
-def flip_channels(image):
+def flip_channels(image: np.ndarray) -> np.ndarray:
     """
     Flip the color channels of the given `image` from BGR to RGB and vice versa.
 
@@ -1471,12 +1524,12 @@ def flip_channels(image):
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         Input image in either BGR or RGB format.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Output image in the flipped color format.
 
     See Also
@@ -1486,7 +1539,7 @@ def flip_channels(image):
     return cv2.cvtColor(src=image, code=cv2.COLOR_BGR2RGB)
 
 
-def split_channels(image):
+def split_channels(image: np.ndarray) -> tuple[np.ndarray, ...]:
     """
     Split the given image into a tuple containing its channels as individual images.
 
@@ -1494,7 +1547,7 @@ def split_channels(image):
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The image to split.
 
     Returns
@@ -1518,7 +1571,11 @@ def split_channels(image):
         )
 
 
-def as_channels(b=None, g=None, r=None):
+def as_channels(
+    b: np.ndarray | None = None,
+    g: np.ndarray | None = None,
+    r: np.ndarray | None = None,
+) -> np.ndarray:
     """
     Merge up to three grayscale images into one color image.
 
@@ -1527,16 +1584,16 @@ def as_channels(b=None, g=None, r=None):
 
     Parameters
     ----------
-    b : np.ndarray or None, optional
+    b : numpy.ndarray or None, optional
         The image to use for the blue color channel.
-    g : np.ndarray or None, optional
+    g : numpy.ndarray or None, optional
         The image to use for the green color channel.
-    r : np.ndarray or None, optional
+    r : numpy.ndarray or None, optional
         The image to use for the red color channel.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         The BGR color image created by merging the input images.
 
     Raises
@@ -1581,22 +1638,26 @@ def as_channels(b=None, g=None, r=None):
 #
 
 
-def clip(image, lower=None, upper=None):
+def clip(
+    image: np.ndarray,
+    lower: int | float | None = None,
+    upper: int | float | None = None,
+) -> np.ndarray:
     """
     Clip values of the given `image` to the range specified by `lower` and `upper`.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The input image.
-    lower : float or int or None
+    lower : int or float or None
         Lower bound of the clipping range (inclusive). If `None`, no lower bound is applied.
-    upper : float or int or None
+    upper : int or float or None
         Upper bound of the clipping range (inclusive). If `None`, no upper bound is applied.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Clipped image.
 
     Notes
@@ -1621,18 +1682,18 @@ def clip(image, lower=None, upper=None):
     return image
 
 
-def clip_01(image):
+def clip_01(image: np.ndarray) -> np.ndarray:
     """
     Clip values of the given `image` to the range `(0.0, 1.0)`.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The input image.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Clipped image with values in the range `(0.0, 1.0)`.
 
     Examples
@@ -1643,18 +1704,18 @@ def clip_01(image):
     return clip(image=image, lower=0.0, upper=1.0)
 
 
-def clip_11(image):
+def clip_11(image: np.ndarray) -> np.ndarray:
     """
     Clip values of the given `image` to the range `(-1.0, 1.0)`.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The input image.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Clipped image with values in the range `(-1.0, 1.0)`.
 
     Examples
@@ -1665,18 +1726,18 @@ def clip_11(image):
     return clip(image=image, lower=-1.0, upper=1.0)
 
 
-def clip_0255(image):
+def clip_0255(image: np.ndarray) -> np.ndarray:
     """
     Clip values of the given `image` to the range `(0.0, 255.0)`.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The input image.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Clipped image with values in the range `(0.0, 255.0)`.
 
     Examples
@@ -1687,7 +1748,11 @@ def clip_0255(image):
     return clip(image=image, lower=0.0, upper=255.0)
 
 
-def normalize(image, mode="minmax", **kwargs):
+def normalize(
+    image: np.ndarray,
+    mode: str = "minmax",
+    **kwargs,
+) -> np.ndarray:
     """
     Normalize the intensity values of the given `image` to a certain range.
 
@@ -1700,7 +1765,7 @@ def normalize(image, mode="minmax", **kwargs):
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         Input image to be normalized.
     mode : str, optional
         Normalization mode. Valid modes are {'none', 'interval', 'minmax', 'zminmax', 'percentile'}.
@@ -1709,7 +1774,7 @@ def normalize(image, mode="minmax", **kwargs):
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         The normalized image.
 
     Raises
@@ -1782,18 +1847,18 @@ def normalize(image, mode="minmax", **kwargs):
         raise ValueError(f"Invalid mode '{mode}'")
 
 
-def invert(image):
+def invert(image: np.ndarray) -> np.ndarray:
     """
     Invert the intensity values of the given image.
 
     Parameters
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The image to invert.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         The inverted image.
 
     Raises
