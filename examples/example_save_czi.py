@@ -19,6 +19,8 @@ def main():
             channel_names={0: "B", 1: "G", 2: "R"},
             channel_display_settings={
                 0: {"color_bgr": (255, 0, 0), "is_enabled": True},
+                1: {"color_bgr": (0, 255, 0), "is_enabled": False},
+                2: {"color_bgr": (0, 0, 255), "is_enabled": False},
             },
         ),
     )
