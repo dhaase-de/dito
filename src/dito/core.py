@@ -775,7 +775,7 @@ class PaddedImageIndexer:
 
     def __getitem__(
         self,
-        item: tuple[slice | ellipsis, ...] | slice | ellipsis,
+        item: tuple[slice, ...] | slice,  # TODO: add ellipsis to allowed types -> tuple[slice | Ellipsis, ...] | slice | Ellipsis
     ) -> np.ndarray:
         """
         Return a cropped and padded version of the input image according to the given indices.
