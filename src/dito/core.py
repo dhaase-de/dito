@@ -365,8 +365,8 @@ def tir(
             "The two required arguments must either be (i) given separately or (ii) via a sequence of length two, but got neither"
         )
     return (
-        int(round(items[items[0]])),
-        int(round(items[items[1]])),
+        int(round(items[0])),
+        int(round(items[1])),
     )
 
 
@@ -775,10 +775,12 @@ class PaddedImageIndexer:
 
     def __getitem__(
         self,
-        item: tuple[slice, ...] | slice,  # TODO: add ellipsis to allowed types -> tuple[slice | Ellipsis, ...] | slice | Ellipsis
+        item: tuple[slice, ...] | slice,
     ) -> np.ndarray:
         """
         Return a cropped and padded version of the input image according to the given indices.
+
+        TODO: add ellipsis to allowed types -> tuple[slice | Ellipsis, ...] | slice | Ellipsis.
 
         Parameters
         ----------
